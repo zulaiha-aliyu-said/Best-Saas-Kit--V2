@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 pt-20 sm:pt-16">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
@@ -20,17 +20,17 @@ const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="space-y-8"
+          className="space-y-6 sm:space-y-8"
         >
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center space-x-2 bg-muted/50 backdrop-blur-sm border border-border rounded-full px-4 py-2 text-sm text-muted-foreground"
+            className="inline-flex items-center space-x-2 bg-muted/50 backdrop-blur-sm border border-border rounded-full px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-muted-foreground"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Ultimate AI SAAS Kit - Launch in Minutes</span>
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="whitespace-nowrap">Ultimate AI SAAS Kit - Launch in Minutes</span>
           </motion.div>
 
           {/* Main Headline */}
@@ -38,7 +38,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight"
+            className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-tight"
           >
             Build AI-Powered
             <br />
@@ -54,9 +54,9 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4"
           >
-            The complete toolkit for developers to create, customize, and launch 
+            The complete toolkit for developers to create, customize, and launch
             AI-powered SAAS applications with authentication, payments, and modern UI components.
           </motion.p>
 
@@ -88,13 +88,22 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
           >
-            <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+            <Button
+              size="lg"
+              className="text-base font-medium px-6 py-3 h-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              asChild
+            >
               <Link href="/get-started" className="flex items-center space-x-2">
                 <span>Get Started Free</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6 h-auto" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-base font-medium px-6 py-3 h-12 rounded-lg border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+              asChild
+            >
               <Link href="/demo">View Live Demo</Link>
             </Button>
           </motion.div>
