@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Menu, X, Zap } from "lucide-react"
 
@@ -43,6 +44,7 @@ const Navigation = () => {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             <Button variant="ghost" asChild>
               <Link href="/login">Sign In</Link>
             </Button>
@@ -85,6 +87,10 @@ const Navigation = () => {
               </Link>
             ))}
             <div className="flex flex-col space-y-2 pt-4 border-t border-border">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
               <Button variant="ghost" asChild>
                 <Link href="/login">Sign In</Link>
               </Button>
