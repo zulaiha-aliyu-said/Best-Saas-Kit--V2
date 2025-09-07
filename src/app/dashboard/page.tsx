@@ -1,10 +1,10 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Users, 
-  Activity, 
-  CreditCard, 
+import {
+  Users,
+  Activity,
+  CreditCard,
   DollarSign,
   TrendingUp,
   Zap,
@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const user = await currentUser();
+  const session = await auth();
+  const user = session?.user;
 
   const stats = [
     {
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {user?.firstName || "User"}!
+            Welcome back, {user?.name?.split(' ')[0] || "User"}!
           </h1>
           <p className="text-muted-foreground">
             Here's what's happening with your AI SAAS application today.

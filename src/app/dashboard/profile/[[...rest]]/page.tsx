@@ -1,11 +1,12 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserProfile } from "@clerk/nextjs";
+import { SignOutButton } from "@/components/auth/signout-button";
 
 export default async function ProfilePage() {
-  const user = await currentUser();
+  const session = await auth();
+  const user = session?.user;
 
   return (
     <div className="space-y-6">
@@ -29,25 +30,23 @@ export default async function ProfilePage() {
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
                 <span className="text-primary-foreground font-semibold">
-                  {user?.firstName?.charAt(0) || "U"}
+                  {user?.name?.charAt(0) || "U"}
                 </span>
               </div>
               <div>
                 <p className="font-medium">
-                  {user?.firstName} {user?.lastName}
+                  {user?.name || "User"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {user?.emailAddresses[0]?.emailAddress}
+                  {user?.email}
                 </p>
               </div>
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm">Member since</span>
-                <span className="text-sm font-medium">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
-                </span>
+                <span className="text-sm">Provider</span>
+                <span className="text-sm font-medium">Google</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Status</span>
@@ -61,31 +60,37 @@ export default async function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Clerk User Profile */}
+        {/* Profile Actions */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Profile Management</CardTitle>
               <CardDescription>
-                Update your personal information, security settings, and more
+                Manage your account settings and preferences
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <UserProfile 
-                appearance={{
-                  elements: {
-                    card: "shadow-none border-0",
-                    navbar: "hidden",
-                    navbarMobileMenuButton: "hidden",
-                    headerTitle: "text-foreground",
-                    headerSubtitle: "text-muted-foreground",
-                    formButtonPrimary: "bg-primary hover:bg-primary/90 text-primary-foreground",
-                    formFieldInput: "bg-background border border-border text-foreground",
-                    identityPreviewText: "text-foreground",
-                    identityPreviewEditButton: "text-primary hover:text-primary/90"
-                  }
-                }}
-              />
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-medium">Account Information</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your account is managed through Google OAuth. To update your profile information,
+                    please visit your Google account settings.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full" asChild>
+                    <a href="https://myaccount.google.com" target="_blank" rel="noopener noreferrer">
+                      Manage Google Account
+                    </a>
+                  </Button>
+
+                  <SignOutButton className="w-full">
+                    Sign Out
+                  </SignOutButton>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
