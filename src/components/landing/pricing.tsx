@@ -4,8 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check, Star, Zap } from "lucide-react"
 import { motion } from "framer-motion"
+import { PricingClient } from "./pricing-client"
 
-const Pricing = () => {
+interface PricingProps {
+  isAuthenticated?: boolean;
+}
+
+const Pricing = ({ isAuthenticated = false }: PricingProps) => {
   const plans = [
     {
       name: "Starter",
@@ -126,14 +131,10 @@ const Pricing = () => {
                     ))}
                   </ul>
                   
-                  <Button 
-                    className="w-full" 
-                    variant={plan.variant}
-                    size="lg"
-                  >
-                    {plan.popular && <Zap className="w-4 h-4 mr-2" />}
-                    {plan.cta}
-                  </Button>
+                  <PricingClient
+                    plan={plan}
+                    isAuthenticated={isAuthenticated}
+                  />
                 </CardContent>
               </Card>
             </motion.div>

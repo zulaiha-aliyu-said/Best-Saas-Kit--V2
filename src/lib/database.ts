@@ -18,6 +18,10 @@ export interface User {
   updated_at: Date
   last_login: Date
   credits: number
+  subscription_status: string
+  stripe_customer_id?: string
+  subscription_id?: string
+  subscription_end_date?: Date
 }
 
 export interface CreateUserData {
@@ -394,6 +398,110 @@ export async function getCreditStats() {
       maxCredits: parseInt(queries[4].rows[0].max_credits) || 0,
       minCredits: parseInt(queries[5].rows[0].min_credits) || 0,
     }
+  } finally {
+    client.release()
+  }
+}
+
+// Billing Functions
+
+// Update user subscription status
+export async function updateUserSubscription(
+  userId: number,
+  subscriptionData: {
+    subscription_status: string
+    stripe_customer_id?: string
+    subscription_id?: string
+    subscription_end_date?: Date
+  }
+): Promise<boolean> {
+  const client = await pool.connect()
+
+  try {
+    const query = `
+      UPDATE users
+      SET subscription_status = $1,
+          stripe_customer_id = $2,
+          subscription_id = $3,
+          subscription_end_date = $4,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $5
+    `
+    const result = await client.query(query, [
+      subscriptionData.subscription_status,
+      subscriptionData.stripe_customer_id || null,
+      subscriptionData.subscription_id || null,
+      subscriptionData.subscription_end_date || null,
+      userId
+    ])
+
+    return result.rowCount !== null && result.rowCount > 0
+  } finally {
+    client.release()
+  }
+}
+
+// Get user by Stripe customer ID
+export async function getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | null> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT * FROM users WHERE stripe_customer_id = $1'
+    const result = await client.query(query, [stripeCustomerId])
+
+    return result.rows[0] as User || null
+  } finally {
+    client.release()
+  }
+}
+
+// Get subscription statistics (admin function)
+export async function getSubscriptionStats() {
+  const client = await pool.connect()
+
+  try {
+    const queries = await Promise.all([
+      client.query('SELECT COUNT(*) as total_users FROM users'),
+      client.query('SELECT COUNT(*) as free_users FROM users WHERE subscription_status = \'free\''),
+      client.query('SELECT COUNT(*) as pro_users FROM users WHERE subscription_status = \'pro\''),
+      client.query('SELECT COUNT(*) as active_subscriptions FROM users WHERE subscription_status = \'pro\' AND (subscription_end_date IS NULL OR subscription_end_date > CURRENT_TIMESTAMP)'),
+      client.query('SELECT SUM(CASE WHEN subscription_status = \'pro\' THEN 99 ELSE 0 END) as total_revenue FROM users'),
+    ])
+
+    return {
+      totalUsers: parseInt(queries[0].rows[0].total_users),
+      freeUsers: parseInt(queries[1].rows[0].free_users),
+      proUsers: parseInt(queries[2].rows[0].pro_users),
+      activeSubscriptions: parseInt(queries[3].rows[0].active_subscriptions),
+      totalRevenue: parseInt(queries[4].rows[0].total_revenue) || 0,
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Check if user has active subscription
+export async function hasActiveSubscription(userId: number): Promise<boolean> {
+  const client = await pool.connect()
+
+  try {
+    const query = `
+      SELECT subscription_status, subscription_end_date
+      FROM users
+      WHERE id = $1
+    `
+    const result = await client.query(query, [userId])
+
+    if (result.rows.length === 0) return false
+
+    const user = result.rows[0]
+    if (user.subscription_status !== 'pro') return false
+
+    // If no end date, it's active (one-time payment)
+    if (!user.subscription_end_date) return true
+
+    // Check if subscription hasn't expired
+    return new Date(user.subscription_end_date) > new Date()
   } finally {
     client.release()
   }

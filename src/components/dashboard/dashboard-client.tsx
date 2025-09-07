@@ -17,13 +17,15 @@ import {
   Zap,
   Menu,
   X,
-  MessageSquare
+  MessageSquare,
+  CreditCard
 } from "lucide-react"
 
 // Regular user navigation items
 const regularUserItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "AI Chat", href: "/dashboard/chat", icon: MessageSquare },
+  { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
   { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]

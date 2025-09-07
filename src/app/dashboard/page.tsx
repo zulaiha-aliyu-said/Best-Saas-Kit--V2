@@ -188,10 +188,10 @@ export default async function DashboardPage() {
                   <Link href="/dashboard/chat">Start AI Chat</Link>
                 </Button>
                 <Button className="w-full" variant="outline" asChild>
-                  <Link href="/dashboard/profile">Edit Profile</Link>
+                  <Link href="/dashboard/billing">Billing & Plans</Link>
                 </Button>
                 <Button className="w-full" variant="outline" asChild>
-                  <Link href="/dashboard/settings">Settings</Link>
+                  <Link href="/dashboard/profile">Edit Profile</Link>
                 </Button>
               </>
             )}
