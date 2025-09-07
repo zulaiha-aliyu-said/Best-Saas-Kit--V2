@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getUserStats } from "@/lib/database";
+import { getUserStats, getUserCredits } from "@/lib/database";
+import { isAdminEmail } from "@/lib/admin-config";
+import Link from "next/link";
 
 export const runtime = 'nodejs';
 import {
@@ -14,28 +16,44 @@ import {
   BarChart3,
   Settings,
   UserPlus,
-  Calendar
+  Calendar,
+  MessageSquare,
+  User
 } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth();
   const user = session?.user;
 
-  // Get real user statistics from database
-  let userStats;
+  // Check if user is admin
+  const isAdmin = isAdminEmail(user?.email);
+
+  // Get user's credits
+  let userCredits = 0;
   try {
-    userStats = await getUserStats();
+    userCredits = await getUserCredits(user?.id || '');
   } catch (error) {
-    console.error("Error fetching user stats:", error);
-    userStats = {
-      totalUsers: 0,
-      activeToday: 0,
-      newThisWeek: 0,
-      newThisMonth: 0
-    };
+    console.error("Error fetching user credits:", error);
   }
 
-  const stats = [
+  // Get admin statistics only if user is admin
+  let userStats;
+  if (isAdmin) {
+    try {
+      userStats = await getUserStats();
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      userStats = {
+        totalUsers: 0,
+        activeToday: 0,
+        newThisWeek: 0,
+        newThisMonth: 0
+      };
+    }
+  }
+
+  // Admin stats
+  const adminStats = userStats ? [
     {
       title: "Total Users",
       value: userStats.totalUsers.toLocaleString(),
@@ -60,6 +78,34 @@ export default async function DashboardPage() {
       change: "Monthly growth",
       icon: Calendar,
     },
+  ] : [];
+
+  // Regular user stats
+  const regularUserStats = [
+    {
+      title: "Your Credits",
+      value: userCredits.toLocaleString(),
+      change: "Available for AI chat",
+      icon: DollarSign,
+    },
+    {
+      title: "AI Chat",
+      value: "Ready",
+      change: "Start chatting now",
+      icon: MessageSquare,
+    },
+    {
+      title: "Profile",
+      value: "Complete",
+      change: "Manage your account",
+      icon: User,
+    },
+    {
+      title: "Settings",
+      value: "Customize",
+      change: "Personalize your experience",
+      icon: Settings,
+    },
   ];
 
   return (
@@ -68,27 +114,32 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {user?.name?.split(' ')[0] || "User"}!
+            {isAdmin ? "Admin Dashboard" : `Welcome back, ${user?.name?.split(' ')[0] || "User"}!`}
           </h1>
           <p className="text-muted-foreground">
-            Here's what's happening with your AI SAAS application today.
+            {isAdmin
+              ? "Here's what's happening with your application."
+              : "Ready to start chatting with AI? Check your credits and explore the features below."
+            }
           </p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Analytics
-          </Button>
-          <Button>
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex space-x-2">
+            <Button variant="outline">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics
+            </Button>
+            <Button>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {(isAdmin ? adminStats : regularUserStats).map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -110,21 +161,40 @@ export default async function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Quick Start</CardTitle>
+            <CardTitle>{isAdmin ? "Admin Actions" : "Quick Start"}</CardTitle>
             <CardDescription>
-              Get started with your AI-powered application
+              {isAdmin
+                ? "Manage your application and users"
+                : "Get started with AI chat and features"
+              }
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" variant="outline">
-              Create New Project
-            </Button>
-            <Button className="w-full" variant="outline">
-              View Documentation
-            </Button>
-            <Button className="w-full" variant="outline">
-              API Integration
-            </Button>
+            {isAdmin ? (
+              <>
+                <Button className="w-full" variant="outline" asChild>
+                  <Link href="/admin">Admin Panel</Link>
+                </Button>
+                <Button className="w-full" variant="outline" asChild>
+                  <Link href="/admin/users">Manage Users</Link>
+                </Button>
+                <Button className="w-full" variant="outline" asChild>
+                  <Link href="/dashboard/analytics">View Analytics</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button className="w-full" asChild>
+                  <Link href="/dashboard/chat">Start AI Chat</Link>
+                </Button>
+                <Button className="w-full" variant="outline" asChild>
+                  <Link href="/dashboard/profile">Edit Profile</Link>
+                </Button>
+                <Button className="w-full" variant="outline" asChild>
+                  <Link href="/dashboard/settings">Settings</Link>
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -132,23 +202,42 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
-              Your latest actions and updates
+              {isAdmin ? "System activity and updates" : "Your recent actions"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">API key generated</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm">Profile updated</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm">New user registered</span>
-              </div>
+              {isAdmin ? (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm">New user registered</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">Credits updated</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm">System maintenance</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm">Account created</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">Credits available: {userCredits}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-sm">Ready to chat with AI</span>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

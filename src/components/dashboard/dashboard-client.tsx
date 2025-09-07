@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { UserButtonClient } from "@/components/auth/user-button-client"
 import { CreditsDisplay } from "@/components/credits/credits-display"
+import { isAdminEmail } from "@/lib/admin-config"
 import { cn } from "@/lib/utils"
 import {
   Home,
@@ -19,7 +20,16 @@ import {
   MessageSquare
 } from "lucide-react"
 
-const sidebarItems = [
+// Regular user navigation items
+const regularUserItems = [
+  { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "AI Chat", href: "/dashboard/chat", icon: MessageSquare },
+  { name: "Profile", href: "/dashboard/profile", icon: User },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+]
+
+// Admin user navigation items (includes everything)
+const adminUserItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "AI Chat", href: "/dashboard/chat", icon: MessageSquare },
   { name: "Users", href: "/dashboard/users", icon: Users },
@@ -35,6 +45,10 @@ interface DashboardClientProps {
 
 export function DashboardClient({ children, session }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Determine if user is admin and get appropriate navigation items
+  const isAdmin = isAdminEmail(session.user.email)
+  const sidebarItems = isAdmin ? adminUserItems : regularUserItems
 
   return (
     <div className="min-h-screen bg-background">

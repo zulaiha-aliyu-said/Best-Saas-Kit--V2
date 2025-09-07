@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getAllUsers, type User } from "@/lib/database";
@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export const runtime = 'nodejs';
 
 export default async function UsersPage() {
-  const session = await auth();
+  // This will redirect non-admin users
+  await requireAdminAccess();
 
   // Get all users from database
   let users: User[];
