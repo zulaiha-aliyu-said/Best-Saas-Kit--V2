@@ -2,7 +2,7 @@ import { requireAdminAccess } from "@/lib/admin-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAnalyticsData, getGrowthMetrics } from "@/lib/database";
 import { getSimpleAnalytics, getSimpleGrowthMetrics } from "@/lib/simple-analytics";
-import { AnalyticsClient } from "@/components/admin/analytics-client";
+
 import { 
   Users, 
   DollarSign, 
@@ -67,9 +67,7 @@ export default async function AnalyticsPage() {
     {
       title: "Total Revenue",
       value: `$${totalRevenue.toLocaleString()}`,
-      change: `${analyticsData.revenue.monthlyRevenue.length > 1 ? 
-        ((analyticsData.revenue.monthlyRevenue[0]?.revenue || 0) - 
-         (analyticsData.revenue.monthlyRevenue[1]?.revenue || 0)) : 0} this month`,
+      change: `${proUsers} Pro users × $99`,
       icon: DollarSign,
       color: "text-green-600"
     },
@@ -172,11 +170,57 @@ export default async function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Charts and Detailed Analytics */}
-      <AnalyticsClient 
-        analyticsData={analyticsData}
-        growthMetrics={growthMetrics}
-      />
+      {/* User Distribution */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>User Distribution</CardTitle>
+            <CardDescription>Users by subscription status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analyticsData.users.byStatus.map((status: any) => {
+                const percentage = (parseInt(status.count) / totalUsers) * 100;
+                return (
+                  <div key={status.subscription_status} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium">
+                        {status.subscription_status === 'pro' ? 'Pro' : 'Free'}: {status.count} users
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Credits Overview</CardTitle>
+            <CardDescription>Credit statistics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Total Credits</span>
+                <span className="text-lg font-bold">{analyticsData.credits.total.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Average per User</span>
+                <span className="text-lg font-bold">{analyticsData.credits.average.toFixed(0)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Active Users</span>
+                <span className="text-lg font-bold">{analyticsData.users.activeUsers}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
