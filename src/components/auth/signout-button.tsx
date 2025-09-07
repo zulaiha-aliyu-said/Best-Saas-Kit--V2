@@ -1,6 +1,6 @@
 "use client"
 
-import { signOut } from "@/lib/auth-actions"
+import { signOutAction } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 
 interface SignOutButtonProps {
@@ -10,7 +10,7 @@ interface SignOutButtonProps {
 
 export function SignOutButton({ children, className }: SignOutButtonProps) {
   return (
-    <form action={signOut}>
+    <form action={signOutAction}>
       <Button
         type="submit"
         variant="outline"

@@ -1,6 +1,6 @@
 "use client"
 
-import { signIn } from "@/lib/auth-actions"
+import { signInAction } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 
 interface SignInButtonProps {
@@ -10,7 +10,7 @@ interface SignInButtonProps {
 
 export function SignInButton({ children, className }: SignInButtonProps) {
   return (
-    <form action={signIn}>
+    <form action={signInAction}>
       <Button type="submit" className={className}>
         {children || "Sign In with Google"}
       </Button>
