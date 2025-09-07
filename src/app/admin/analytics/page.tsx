@@ -1,6 +1,7 @@
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAnalyticsData, getGrowthMetrics } from "@/lib/database";
+import { getSimpleAnalytics, getSimpleGrowthMetrics } from "@/lib/simple-analytics";
 import { AnalyticsClient } from "@/components/admin/analytics-client";
 import { 
   Users, 
@@ -25,11 +26,12 @@ export default async function AnalyticsPage() {
 
   try {
     console.log("Starting analytics data fetch...");
-    analyticsData = await getAnalyticsData();
-    console.log("Analytics data fetched successfully");
+    // Use simple analytics first to avoid SQL errors
+    analyticsData = await getSimpleAnalytics();
+    console.log("Simple analytics data fetched successfully");
 
-    growthMetrics = await getGrowthMetrics();
-    console.log("Growth metrics fetched successfully");
+    growthMetrics = await getSimpleGrowthMetrics();
+    console.log("Simple growth metrics fetched successfully");
   } catch (error) {
     console.error("Error fetching analytics:", error);
     console.error("Error details:", {

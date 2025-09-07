@@ -589,7 +589,7 @@ export async function getAnalyticsData() {
       client.query('SELECT SUM(credits) as total_credits FROM users'),
       // Average credits per user
       client.query('SELECT AVG(credits) as avg_credits FROM users'),
-      // Credits distribution
+      // Credits distribution (simplified)
       client.query(`
         SELECT
           CASE
@@ -613,16 +613,7 @@ export async function getAnalyticsData() {
             WHEN credits <= 1000 THEN '501-1000'
             ELSE '1000+'
           END
-        ORDER BY
-          CASE
-            WHEN credits = 0 THEN 0
-            WHEN credits <= 10 THEN 1
-            WHEN credits <= 50 THEN 2
-            WHEN credits <= 100 THEN 3
-            WHEN credits <= 500 THEN 4
-            WHEN credits <= 1000 THEN 5
-            ELSE 6
-          END
+        ORDER BY user_count DESC
       `),
     ])
 
