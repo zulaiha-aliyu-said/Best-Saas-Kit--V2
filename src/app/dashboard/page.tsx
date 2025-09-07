@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getUserStats } from "@/lib/database";
 import {
   Users,
   Activity,
@@ -9,37 +10,53 @@ import {
   TrendingUp,
   Zap,
   BarChart3,
-  Settings
+  Settings,
+  UserPlus,
+  Calendar
 } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth();
   const user = session?.user;
 
+  // Get real user statistics from database
+  let userStats;
+  try {
+    userStats = await getUserStats();
+  } catch (error) {
+    console.error("Error fetching user stats:", error);
+    userStats = {
+      totalUsers: 0,
+      activeToday: 0,
+      newThisWeek: 0,
+      newThisMonth: 0
+    };
+  }
+
   const stats = [
     {
       title: "Total Users",
-      value: "2,350",
-      change: "+20.1%",
+      value: userStats.totalUsers.toLocaleString(),
+      change: `+${userStats.newThisMonth} this month`,
       icon: Users,
     },
     {
-      title: "Active Sessions",
-      value: "1,234",
-      change: "+15.3%",
+      title: "Active Today",
+      value: userStats.activeToday.toLocaleString(),
+      change: "Users logged in today",
       icon: Activity,
     },
     {
-      title: "Revenue",
-      value: "$45,231",
-      change: "+25.2%",
-      icon: DollarSign,
+      title: "New This Week",
+      value: userStats.newThisWeek.toLocaleString(),
+      change: "New registrations",
+      icon: UserPlus,
     },
     {
-      title: "API Calls",
-      value: "12,234",
-      change: "+12.5%",
-      icon: Zap,
+      title: "New This Month",
+      value: userStats.newThisMonth.toLocaleString(),
+      change: "Monthly growth",
+      icon: Calendar,
     },
   ];
 
@@ -80,7 +97,7 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">{stat.change}</span> from last month
+                <span className="text-blue-600">{stat.change}</span>
               </p>
             </CardContent>
           </Card>

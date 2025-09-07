@@ -10,6 +10,7 @@ import {
   Home,
   Settings,
   User,
+  Users,
   BarChart3,
   Zap,
   Menu,
@@ -20,6 +21,7 @@ import {
 const sidebarItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "AI Chat", href: "/dashboard/chat", icon: MessageSquare },
+  { name: "Users", href: "/dashboard/users", icon: Users },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
