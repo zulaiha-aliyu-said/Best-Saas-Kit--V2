@@ -1,14 +1,16 @@
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getAllUsers } from "@/lib/database";
+import { getAllUsers, type User } from "@/lib/database";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+export const runtime = 'nodejs';
 
 export default async function UsersPage() {
   const session = await auth();
-  
+
   // Get all users from database
-  let users;
+  let users: User[];
   try {
     users = await getAllUsers();
   } catch (error) {

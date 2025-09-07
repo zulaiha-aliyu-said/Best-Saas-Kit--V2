@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getUserStats } from "@/lib/database";
+
+export const runtime = 'nodejs';
 import {
   Users,
   Activity,
