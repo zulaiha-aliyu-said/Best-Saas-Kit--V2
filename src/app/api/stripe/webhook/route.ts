@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/stripe';
-import { getUserByStripeCustomerId, updateUserSubscription, addCredits } from '@/lib/database';
+import { getUserByStripeCustomerId, updateUserSubscription, addCredits, getUserByEmail, getUserById } from '@/lib/database';
 import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
@@ -46,37 +46,80 @@ export async function POST(request: NextRequest) {
           sessionId: session.id,
           paymentStatus: session.payment_status,
           customerId: session.customer,
-          amount: session.amount_total
+          amount: session.amount_total,
+          metadata: session.metadata
         });
 
-        if (session.payment_status === 'paid' && session.customer) {
-          // Get user by Stripe customer ID
-          const user = await getUserByStripeCustomerId(session.customer as string);
+        if (session.payment_status === 'paid') {
+          let user = null;
+
+          // Method 1: Try to find user by Stripe customer ID
+          if (session.customer) {
+            try {
+              user = await getUserByStripeCustomerId(session.customer as string);
+              if (user) {
+                console.log(`Found user by customer ID ${session.customer}: ${user.email}`);
+              }
+            } catch (error) {
+              console.error('Error finding user by customer ID:', error);
+            }
+          }
+
+          // Method 2: Try to find user by metadata user ID
+          if (!user && session.metadata?.userId) {
+            try {
+              const userId = parseInt(session.metadata.userId);
+              user = await getUserById(userId);
+              if (user) {
+                console.log(`Found user by metadata user ID ${userId}: ${user.email}`);
+              }
+            } catch (error) {
+              console.error('Error finding user by metadata user ID:', error);
+            }
+          }
+
+          // Method 3: Try to find user by metadata email
+          if (!user && session.metadata?.userEmail) {
+            try {
+              user = await getUserByEmail(session.metadata.userEmail);
+              if (user) {
+                console.log(`Found user by metadata email ${session.metadata.userEmail}: ${user.email}`);
+              }
+            } catch (error) {
+              console.error('Error finding user by metadata email:', error);
+            }
+          }
 
           if (user) {
-            console.log(`Found user for customer ${session.customer}: ${user.email}`);
+            try {
+              // Update user to Pro subscription
+              const updateResult = await updateUserSubscription(user.id, {
+                subscription_status: 'pro',
+                stripe_customer_id: session.customer as string,
+                subscription_id: session.id,
+                // For one-time payment, no end date (lifetime access)
+              });
 
-            // Update user to Pro subscription
-            const updateResult = await updateUserSubscription(user.id, {
-              subscription_status: 'pro',
-              stripe_customer_id: session.customer as string,
-              subscription_id: session.id,
-              // For one-time payment, no end date (lifetime access)
-            });
+              // Add bonus credits for Pro users (1000 credits)
+              const creditsResult = await addCredits(user.id, 1000);
 
-            // Add bonus credits for Pro users (e.g., 1000 credits)
-            const creditsResult = await addCredits(user.id, 1000);
-
-            console.log(`User ${user.email} upgraded to Pro plan:`, {
-              subscriptionUpdated: updateResult,
-              creditsAdded: creditsResult.success,
-              newCreditBalance: creditsResult.newBalance
-            });
+              console.log(`✅ User ${user.email} successfully upgraded to Pro plan:`, {
+                userId: user.id,
+                subscriptionUpdated: updateResult,
+                creditsAdded: creditsResult ? creditsResult.success : false,
+                newCreditBalance: creditsResult ? creditsResult.newBalance : 'unknown'
+              });
+            } catch (error) {
+              console.error(`❌ Error upgrading user ${user.email} to Pro:`, error);
+            }
           } else {
-            console.error(`No user found for Stripe customer ID: ${session.customer}`);
+            console.error(`❌ No user found for checkout session ${session.id}:`, {
+              customerId: session.customer,
+              metadata: session.metadata
+            });
           }
         } else {
-          console.log('Checkout session not processed:', {
+          console.log('Checkout session not processed - payment not completed:', {
             paymentStatus: session.payment_status,
             hasCustomer: !!session.customer
           });

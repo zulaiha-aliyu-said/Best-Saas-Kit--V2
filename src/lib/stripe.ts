@@ -25,6 +25,8 @@ export async function createStripeCustomer(email: string, name?: string) {
 // Create checkout session for Pro plan
 export async function createCheckoutSession(
   customerId: string,
+  userId: number,
+  userEmail: string,
   successUrl: string,
   cancelUrl: string
 ) {
@@ -49,6 +51,8 @@ export async function createCheckoutSession(
     cancel_url: cancelUrl,
     metadata: {
       plan: 'pro',
+      userId: userId.toString(),
+      userEmail: userEmail,
     },
   });
 }

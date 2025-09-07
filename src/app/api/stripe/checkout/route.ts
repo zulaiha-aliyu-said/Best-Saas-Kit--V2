@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
     // Create checkout session
     const checkoutSession = await createCheckoutSession(
       customerId,
+      user.id,
+      user.email,
       `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
       `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`
     );

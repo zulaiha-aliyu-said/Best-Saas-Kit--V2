@@ -86,11 +86,25 @@ export async function getUserByGoogleId(googleId: string): Promise<User | null> 
 // Get user by email
 export async function getUserByEmail(email: string): Promise<User | null> {
   const client = await pool.connect()
-  
+
   try {
     const query = 'SELECT * FROM users WHERE email = $1'
     const result = await client.query(query, [email])
-    
+
+    return result.rows[0] as User || null
+  } finally {
+    client.release()
+  }
+}
+
+// Get user by ID
+export async function getUserById(id: number): Promise<User | null> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT * FROM users WHERE id = $1'
+    const result = await client.query(query, [id])
+
     return result.rows[0] as User || null
   } finally {
     client.release()
