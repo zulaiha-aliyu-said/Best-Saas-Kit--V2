@@ -10,7 +10,14 @@ export async function POST(request: NextRequest) {
     const body = await request.text();
     const signature = request.headers.get('stripe-signature');
 
+    console.log('Webhook received:', {
+      hasBody: !!body,
+      hasSignature: !!signature,
+      bodyLength: body.length
+    });
+
     if (!signature) {
+      console.error('Missing stripe-signature header');
       return NextResponse.json(
         { error: 'Missing stripe-signature header' },
         { status: 400 }
@@ -21,6 +28,7 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event;
     try {
       event = verifyWebhookSignature(body, signature);
+      console.log('Webhook signature verified successfully, event type:', event.type);
     } catch (error) {
       console.error('Webhook signature verification failed:', error);
       return NextResponse.json(
@@ -33,14 +41,23 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        
+
+        console.log('Processing checkout.session.completed:', {
+          sessionId: session.id,
+          paymentStatus: session.payment_status,
+          customerId: session.customer,
+          amount: session.amount_total
+        });
+
         if (session.payment_status === 'paid' && session.customer) {
           // Get user by Stripe customer ID
           const user = await getUserByStripeCustomerId(session.customer as string);
-          
+
           if (user) {
+            console.log(`Found user for customer ${session.customer}: ${user.email}`);
+
             // Update user to Pro subscription
-            await updateUserSubscription(user.id, {
+            const updateResult = await updateUserSubscription(user.id, {
               subscription_status: 'pro',
               stripe_customer_id: session.customer as string,
               subscription_id: session.id,
@@ -48,10 +65,21 @@ export async function POST(request: NextRequest) {
             });
 
             // Add bonus credits for Pro users (e.g., 1000 credits)
-            await addCredits(user.id, 1000);
+            const creditsResult = await addCredits(user.id, 1000);
 
-            console.log(`User ${user.email} upgraded to Pro plan`);
+            console.log(`User ${user.email} upgraded to Pro plan:`, {
+              subscriptionUpdated: updateResult,
+              creditsAdded: creditsResult.success,
+              newCreditBalance: creditsResult.newBalance
+            });
+          } else {
+            console.error(`No user found for Stripe customer ID: ${session.customer}`);
           }
+        } else {
+          console.log('Checkout session not processed:', {
+            paymentStatus: session.payment_status,
+            hasCustomer: !!session.customer
+          });
         }
         break;
       }
