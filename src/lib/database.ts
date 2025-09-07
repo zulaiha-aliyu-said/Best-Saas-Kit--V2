@@ -8,6 +8,9 @@ const pool = new Pool({
   }
 })
 
+// Export pool for use in other modules
+export { pool }
+
 export interface User {
   id: number
   google_id: string
