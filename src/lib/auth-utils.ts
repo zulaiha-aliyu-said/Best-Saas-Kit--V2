@@ -1,13 +1,12 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "./auth"
+import { auth } from "./auth"
 
 export async function getCurrentUser() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   return session?.user
 }
 
 export async function requireAuth() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) {
     throw new Error("Authentication required")
   }

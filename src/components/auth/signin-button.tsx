@@ -1,6 +1,6 @@
 "use client"
 
-import { signIn } from "next-auth/react"
+import { signIn } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 
 interface SignInButtonProps {
@@ -10,11 +10,10 @@ interface SignInButtonProps {
 
 export function SignInButton({ children, className }: SignInButtonProps) {
   return (
-    <Button
-      onClick={() => signIn("google")}
-      className={className}
-    >
-      {children || "Sign In with Google"}
-    </Button>
+    <form action={signIn}>
+      <Button type="submit" className={className}>
+        {children || "Sign In with Google"}
+      </Button>
+    </form>
   )
 }

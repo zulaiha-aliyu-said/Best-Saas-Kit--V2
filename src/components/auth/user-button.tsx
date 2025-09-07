@@ -1,6 +1,4 @@
-"use client"
-
-import { useSession } from "next-auth/react"
+import { auth } from "@/lib/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -12,8 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SignOutButton } from "./signout-button"
 
-export function UserButton() {
-  const { data: session } = useSession()
+export async function UserButton() {
+  const session = await auth()
 
   if (!session?.user) {
     return null

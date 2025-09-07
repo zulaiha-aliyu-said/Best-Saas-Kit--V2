@@ -1,29 +1,18 @@
-import { withAuth } from "next-auth/middleware"
+import { auth } from "@/lib/auth"
 
-export default withAuth(
-  function middleware(req) {
-    // Add any additional middleware logic here
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Define protected routes
-        const protectedPaths = ['/dashboard', '/api/chat', '/api/usage', '/api/test-ai']
-        const isProtectedPath = protectedPaths.some(path =>
-          req.nextUrl.pathname.startsWith(path)
-        )
+export default auth((req) => {
+  // Define protected routes
+  const protectedPaths = ['/dashboard', '/api/chat', '/api/usage', '/api/test-ai']
+  const isProtectedPath = protectedPaths.some(path =>
+    req.nextUrl.pathname.startsWith(path)
+  )
 
-        // Allow access to protected routes only if user has a token
-        if (isProtectedPath) {
-          return !!token
-        }
-
-        // Allow access to all other routes
-        return true
-      },
-    },
+  // Allow access to protected routes only if user has a session
+  if (isProtectedPath && !req.auth) {
+    const newUrl = new URL('/auth/signin', req.nextUrl.origin)
+    return Response.redirect(newUrl)
   }
-)
+})
 
 export const config = {
   matcher: [

@@ -1,6 +1,11 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { DashboardClient } from "@/components/dashboard/dashboard-client";
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { UserButton } from "@/components/auth/user-button"
+import { cn } from "@/lib/utils"
 import {
   Home,
   Settings,
@@ -10,9 +15,7 @@ import {
   Menu,
   X,
   MessageSquare
-} from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+} from "lucide-react"
 
 const sidebarItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -20,21 +23,15 @@ const sidebarItems = [
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
-];
+]
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
-  return <DashboardClient session={session}>{children}</DashboardClient>
+interface DashboardClientProps {
+  children: React.ReactNode
+  session: any
 }
+
+export function DashboardClient({ children, session }: DashboardClientProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,10 +50,10 @@ export default async function DashboardLayout({
       )}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
           <div className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-              <Zap className="w-5 h-5 text-primary-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Zap className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">AI SAAS Kit</span>
+            <span className="text-lg font-semibold">Best SAAS Kit</span>
           </div>
           <Button
             variant="ghost"
@@ -103,16 +100,9 @@ export default async function DashboardLayout({
                 Welcome back, {session.user?.name?.split(' ')[0] || "User"}!
               </h1>
             </div>
-
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <UserButton 
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8"
-                  }
-                }}
-              />
+              <UserButton />
             </div>
           </div>
         </header>
@@ -123,5 +113,5 @@ export default async function DashboardLayout({
         </main>
       </div>
     </div>
-  );
+  )
 }

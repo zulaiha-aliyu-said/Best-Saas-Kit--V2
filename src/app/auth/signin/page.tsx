@@ -1,33 +1,13 @@
-"use client"
-
-import { signIn, getSession } from "next-auth/react"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { SignInButton } from "@/components/auth/signin-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function SignInPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+export default async function SignInPage() {
+  const session = await auth()
 
-  useEffect(() => {
-    // Check if user is already signed in
-    getSession().then((session) => {
-      if (session) {
-        router.push("/dashboard")
-      }
-    })
-  }, [router])
-
-  const handleSignIn = async () => {
-    setIsLoading(true)
-    try {
-      await signIn("google", { callbackUrl: "/dashboard" })
-    } catch (error) {
-      console.error("Sign in error:", error)
-    } finally {
-      setIsLoading(false)
-    }
+  if (session) {
+    redirect("/dashboard")
   }
 
   return (
@@ -40,14 +20,7 @@ export default function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            onClick={handleSignIn}
-            disabled={isLoading}
-            className="w-full"
-            size="lg"
-          >
-            {isLoading ? "Signing in..." : "Sign in with Google"}
-          </Button>
+          <SignInButton className="w-full" />
         </CardContent>
       </Card>
     </div>
