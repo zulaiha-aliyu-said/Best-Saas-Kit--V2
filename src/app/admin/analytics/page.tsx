@@ -22,15 +22,35 @@ export default async function AnalyticsPage() {
   // Get analytics data
   let analyticsData;
   let growthMetrics;
-  
+
   try {
-    [analyticsData, growthMetrics] = await Promise.all([
-      getAnalyticsData(),
-      getGrowthMetrics()
-    ]);
+    console.log("Starting analytics data fetch...");
+    analyticsData = await getAnalyticsData();
+    console.log("Analytics data fetched successfully");
+
+    growthMetrics = await getGrowthMetrics();
+    console.log("Growth metrics fetched successfully");
   } catch (error) {
     console.error("Error fetching analytics:", error);
-    return <div>Error loading analytics data.</div>;
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+
+    return (
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h3 className="text-red-800 font-medium">Error loading analytics data</h3>
+          <p className="text-red-600 text-sm mt-1">
+            {error instanceof Error ? error.message : 'Unknown error occurred'}
+          </p>
+          <p className="text-red-600 text-xs mt-2">
+            Check the server logs for more details.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Calculate key metrics
