@@ -194,19 +194,7 @@ export async function deleteUserByGoogleId(googleId: string): Promise<boolean> {
   }
 }
 
-// Get user by ID (admin only)
-export async function getUserById(userId: number): Promise<User | null> {
-  const client = await pool.connect()
 
-  try {
-    const query = 'SELECT * FROM users WHERE id = $1'
-    const result = await client.query(query, [userId])
-
-    return result.rows[0] as User || null
-  } finally {
-    client.release()
-  }
-}
 
 // Get recent user activity (admin only)
 export async function getRecentUserActivity(limit: number = 50): Promise<User[]> {
