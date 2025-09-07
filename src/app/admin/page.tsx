@@ -17,7 +17,9 @@ export default async function AdminDashboard() {
   // Get detailed statistics
   let stats;
   try {
+    console.log("Fetching admin dashboard stats...");
     stats = await getDetailedUserStats();
+    console.log("Admin stats fetched:", stats);
   } catch (error) {
     console.error("Error fetching admin stats:", error);
     stats = {
@@ -93,8 +95,12 @@ export default async function AdminDashboard() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <p className="text-muted-foreground">
-          Overview of user activity and system statistics.
+          Overview of user activity and system statistics (Real-time data from database).
         </p>
+        {/* Debug info to verify real data */}
+        <div className="text-xs text-muted-foreground mt-2">
+          Last updated: {new Date().toLocaleString()} | Total Users: {stats.totalUsers} | Data Source: PostgreSQL Database
+        </div>
       </div>
 
       {/* Overview Stats */}

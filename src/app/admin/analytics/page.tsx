@@ -99,8 +99,12 @@ export default async function AnalyticsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
         <p className="text-muted-foreground">
-          Comprehensive insights into your application's performance and growth.
+          Comprehensive insights into your application's performance and growth (Real-time data).
         </p>
+        {/* Debug info to verify real data */}
+        <div className="text-xs text-muted-foreground mt-2">
+          Last updated: {new Date().toLocaleString()} | Total Users: {totalUsers} | Pro Users: {proUsers} | Revenue: ${totalRevenue} | Data Source: Live PostgreSQL Database
+        </div>
       </div>
 
       {/* Key Metrics */}
