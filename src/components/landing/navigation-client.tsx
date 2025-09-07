@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Menu, X, Zap } from "lucide-react"
 import { SignInButton } from "@/components/auth/signin-button"
-import { UserButton } from "@/components/auth/user-button"
+import { UserButtonClient } from "@/components/auth/user-button-client"
 
 interface NavigationClientProps {
   session: any
@@ -65,7 +65,7 @@ export function NavigationClient({ session }: NavigationClientProps) {
                 <Button variant="ghost" asChild>
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
-                <UserButton />
+                <UserButtonClient user={session.user} />
               </>
             )}
           </div>
@@ -117,7 +117,7 @@ export function NavigationClient({ session }: NavigationClientProps) {
                     <Link href="/dashboard">Dashboard</Link>
                   </Button>
                   <div className="flex items-center space-x-2 p-2">
-                    <UserButton />
+                    <UserButtonClient user={session.user} />
                     <span className="text-sm text-muted-foreground">Account</span>
                   </div>
                 </>

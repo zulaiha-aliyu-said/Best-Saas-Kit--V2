@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { UserButton } from "@/components/auth/user-button"
+import { UserButtonClient } from "@/components/auth/user-button-client"
 import { cn } from "@/lib/utils"
 import {
   Home,
@@ -102,7 +102,7 @@ export function DashboardClient({ children, session }: DashboardClientProps) {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <UserButton />
+              <UserButtonClient user={session.user} />
             </div>
           </div>
         </header>
