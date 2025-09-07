@@ -2,20 +2,17 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Menu, X, Zap } from "lucide-react"
-import {
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  SignedIn,
-  SignedOut
-} from "@clerk/nextjs"
+import { SignInButton } from "@/components/auth/signin-button"
+import { UserButton } from "@/components/auth/user-button"
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = React.useState(false)
+  const { data: session } = useSession()
 
   const navItems = [
     { name: "Features", href: "#features" },
@@ -52,26 +49,23 @@ const Navigation = () => {
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="ghost">Sign In</Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button>Get Started</Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <Button variant="ghost" asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8"
-                  }
-                }}
-              />
-            </SignedIn>
+            {!session ? (
+              <>
+                <SignInButton>
+                  <Button variant="ghost">Sign In</Button>
+                </SignInButton>
+                <SignInButton>
+                  <Button>Get Started</Button>
+                </SignInButton>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <UserButton />
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -112,29 +106,26 @@ const Navigation = () => {
                 <span className="text-sm text-muted-foreground">Theme</span>
                 <ThemeToggle />
               </div>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button variant="ghost" className="w-full justify-start">Sign In</Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button className="w-full">Get Started</Button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <div className="flex items-center space-x-2 p-2">
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-8 h-8"
-                      }
-                    }}
-                  />
-                  <span className="text-sm text-muted-foreground">Account</span>
-                </div>
-              </SignedIn>
+              {!session ? (
+                <>
+                  <SignInButton>
+                    <Button variant="ghost" className="w-full justify-start">Sign In</Button>
+                  </SignInButton>
+                  <SignInButton>
+                    <Button className="w-full">Get Started</Button>
+                  </SignInButton>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild className="w-full justify-start">
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                  <div className="flex items-center space-x-2 p-2">
+                    <UserButton />
+                    <span className="text-sm text-muted-foreground">Account</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
+import { UserButton } from "@/components/auth/user-button";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Link from "next/link";
@@ -30,13 +31,24 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoaded } = useUser();
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!isLoaded) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="text-muted-foreground">Please sign in to access the dashboard.</p>
+        </div>
       </div>
     );
   }
@@ -105,7 +117,7 @@ export default function DashboardLayout({
                 <Menu className="h-5 w-5" />
               </Button>
               <h1 className="text-xl font-semibold">
-                Welcome back, {user?.firstName || "User"}!
+                Welcome back, {session.user?.name?.split(' ')[0] || "User"}!
               </h1>
             </div>
 
