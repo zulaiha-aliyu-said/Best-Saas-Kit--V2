@@ -5,8 +5,9 @@ import { ChatMessage } from "./chat-message";
 import { ChatInput } from "./chat-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Download, MessageSquare } from "lucide-react";
+import { Trash2, Download, MessageSquare, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CreditsDisplay } from "@/components/credits/credits-display";
 
 export interface Message {
   id: string;
@@ -28,6 +29,7 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -70,11 +72,29 @@ export function ChatInterface({
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        // Handle credit-specific errors
+        if (errorData.code === 'INSUFFICIENT_CREDITS') {
+          const errorMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: '⚠️ You don\'t have enough credits to send this message. You need at least 1 credit per message.',
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, errorMessage]);
+          return;
+        }
+
         throw new Error(errorData.error || 'Failed to get response');
       }
 
       const data = await response.json();
-      
+
+      // Update credits if returned
+      if (typeof data.credits === 'number') {
+        setCredits(data.credits);
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -150,6 +170,7 @@ export function ChatInterface({
           {title}
         </CardTitle>
         <div className="flex items-center gap-2">
+          <CreditsDisplay showRefresh />
           {messages.length > 0 && (
             <>
               <Button

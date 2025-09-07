@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { UserButtonClient } from "@/components/auth/user-button-client"
+import { CreditsDisplay } from "@/components/credits/credits-display"
 import { cn } from "@/lib/utils"
 import {
   Home,
@@ -103,6 +104,7 @@ export function DashboardClient({ children, session }: DashboardClientProps) {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
+              <CreditsDisplay showRefresh />
               <ThemeToggle />
               <UserButtonClient user={session.user} />
             </div>

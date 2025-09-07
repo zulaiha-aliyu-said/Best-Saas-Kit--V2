@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 import { incrementMessageCount, checkUsageLimits } from '@/lib/usage-tracking';
+import { deductCredits, getUserCredits } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,19 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    // Check credits first
+    const currentCredits = await getUserCredits(userId);
+    if (currentCredits < 1) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient credits. You need at least 1 credit to send a message.',
+          code: 'INSUFFICIENT_CREDITS',
+          credits: currentCredits
+        },
+        { status: 402 }
+      );
+    }
 
     // Check usage limits
     const usageLimits = checkUsageLimits(userId);
@@ -66,6 +80,19 @@ export async function POST(request: NextRequest) {
       ? messages 
       : [systemMessage, ...messages];
 
+    // Deduct credits before making the API call
+    const creditResult = await deductCredits(userId, 1);
+    if (!creditResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Failed to deduct credits. Please try again.',
+          code: 'CREDIT_DEDUCTION_FAILED',
+          credits: creditResult.newBalance
+        },
+        { status: 402 }
+      );
+    }
+
     // Call OpenRouter API
     const completion = await createChatCompletion(finalMessages, {
       temperature: temperature || 0.7,
@@ -76,11 +103,12 @@ export async function POST(request: NextRequest) {
     const tokensUsed = completion.usage?.total_tokens || 0;
     incrementMessageCount(userId, tokensUsed);
 
-    // Return the response
+    // Return the response with updated credits
     return NextResponse.json({
       message: completion.choices[0]?.message,
       usage: completion.usage,
       model: completion.model,
+      credits: creditResult.newBalance,
     });
 
   } catch (error) {

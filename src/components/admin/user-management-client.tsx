@@ -16,9 +16,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Search, Trash2, RefreshCw } from "lucide-react";
+import { Search, Trash2, RefreshCw, Plus, Minus, Edit } from "lucide-react";
 import { type User } from "@/lib/database";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface UserManagementClientProps {
   initialUsers: User[];
@@ -29,6 +38,9 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+  const [editingCreditsUserId, setEditingCreditsUserId] = useState<number | null>(null);
+  const [creditsAmount, setCreditsAmount] = useState("");
+  const [creditsAction, setCreditsAction] = useState<"add" | "set">("add");
   const { toast } = useToast();
 
   const filteredUsers = users.filter(user =>
@@ -146,6 +158,63 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
     }
   };
 
+  const handleCreditsUpdate = async (userId: number) => {
+    const amount = parseInt(creditsAmount);
+    if (isNaN(amount) || amount < 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/credits`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: creditsAction,
+          amount: amount,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Update the user in the local state
+        setUsers(users.map(user =>
+          user.id === userId
+            ? { ...user, credits: data.newBalance }
+            : user
+        ));
+
+        toast({
+          title: "Credits updated",
+          description: `${creditsAction === 'add' ? 'Added' : 'Set'} ${amount} credits for ${data.user.email}. New balance: ${data.newBalance}`,
+        });
+
+        setEditingCreditsUserId(null);
+        setCreditsAmount("");
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Update failed",
+          description: error.error || "Failed to update credits",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Update error",
+        description: "An error occurred while updating credits",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Search and Actions */}
@@ -200,16 +269,77 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                   </div>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                   <p className="text-xs text-muted-foreground">
-                    ID: {user.id} • Joined: {formatDate(user.created_at)} • Last login: {formatDate(user.last_login)}
+                    ID: {user.id} • Credits: {user.credits} • Joined: {formatDate(user.created_at)} • Last login: {formatDate(user.last_login)}
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-2">
+                {/* Credits Management */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCreditsUserId(user.id);
+                        setCreditsAmount("");
+                        setCreditsAction("add");
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Manage Credits</DialogTitle>
+                      <DialogDescription>
+                        Update credits for <strong>{user.email}</strong> (Current: {user.credits} credits)
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant={creditsAction === "add" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCreditsAction("add")}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                        <Button
+                          variant={creditsAction === "set" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCreditsAction("set")}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Set
+                        </Button>
+                      </div>
+                      <Input
+                        type="number"
+                        placeholder="Enter amount"
+                        value={creditsAmount}
+                        onChange={(e) => setCreditsAmount(e.target.value)}
+                        min="0"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        onClick={() => handleCreditsUpdate(user.id)}
+                        disabled={!creditsAmount || isNaN(parseInt(creditsAmount))}
+                      >
+                        {creditsAction === "add" ? "Add Credits" : "Set Credits"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Delete User */}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       size="sm"
                       disabled={deletingUserId === user.id}
                     >
@@ -220,7 +350,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete User</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete user <strong>{user.email}</strong>? 
+                        Are you sure you want to delete user <strong>{user.email}</strong>?
                         This action cannot be undone and will permanently remove all user data.
                       </AlertDialogDescription>
                     </AlertDialogHeader>

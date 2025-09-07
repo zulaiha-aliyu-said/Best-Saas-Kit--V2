@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { Menu, X, Zap } from "lucide-react"
 import { SignInButton } from "@/components/auth/signin-button"
 import { UserButtonClient } from "@/components/auth/user-button-client"
+import { CreditsDisplay } from "@/components/credits/credits-display"
 
 interface NavigationClientProps {
   session: any
@@ -62,6 +63,7 @@ export function NavigationClient({ session }: NavigationClientProps) {
               </>
             ) : (
               <>
+                <CreditsDisplay />
                 <Button variant="ghost" asChild>
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
