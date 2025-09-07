@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDetailedUserStats, getRecentUserActivity } from "@/lib/database";
+import { getDetailedUserStats, getRecentUserActivity, type User } from "@/lib/database";
 import { 
   Users, 
   UserPlus, 
@@ -33,7 +33,7 @@ export default async function AdminDashboard() {
   }
 
   // Get recent user activity
-  let recentUsers;
+  let recentUsers: User[];
   try {
     recentUsers = await getRecentUserActivity(10);
   } catch (error) {
