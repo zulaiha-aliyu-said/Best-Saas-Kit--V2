@@ -509,6 +509,207 @@ export async function hasActiveSubscription(userId: number): Promise<boolean> {
   }
 }
 
+// Analytics Functions
+
+// Get comprehensive analytics data
+export async function getAnalyticsData() {
+  const client = await pool.connect()
+
+  try {
+    // User analytics
+    const userQueries = await Promise.all([
+      // Total users
+      client.query('SELECT COUNT(*) as total FROM users'),
+      // Users by subscription status
+      client.query(`
+        SELECT
+          subscription_status,
+          COUNT(*) as count
+        FROM users
+        GROUP BY subscription_status
+      `),
+      // New users by day (last 30 days)
+      client.query(`
+        SELECT
+          DATE(created_at) as date,
+          COUNT(*) as count
+        FROM users
+        WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+      `),
+      // New users by month (last 12 months)
+      client.query(`
+        SELECT
+          DATE_TRUNC('month', created_at) as month,
+          COUNT(*) as count
+        FROM users
+        WHERE created_at >= CURRENT_DATE - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', created_at)
+        ORDER BY month DESC
+      `),
+      // Active users (logged in last 30 days)
+      client.query(`
+        SELECT COUNT(*) as active_users
+        FROM users
+        WHERE last_login >= CURRENT_DATE - INTERVAL '30 days'
+      `),
+    ])
+
+    // Revenue analytics
+    const revenueQueries = await Promise.all([
+      // Total revenue (Pro users * $99)
+      client.query(`
+        SELECT
+          COUNT(*) as pro_users,
+          COUNT(*) * 99 as total_revenue
+        FROM users
+        WHERE subscription_status = 'pro'
+      `),
+      // Revenue by month
+      client.query(`
+        SELECT
+          DATE_TRUNC('month', created_at) as month,
+          COUNT(*) as pro_signups,
+          COUNT(*) * 99 as revenue
+        FROM users
+        WHERE subscription_status = 'pro'
+          AND created_at >= CURRENT_DATE - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', created_at)
+        ORDER BY month DESC
+      `),
+    ])
+
+    // Credit analytics
+    const creditQueries = await Promise.all([
+      // Total credits in system
+      client.query('SELECT SUM(credits) as total_credits FROM users'),
+      // Average credits per user
+      client.query('SELECT AVG(credits) as avg_credits FROM users'),
+      // Credits distribution
+      client.query(`
+        SELECT
+          CASE
+            WHEN credits = 0 THEN '0'
+            WHEN credits <= 10 THEN '1-10'
+            WHEN credits <= 50 THEN '11-50'
+            WHEN credits <= 100 THEN '51-100'
+            WHEN credits <= 500 THEN '101-500'
+            WHEN credits <= 1000 THEN '501-1000'
+            ELSE '1000+'
+          END as credit_range,
+          COUNT(*) as user_count
+        FROM users
+        GROUP BY
+          CASE
+            WHEN credits = 0 THEN '0'
+            WHEN credits <= 10 THEN '1-10'
+            WHEN credits <= 50 THEN '11-50'
+            WHEN credits <= 100 THEN '51-100'
+            WHEN credits <= 500 THEN '101-500'
+            WHEN credits <= 1000 THEN '501-1000'
+            ELSE '1000+'
+          END
+        ORDER BY
+          CASE
+            WHEN credits = 0 THEN 0
+            WHEN credits <= 10 THEN 1
+            WHEN credits <= 50 THEN 2
+            WHEN credits <= 100 THEN 3
+            WHEN credits <= 500 THEN 4
+            WHEN credits <= 1000 THEN 5
+            ELSE 6
+          END
+      `),
+    ])
+
+    return {
+      users: {
+        total: parseInt(userQueries[0].rows[0].total),
+        byStatus: userQueries[1].rows,
+        dailySignups: userQueries[2].rows,
+        monthlySignups: userQueries[3].rows,
+        activeUsers: parseInt(userQueries[4].rows[0].active_users),
+      },
+      revenue: {
+        total: parseInt(revenueQueries[0].rows[0].total_revenue) || 0,
+        proUsers: parseInt(revenueQueries[0].rows[0].pro_users),
+        monthlyRevenue: revenueQueries[1].rows,
+      },
+      credits: {
+        total: parseInt(creditQueries[0].rows[0].total_credits) || 0,
+        average: parseFloat(creditQueries[1].rows[0].avg_credits) || 0,
+        distribution: creditQueries[2].rows,
+      },
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get growth metrics
+export async function getGrowthMetrics() {
+  const client = await pool.connect()
+
+  try {
+    const queries = await Promise.all([
+      // Growth rate (users this month vs last month)
+      client.query(`
+        SELECT
+          COUNT(*) as current_month
+        FROM users
+        WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)
+      `),
+      client.query(`
+        SELECT
+          COUNT(*) as last_month
+        FROM users
+        WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+          AND created_at < DATE_TRUNC('month', CURRENT_DATE)
+      `),
+      // Conversion rate (pro users / total users)
+      client.query(`
+        SELECT
+          COUNT(CASE WHEN subscription_status = 'pro' THEN 1 END) as pro_users,
+          COUNT(*) as total_users
+        FROM users
+      `),
+      // Retention (users who logged in this month that were created last month)
+      client.query(`
+        SELECT
+          COUNT(*) as retained_users
+        FROM users
+        WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+          AND created_at < DATE_TRUNC('month', CURRENT_DATE)
+          AND last_login >= DATE_TRUNC('month', CURRENT_DATE)
+      `),
+    ])
+
+    const currentMonth = parseInt(queries[0].rows[0].current_month)
+    const lastMonth = parseInt(queries[1].rows[0].last_month)
+    const proUsers = parseInt(queries[2].rows[0].pro_users)
+    const totalUsers = parseInt(queries[2].rows[0].total_users)
+    const retainedUsers = parseInt(queries[3].rows[0].retained_users)
+
+    const growthRate = lastMonth > 0 ? ((currentMonth - lastMonth) / lastMonth) * 100 : 0
+    const conversionRate = totalUsers > 0 ? (proUsers / totalUsers) * 100 : 0
+    const retentionRate = lastMonth > 0 ? (retainedUsers / lastMonth) * 100 : 0
+
+    return {
+      growthRate: Math.round(growthRate * 100) / 100,
+      conversionRate: Math.round(conversionRate * 100) / 100,
+      retentionRate: Math.round(retentionRate * 100) / 100,
+      currentMonth,
+      lastMonth,
+      proUsers,
+      totalUsers,
+      retainedUsers,
+    }
+  } finally {
+    client.release()
+  }
+}
+
 // Close the pool (for cleanup)
 export async function closePool(): Promise<void> {
   await pool.end()
