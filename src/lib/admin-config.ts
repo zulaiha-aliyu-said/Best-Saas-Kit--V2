@@ -1,6 +1,6 @@
 // Admin configuration - Add admin emails here
 export const ADMIN_EMAILS = [
-  'admin@bestsaaskit.com',
+  'zainulabedeen0002@gmail.com',
   'zain@bestsaaskit.com',
   '42023640+zainulabedeen123@users.noreply.github.com', // Your GitHub email
   // Add more admin emails as needed
