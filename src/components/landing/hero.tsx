@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Code, Rocket } from "lucide-react"
+import { ArrowRight, Sparkles, Zap, Code, Rocket, Github } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
@@ -108,11 +108,36 @@ const Hero = () => {
             </Button>
           </motion.div>
 
-          {/* Social Proof */}
+          {/* GitHub Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7 }}
+            className="flex items-center justify-center pt-4"
+          >
+            <Button
+              size="lg"
+              variant="ghost"
+              className="text-base font-medium px-6 py-3 h-12 rounded-lg hover:bg-muted/30 transition-all duration-300 hover:scale-105 border border-border/50"
+              asChild
+            >
+              <Link
+                href="https://github.com/zainulabedeen123/Best-Saas-Kit--V2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2"
+              >
+                <Github className="w-5 h-5" />
+                <span>View on GitHub</span>
+              </Link>
+            </Button>
+          </motion.div>
+
+          {/* Social Proof */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
             className="pt-8 text-sm text-muted-foreground"
           >
             <p>Trusted by 1000+ developers worldwide</p>
