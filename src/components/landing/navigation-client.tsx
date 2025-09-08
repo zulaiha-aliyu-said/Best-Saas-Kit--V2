@@ -21,7 +21,7 @@ export function NavigationClient({ session }: NavigationClientProps) {
     { name: "Features", href: "#features" },
     { name: "Pricing", href: "#pricing" },
     { name: "Testimonials", href: "#testimonials" },
-    { name: "Documentation", href: "#docs" },
+    { name: "Documentation", href: "/docs" },
   ]
 
   return (
