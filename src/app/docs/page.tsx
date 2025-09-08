@@ -1,21 +1,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  CheckCircle, 
-  Code, 
-  Database, 
-  Shield, 
-  CreditCard, 
-  Bot, 
-  BarChart3, 
+import {
+  CheckCircle,
+  Code,
+  Database,
+  Shield,
+  CreditCard,
+  Bot,
+  BarChart3,
   Palette,
   Globe,
   Settings,
   Users,
   MessageSquare,
   Zap,
-  ExternalLink
+  ExternalLink,
+  Mail
 } from "lucide-react"
 import Link from "next/link"
 
