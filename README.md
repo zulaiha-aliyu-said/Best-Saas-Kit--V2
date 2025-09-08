@@ -4,6 +4,16 @@
 
 A production-ready, feature-complete SAAS starter kit built with Next.js 15, designed to help developers launch AI-powered applications quickly and efficiently.
 
+---
+
+## 📺 **Follow The Creator**
+
+[![YouTube Channel](https://img.shields.io/badge/YouTube-The%20Metaverse%20Guy-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/@TheMetaverseGuy)
+
+**🎥 Subscribe to [The Metaverse Guy](https://www.youtube.com/@TheMetaverseGuy)** for tutorials, updates, and insights about this SAAS kit and other cutting-edge development content!
+
+---
+
 ![Best SAAS Kit V2](https://img.shields.io/badge/Next.js-15.4.4-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
@@ -421,4 +431,4 @@ If you find this project helpful, please consider:
 
 **Built with ❤️ by the Best SAAS Kit team**
 
-[Website](https://bestsaaskit.com) • [Documentation](https://docs.bestsaaskit.com) • [Discord](https://discord.gg/bestsaaskit) • [Twitter](https://twitter.com/bestsaaskit)
+[Website](https://bestsaaskit.com) • [Documentation](https://docs.bestsaaskit.com) • [YouTube](https://www.youtube.com/@TheMetaverseGuy) • [Discord](https://discord.gg/bestsaaskit) • [Twitter](https://twitter.com/bestsaaskit)
