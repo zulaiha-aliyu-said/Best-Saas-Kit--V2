@@ -4,6 +4,8 @@
 
 A production-ready, feature-complete SAAS starter kit built with Next.js 15, designed to help developers launch AI-powered applications quickly and efficiently.
 
+> **Version**: 2.0.1 - Stable Release
+
 ---
 
 ## 📺 **Follow The Creator**
