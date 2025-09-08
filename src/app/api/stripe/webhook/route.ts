@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/stripe';
 import { getUserByStripeCustomerId, updateUserSubscription, addCredits, getUserByEmail, getUserById } from '@/lib/database';
+import { sendEmail, createSubscriptionConfirmationEmail } from '@/lib/resend';
 import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
@@ -102,6 +103,18 @@ export async function POST(request: NextRequest) {
 
               // Add bonus credits for Pro users (1000 credits)
               const creditsResult = await addCredits(user.id, 1000);
+
+              // Send subscription confirmation email
+              if (user.name && user.email) {
+                try {
+                  const subscriptionEmailData = createSubscriptionConfirmationEmail(user.name, user.email, 'Pro');
+                  await sendEmail(subscriptionEmailData);
+                  console.log(`Subscription confirmation email sent to ${user.email}`);
+                } catch (emailError) {
+                  console.error("Failed to send subscription confirmation email:", emailError);
+                  // Don't fail the subscription if email fails
+                }
+              }
 
               console.log(`✅ User ${user.email} successfully upgraded to Pro plan:`, {
                 userId: user.id,

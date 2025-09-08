@@ -589,6 +589,49 @@ export default function DocsPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Resend Email Setup */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Mail className="h-5 w-5 text-red-600" />
+                        Email Setup (Resend)
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="border-l-4 border-red-500 pl-4">
+                          <h4 className="font-medium mb-2">1. Create Resend Account</h4>
+                          <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                            <li>• Sign up at <Link href="https://resend.com/" target="_blank" className="text-blue-600 hover:text-blue-800">resend.com</Link></li>
+                            <li>• Verify your email address</li>
+                            <li>• Add your domain for sending emails</li>
+                          </ul>
+                        </div>
+
+                        <div className="border-l-4 border-red-500 pl-4">
+                          <h4 className="font-medium mb-2">2. Get API Key</h4>
+                          <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                            <li>• Go to API Keys section</li>
+                            <li>• Create a new API key</li>
+                          </ul>
+                          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mt-2">
+                            <code className="text-sm">
+                              RESEND_API_KEY=re_your-resend-api-key<br/>
+                              FROM_EMAIL=onboarding@yourdomain.com<br/>
+                              SUPPORT_EMAIL=support@yourdomain.com
+                            </code>
+                          </div>
+                        </div>
+
+                        <div className="border-l-4 border-red-500 pl-4">
+                          <h4 className="font-medium mb-2">3. Email Features</h4>
+                          <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                            <li>• Welcome emails for new users</li>
+                            <li>• Subscription confirmation emails</li>
+                            <li>• Contact form submissions</li>
+                            <li>• Password reset emails (future feature)</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -955,6 +998,24 @@ export default function DocsPage() {
                           <td className="py-2">AI model to use</td>
                           <td className="py-2"><CheckCircle className="h-4 w-4 text-green-500" /></td>
                           <td className="py-2"><code>qwen/qwen3-235b-a22b-2507</code></td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2"><code>RESEND_API_KEY</code></td>
+                          <td className="py-2">Resend email API key</td>
+                          <td className="py-2"><CheckCircle className="h-4 w-4 text-green-500" /></td>
+                          <td className="py-2"><code>re_your-resend-api-key</code></td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2"><code>FROM_EMAIL</code></td>
+                          <td className="py-2">Email address for sending emails</td>
+                          <td className="py-2">Optional</td>
+                          <td className="py-2"><code>onboarding@yourdomain.com</code></td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2"><code>SUPPORT_EMAIL</code></td>
+                          <td className="py-2">Support email address</td>
+                          <td className="py-2">Optional</td>
+                          <td className="py-2"><code>support@yourdomain.com</code></td>
                         </tr>
                       </tbody>
                     </table>

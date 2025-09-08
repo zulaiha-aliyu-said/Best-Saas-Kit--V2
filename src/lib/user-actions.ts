@@ -2,11 +2,12 @@
 
 import { auth } from "./auth"
 import { upsertUser } from "./database"
+import { sendEmail, createWelcomeEmail } from "./resend"
 
 export async function saveUserToDatabase() {
   try {
     const session = await auth()
-    
+
     if (!session?.user?.id) {
       return { success: false, error: "Not authenticated" }
     }
@@ -20,8 +21,23 @@ export async function saveUserToDatabase() {
 
     const savedUser = await upsertUser(userData)
 
-    return { 
-      success: true, 
+    // Check if this is a new user (created_at and updated_at are the same)
+    const isNewUser = savedUser.created_at.getTime() === savedUser.updated_at.getTime()
+
+    // Send welcome email for new users
+    if (isNewUser && savedUser.email && savedUser.name) {
+      try {
+        const welcomeEmailData = createWelcomeEmail(savedUser.name, savedUser.email)
+        await sendEmail(welcomeEmailData)
+        console.log(`Welcome email sent to ${savedUser.email}`)
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError)
+        // Don't fail the user creation if email fails
+      }
+    }
+
+    return {
+      success: true,
       user: {
         id: savedUser.id,
         email: savedUser.email,
