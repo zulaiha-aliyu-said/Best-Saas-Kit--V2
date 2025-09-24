@@ -9,9 +9,15 @@ export default async function AdminDiscountsPage() {
   await requireAdminAccess();
 
   // Get discount codes and stats
-  let discountCodes;
-  let stats;
-  
+  let discountCodes: any[] = [];
+  let stats: any = {
+    totalCodes: 0,
+    activeCodes: 0,
+    expiredCodes: 0,
+    usedCodes: 0,
+    totalUsage: 0
+  };
+
   try {
     [discountCodes, stats] = await Promise.all([
       getAllDiscountCodes(),
