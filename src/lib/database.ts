@@ -220,7 +220,7 @@ export async function deleteUserById(userId: number): Promise<boolean> {
     const query = 'DELETE FROM users WHERE id = $1'
     const result = await client.query(query, [userId])
 
-    return result.rowCount !== null && result.rowCount > 0
+    return (result.rowCount ?? 0) > 0
   } finally {
     client.release()
   }
@@ -234,7 +234,7 @@ export async function deleteUserByGoogleId(googleId: string): Promise<boolean> {
     const query = 'DELETE FROM users WHERE google_id = $1'
     const result = await client.query(query, [googleId])
 
-    return result.rowCount !== null && result.rowCount > 0
+    return (result.rowCount ?? 0) > 0
   } finally {
     client.release()
   }
@@ -483,7 +483,7 @@ export async function updateUserSubscription(
       userId
     ])
 
-    return result.rowCount !== null && result.rowCount > 0
+    return (result.rowCount ?? 0) > 0
   } finally {
     client.release()
   }
@@ -917,7 +917,7 @@ export async function deleteDiscountCode(id: number): Promise<boolean> {
     const query = 'DELETE FROM discount_codes WHERE id = $1'
     const result = await client.query(query, [id])
 
-    return result.rowCount > 0
+    return (result.rowCount ?? 0) > 0
   } finally {
     client.release()
   }
