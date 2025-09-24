@@ -212,7 +212,7 @@ export function DiscountForm({ discount, onSubmit, isLoading }: DiscountFormProp
           <PopoverContent className="w-auto p-0">
             <Calendar
               mode="single"
-              selected={formData.expires_at}
+              selected={formData.expires_at || undefined}
               onSelect={(date) => handleInputChange('expires_at', date)}
               disabled={(date) => date < new Date()}
               initialFocus
