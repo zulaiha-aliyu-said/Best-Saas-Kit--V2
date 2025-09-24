@@ -122,6 +122,18 @@ export async function POST(request: NextRequest) {
       );
       console.log('Stripe coupon created successfully:', stripeCoupon.id);
 
+      // Look up the database user ID for the admin
+      let databaseUserId = null;
+      try {
+        const { getUserByGoogleId } = await import('@/lib/database');
+        const dbUser = await getUserByGoogleId(adminUser.id);
+        if (dbUser) {
+          databaseUserId = dbUser.id;
+        }
+      } catch (error) {
+        console.log('Could not find database user ID, proceeding without created_by');
+      }
+
       // Prepare discount data
       const discountData: CreateDiscountCodeData = {
         code: code.toUpperCase(), // Store codes in uppercase
@@ -130,7 +142,7 @@ export async function POST(request: NextRequest) {
         discount_value,
         max_uses: max_uses || null,
         expires_at: expiresAt,
-        created_by: parseInt(adminUser.id) // Assuming adminUser has id
+        created_by: databaseUserId // Use database user ID or null
       };
 
       // Create discount code in database

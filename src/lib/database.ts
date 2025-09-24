@@ -63,7 +63,7 @@ export interface CreateDiscountCodeData {
   discount_value: number
   max_uses?: number
   expires_at?: Date | null
-  created_by: number
+  created_by?: number | null
 }
 
 export interface UpdateDiscountCodeData {
