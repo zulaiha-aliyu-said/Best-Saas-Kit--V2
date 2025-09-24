@@ -62,7 +62,7 @@ export interface CreateDiscountCodeData {
   discount_type: 'percentage' | 'fixed'
   discount_value: number
   max_uses?: number
-  expires_at?: Date
+  expires_at?: Date | null
   created_by: number
 }
 
