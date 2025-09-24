@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/stripe';
-import { getUserByStripeCustomerId, updateUserSubscription, addCredits, getUserByEmail, getUserById } from '@/lib/database';
+import { getUserByStripeCustomerId, updateUserSubscription, addCredits, getUserByEmail, getUserById, incrementDiscountUsage } from '@/lib/database';
 import { sendEmail, createSubscriptionConfirmationEmail } from '@/lib/resend';
 import Stripe from 'stripe';
 
@@ -103,6 +103,25 @@ export async function POST(request: NextRequest) {
 
               // Add bonus credits for Pro users (1000 credits)
               const creditsResult = await addCredits(user.id, 1000);
+
+              // Track discount usage if a discount was applied
+              if (session.total_details?.breakdown?.discounts && session.total_details.breakdown.discounts.length > 0) {
+                for (const discount of session.total_details.breakdown.discounts) {
+                  if (discount.discount?.coupon?.id) {
+                    // Extract discount code from Stripe coupon ID (format: discount_CODENAME)
+                    const couponId = discount.discount.coupon.id;
+                    if (couponId.startsWith('discount_')) {
+                      const discountCode = couponId.replace('discount_', '').toUpperCase();
+                      try {
+                        const usageTracked = await incrementDiscountUsage(discountCode);
+                        console.log(`Discount usage tracked for code ${discountCode}:`, usageTracked);
+                      } catch (discountError) {
+                        console.error(`Error tracking discount usage for code ${discountCode}:`, discountError);
+                      }
+                    }
+                  }
+                }
+              }
 
               // Send subscription confirmation email
               if (user.name && user.email) {

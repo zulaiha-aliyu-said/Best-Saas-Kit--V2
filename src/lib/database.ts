@@ -40,6 +40,49 @@ export interface UpdateUserData {
   last_login?: Date
 }
 
+// Discount Code Interfaces
+export interface DiscountCode {
+  id: number
+  code: string
+  stripe_coupon_id?: string
+  discount_type: 'percentage' | 'fixed'
+  discount_value: number
+  max_uses?: number
+  current_uses: number
+  expires_at?: Date
+  is_active: boolean
+  created_by?: number
+  created_at: Date
+  updated_at: Date
+}
+
+export interface CreateDiscountCodeData {
+  code: string
+  stripe_coupon_id?: string
+  discount_type: 'percentage' | 'fixed'
+  discount_value: number
+  max_uses?: number
+  expires_at?: Date
+  created_by: number
+}
+
+export interface UpdateDiscountCodeData {
+  code?: string
+  discount_type?: 'percentage' | 'fixed'
+  discount_value?: number
+  max_uses?: number
+  expires_at?: Date
+  is_active?: boolean
+}
+
+export interface DiscountValidationResult {
+  is_valid: boolean
+  discount_id?: number
+  discount_type?: 'percentage' | 'fixed'
+  discount_value?: number
+  error_message?: string
+}
+
 // Create or update user on login
 export async function upsertUser(userData: CreateUserData): Promise<User> {
   const client = await pool.connect()
@@ -698,6 +741,301 @@ export async function getGrowthMetrics() {
       proUsers,
       totalUsers,
       retainedUsers,
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Discount Code Functions
+
+// Create a new discount code
+export async function createDiscountCode(discountData: CreateDiscountCodeData): Promise<DiscountCode> {
+  const client = await pool.connect()
+
+  try {
+    const query = `
+      INSERT INTO discount_codes (
+        code, stripe_coupon_id, discount_type, discount_value,
+        max_uses, expires_at, created_by
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `
+
+    const values = [
+      discountData.code,
+      discountData.stripe_coupon_id || null,
+      discountData.discount_type,
+      discountData.discount_value,
+      discountData.max_uses || null,
+      discountData.expires_at || null,
+      discountData.created_by
+    ]
+
+    const result = await client.query(query, values)
+    return result.rows[0] as DiscountCode
+  } finally {
+    client.release()
+  }
+}
+
+// Get all discount codes (admin only)
+export async function getAllDiscountCodes(): Promise<DiscountCode[]> {
+  const client = await pool.connect()
+
+  try {
+    const query = `
+      SELECT dc.*, u.email as created_by_email, u.name as created_by_name
+      FROM discount_codes dc
+      LEFT JOIN users u ON dc.created_by = u.id
+      ORDER BY dc.created_at DESC
+    `
+    const result = await client.query(query)
+
+    return result.rows.map(row => ({
+      id: row.id,
+      code: row.code,
+      stripe_coupon_id: row.stripe_coupon_id,
+      discount_type: row.discount_type,
+      discount_value: row.discount_value,
+      max_uses: row.max_uses,
+      current_uses: row.current_uses,
+      expires_at: row.expires_at,
+      is_active: row.is_active,
+      created_by: row.created_by,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      // Additional fields for admin display
+      created_by_email: row.created_by_email,
+      created_by_name: row.created_by_name,
+    })) as DiscountCode[]
+  } finally {
+    client.release()
+  }
+}
+
+// Get discount code by ID
+export async function getDiscountCodeById(id: number): Promise<DiscountCode | null> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT * FROM discount_codes WHERE id = $1'
+    const result = await client.query(query, [id])
+
+    return result.rows.length > 0 ? result.rows[0] as DiscountCode : null
+  } finally {
+    client.release()
+  }
+}
+
+// Get discount code by code string
+export async function getDiscountCodeByCode(code: string): Promise<DiscountCode | null> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT * FROM discount_codes WHERE code = $1'
+    const result = await client.query(query, [code])
+
+    return result.rows.length > 0 ? result.rows[0] as DiscountCode : null
+  } finally {
+    client.release()
+  }
+}
+
+// Update discount code
+export async function updateDiscountCode(id: number, updateData: UpdateDiscountCodeData): Promise<DiscountCode | null> {
+  const client = await pool.connect()
+
+  try {
+    const fields = []
+    const values = []
+    let paramCount = 1
+
+    if (updateData.code !== undefined) {
+      fields.push(`code = $${paramCount}`)
+      values.push(updateData.code)
+      paramCount++
+    }
+
+    if (updateData.discount_type !== undefined) {
+      fields.push(`discount_type = $${paramCount}`)
+      values.push(updateData.discount_type)
+      paramCount++
+    }
+
+    if (updateData.discount_value !== undefined) {
+      fields.push(`discount_value = $${paramCount}`)
+      values.push(updateData.discount_value)
+      paramCount++
+    }
+
+    if (updateData.max_uses !== undefined) {
+      fields.push(`max_uses = $${paramCount}`)
+      values.push(updateData.max_uses)
+      paramCount++
+    }
+
+    if (updateData.expires_at !== undefined) {
+      fields.push(`expires_at = $${paramCount}`)
+      values.push(updateData.expires_at)
+      paramCount++
+    }
+
+    if (updateData.is_active !== undefined) {
+      fields.push(`is_active = $${paramCount}`)
+      values.push(updateData.is_active)
+      paramCount++
+    }
+
+    if (fields.length === 0) {
+      return await getDiscountCodeById(id)
+    }
+
+    fields.push(`updated_at = CURRENT_TIMESTAMP`)
+    values.push(id)
+
+    const query = `
+      UPDATE discount_codes
+      SET ${fields.join(', ')}
+      WHERE id = $${paramCount}
+      RETURNING *
+    `
+
+    const result = await client.query(query, values)
+    return result.rows.length > 0 ? result.rows[0] as DiscountCode : null
+  } finally {
+    client.release()
+  }
+}
+
+// Delete discount code
+export async function deleteDiscountCode(id: number): Promise<boolean> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'DELETE FROM discount_codes WHERE id = $1'
+    const result = await client.query(query, [id])
+
+    return result.rowCount > 0
+  } finally {
+    client.release()
+  }
+}
+
+// Validate discount code using database function
+export async function validateDiscountCode(code: string): Promise<DiscountValidationResult> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT * FROM validate_discount_code($1)'
+    const result = await client.query(query, [code])
+
+    if (result.rows.length === 0) {
+      return {
+        is_valid: false,
+        error_message: 'Invalid discount code'
+      }
+    }
+
+    const row = result.rows[0]
+    return {
+      is_valid: row.is_valid,
+      discount_id: row.discount_id,
+      discount_type: row.discount_type,
+      discount_value: row.discount_value,
+      error_message: row.error_message
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Increment discount code usage
+export async function incrementDiscountUsage(code: string): Promise<boolean> {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT increment_discount_usage($1) as success'
+    const result = await client.query(query, [code])
+
+    return result.rows[0]?.success || false
+  } finally {
+    client.release()
+  }
+}
+
+// Get discount code statistics
+export async function getDiscountStats() {
+  const client = await pool.connect()
+
+  try {
+    const query = 'SELECT * FROM get_discount_stats()'
+    const result = await client.query(query)
+
+    if (result.rows.length === 0) {
+      return {
+        totalCodes: 0,
+        activeCodes: 0,
+        expiredCodes: 0,
+        usedCodes: 0,
+        totalUsage: 0
+      }
+    }
+
+    const row = result.rows[0]
+    return {
+      totalCodes: row.total_codes,
+      activeCodes: row.active_codes,
+      expiredCodes: row.expired_codes,
+      usedCodes: row.used_codes,
+      totalUsage: row.total_usage
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get discount code usage analytics
+export async function getDiscountAnalytics() {
+  const client = await pool.connect()
+
+  try {
+    const queries = await Promise.all([
+      // Most used discount codes
+      client.query(`
+        SELECT code, current_uses, max_uses, discount_type, discount_value
+        FROM discount_codes
+        WHERE current_uses > 0
+        ORDER BY current_uses DESC
+        LIMIT 10
+      `),
+      // Recent discount code usage (last 30 days)
+      client.query(`
+        SELECT
+          DATE(updated_at) as date,
+          COUNT(*) as codes_used
+        FROM discount_codes
+        WHERE current_uses > 0
+          AND updated_at >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY DATE(updated_at)
+        ORDER BY date DESC
+      `),
+      // Discount codes by type
+      client.query(`
+        SELECT
+          discount_type,
+          COUNT(*) as count,
+          SUM(current_uses) as total_uses
+        FROM discount_codes
+        GROUP BY discount_type
+      `),
+    ])
+
+    return {
+      mostUsed: queries[0].rows,
+      recentUsage: queries[1].rows,
+      byType: queries[2].rows,
     }
   } finally {
     client.release()

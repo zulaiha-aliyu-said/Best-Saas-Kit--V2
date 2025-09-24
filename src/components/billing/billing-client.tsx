@@ -4,6 +4,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Crown, Loader2 } from "lucide-react";
 import { redirectToCheckout } from "@/lib/stripe-client";
+import { DiscountInput, PriceDisplay } from "@/components/checkout/discount-input";
+
+interface DiscountDetails {
+  discount_id: number
+  discount_type: 'percentage' | 'fixed'
+  discount_value: number
+  code: string
+}
 
 interface BillingClientProps {
   currentPlan: string;
@@ -11,6 +19,7 @@ interface BillingClientProps {
 
 export function BillingClient({ currentPlan }: BillingClientProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountDetails | null>(null);
 
   const handleUpgrade = async () => {
     if (currentPlan === 'pro') {
@@ -18,17 +27,20 @@ export function BillingClient({ currentPlan }: BillingClientProps) {
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Create checkout session
+      // Create checkout session with optional discount
+      const requestBody: any = { plan: 'pro' };
+      if (appliedDiscount) {
+        requestBody.discountCode = appliedDiscount.code;
+      }
+
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          plan: 'pro',
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -61,9 +73,30 @@ export function BillingClient({ currentPlan }: BillingClientProps) {
     );
   }
 
+  const originalPrice = 99; // $99 Pro plan price
+
   return (
-    <div className="space-y-4">
-      <Button 
+    <div className="space-y-6">
+      {/* Discount Input */}
+      <DiscountInput
+        onDiscountApplied={setAppliedDiscount}
+        disabled={isLoading}
+      />
+
+      {/* Price Display */}
+      <div className="text-center">
+        <PriceDisplay
+          originalPrice={originalPrice}
+          discount={appliedDiscount}
+          className="mb-2"
+        />
+        <p className="text-sm text-muted-foreground">
+          One-time payment, lifetime access
+        </p>
+      </div>
+
+      {/* Upgrade Button */}
+      <Button
         onClick={handleUpgrade}
         disabled={isLoading}
         className="w-full"
@@ -77,13 +110,13 @@ export function BillingClient({ currentPlan }: BillingClientProps) {
         ) : (
           <>
             <Crown className="mr-2 h-4 w-4" />
-            Upgrade to Pro - $99
+            {appliedDiscount ? 'Upgrade to Pro with Discount' : 'Upgrade to Pro'}
           </>
         )}
       </Button>
-      
+
       <p className="text-xs text-center text-muted-foreground">
-        Secure payment powered by Stripe. One-time payment, lifetime access.
+        Secure payment powered by Stripe. {appliedDiscount && 'Discount will be applied at checkout.'}
       </p>
     </div>
   );

@@ -20,6 +20,7 @@ export const ADMIN_PERMISSIONS = {
   DELETE_USERS: 'delete_users',
   VIEW_ANALYTICS: 'view_analytics',
   MANAGE_SYSTEM: 'manage_system',
+  MANAGE_DISCOUNTS: 'manage_discounts',
 } as const;
 
 export type AdminPermission = typeof ADMIN_PERMISSIONS[keyof typeof ADMIN_PERMISSIONS];

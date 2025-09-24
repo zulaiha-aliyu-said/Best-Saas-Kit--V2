@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createStripeCustomer, createCheckoutSession } from '@/lib/stripe';
-import { getUserByGoogleId, updateUserSubscription } from '@/lib/database';
+import { createStripeCustomer, createCheckoutSession, createCheckoutSessionWithDiscount } from '@/lib/stripe';
+import { getUserByGoogleId, updateUserSubscription, validateDiscountCode, getDiscountCodeByCode } from '@/lib/database';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { plan } = await request.json();
+    const { plan, discountCode } = await request.json();
 
     if (plan !== 'pro') {
       return NextResponse.json(
@@ -56,14 +56,43 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create checkout session
-    const checkoutSession = await createCheckoutSession(
-      customerId,
-      user.id,
-      user.email,
-      `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
-      `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`
-    );
+    // Handle discount code if provided
+    let stripeCouponId = undefined;
+    if (discountCode) {
+      // Validate discount code
+      const validation = await validateDiscountCode(discountCode.toUpperCase());
+
+      if (!validation.is_valid) {
+        return NextResponse.json(
+          { error: validation.error_message || 'Invalid discount code' },
+          { status: 400 }
+        );
+      }
+
+      // Get the full discount code details to get Stripe coupon ID
+      const discountDetails = await getDiscountCodeByCode(discountCode.toUpperCase());
+      if (discountDetails?.stripe_coupon_id) {
+        stripeCouponId = discountDetails.stripe_coupon_id;
+      }
+    }
+
+    // Create checkout session with or without discount
+    const checkoutSession = stripeCouponId
+      ? await createCheckoutSessionWithDiscount(
+          customerId,
+          user.id,
+          user.email,
+          `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
+          `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`,
+          stripeCouponId
+        )
+      : await createCheckoutSession(
+          customerId,
+          user.id,
+          user.email,
+          `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
+          `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`
+        );
 
     return NextResponse.json({
       sessionId: checkoutSession.id,
