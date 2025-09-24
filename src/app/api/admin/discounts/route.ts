@@ -114,11 +114,13 @@ export async function POST(request: NextRequest) {
 
     try {
       // Create Stripe coupon first
+      console.log('Creating Stripe coupon:', { code, discount_type, discount_value });
       const stripeCoupon = await createStripeCoupon(
         code,
         discount_type,
         discount_value
       );
+      console.log('Stripe coupon created successfully:', stripeCoupon.id);
 
       // Prepare discount data
       const discountData: CreateDiscountCodeData = {
@@ -141,7 +143,13 @@ export async function POST(request: NextRequest) {
 
     } catch (stripeError: any) {
       console.error('Stripe coupon creation error:', stripeError);
-      
+      console.error('Stripe error details:', {
+        type: stripeError.type,
+        code: stripeError.code,
+        message: stripeError.message,
+        param: stripeError.param
+      });
+
       // Handle specific Stripe errors
       if (stripeError.code === 'resource_already_exists') {
         return NextResponse.json(
@@ -150,8 +158,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Handle parameter errors
+      if (stripeError.type === 'invalid_request_error') {
+        return NextResponse.json(
+          { error: `Stripe validation error: ${stripeError.message}` },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json(
-        { error: 'Failed to create Stripe coupon' },
+        { error: `Failed to create Stripe coupon: ${stripeError.message || 'Unknown error'}` },
         { status: 500 }
       );
     }

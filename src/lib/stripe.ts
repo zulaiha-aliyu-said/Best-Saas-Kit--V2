@@ -63,20 +63,30 @@ export async function createStripeCoupon(
   discountType: 'percentage' | 'fixed',
   discountValue: number
 ) {
-  const couponData: any = {
-    id: `discount_${discountCode.toLowerCase()}`,
-    name: `Discount Code: ${discountCode}`,
-    duration: 'once', // One-time use discount
-  };
+  try {
+    const couponData: any = {
+      id: `discount_${discountCode.toLowerCase()}`,
+      name: `Discount Code: ${discountCode}`,
+      duration: 'once', // One-time use discount
+    };
 
-  if (discountType === 'percentage') {
-    couponData.percent_off = discountValue;
-  } else {
-    couponData.amount_off = discountValue; // Value in cents
-    couponData.currency = STRIPE_CONFIG.PRO_PLAN.currency;
+    if (discountType === 'percentage') {
+      // Ensure percentage is a whole number between 1-100
+      couponData.percent_off = Math.round(discountValue);
+    } else {
+      // For fixed amount, convert dollars to cents if needed
+      // If value is less than 100, assume it's in dollars and convert to cents
+      const amountInCents = discountValue < 100 ? discountValue * 100 : discountValue;
+      couponData.amount_off = Math.round(amountInCents);
+      couponData.currency = STRIPE_CONFIG.PRO_PLAN.currency;
+    }
+
+    console.log('Creating Stripe coupon with data:', couponData);
+    return await stripe.coupons.create(couponData);
+  } catch (error) {
+    console.error('Stripe coupon creation error:', error);
+    throw error;
   }
-
-  return await stripe.coupons.create(couponData);
 }
 
 // Delete Stripe coupon
