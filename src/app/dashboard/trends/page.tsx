@@ -1,10 +1,12 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
 export default function TrendsPage() {
+  const router = useRouter();
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -58,7 +60,10 @@ export default function TrendsPage() {
                   <Badge className="mr-2">#{idx+1} {idx===0? 'Trending':'Rising'}</Badge>
                   <span className="text-xs text-green-600">{t.growth}</span>
                 </div>
-                <Button size="sm">Use Topic</Button>
+                <Button size="sm" onClick={()=>{
+                  const params = new URLSearchParams({ prefill: t.title, platforms: 'x,linkedin,instagram', num: '3' });
+                  router.push(`/dashboard/repurpose?${params.toString()}`);
+                }}>Use Topic</Button>
               </div>
               <CardTitle className="mt-2">{t.title}</CardTitle>
             </CardHeader>

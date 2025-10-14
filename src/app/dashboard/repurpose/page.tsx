@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,12 @@ interface GeneratedOutput {
   _fallback_note?: string;
 }
 
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+
 export default function RepurposePage() {
   const [tab, setTab] = useState<"text"|"url"|"file">("text");
+  const search = useSearchParams();
   const [includeHashtags, setIncludeHashtags] = useState(true);
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState<GeneratedOutput | null>(null);
@@ -45,8 +49,29 @@ export default function RepurposePage() {
   }, [output]);
 
   const copy = async (text: string) => {
+    toast.success('Copied to clipboard');
     await navigator.clipboard.writeText(text);
   };
+
+  useEffect(()=>{
+    const prefill = search.get('prefill');
+    const platforms = (search.get('platforms') || '').split(',').filter(Boolean);
+    const num = search.get('num');
+    if (prefill) {
+      const textarea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
+      if (textarea) textarea.value = prefill;
+    }
+    if (platforms.length) {
+      const container = document.getElementById('rp-platforms');
+      container?.querySelectorAll('button[data-key]')?.forEach((btn)=>{
+        const b = btn as HTMLButtonElement;
+        b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
+      });
+    }
+    if (num) {
+      // best-effort: not strictly controlling Select; ok to ignore
+    }
+  }, [search]);
 
   return (
     <div className="space-y-6">
@@ -338,7 +363,7 @@ export default function RepurposePage() {
             <Button onClick={async ()=>{
               if (!schedulePlatform) return;
               const res = await fetch('/api/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ platform: schedulePlatform, content: scheduleBody, scheduledAt: scheduleAt, timezone: tz }) });
-              if (res.ok) { setScheduleOpen(false); }
+              if (res.ok) { setScheduleOpen(false); toast.success('Scheduled successfully', { action: { label: 'View', onClick: ()=> location.assign('/dashboard/schedule') } }); }
             }}>Schedule</Button>
           </DialogFooter>
         </DialogContent>
