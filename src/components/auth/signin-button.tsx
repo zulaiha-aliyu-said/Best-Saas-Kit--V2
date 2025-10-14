@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { signInAction } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 
@@ -11,9 +12,18 @@ interface SignInButtonProps {
 export function SignInButton({ children, className }: SignInButtonProps) {
   return (
     <form action={signInAction}>
-      <Button type="submit" className={className}>
-        {children || "Sign In with Google"}
-      </Button>
+      {children ? (
+        React.isValidElement(children)
+          // If a React element (e.g., <Button />) is provided, make it the submit control
+          ? React.cloneElement(children as React.ReactElement, { type: "submit", className: (children as any).props?.className ?? className })
+          // If non-element content is provided, render a native button
+          : <button type="submit" className={className}>{children}</button>
+      ) : (
+        // Default rendering when no children are passed
+        <Button type="submit" className={className}>
+          {"Sign In with Google"}
+        </Button>
+      )}
     </form>
   )
 }

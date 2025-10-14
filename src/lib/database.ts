@@ -451,6 +451,171 @@ export async function getCreditStats() {
   }
 }
 
+// RepurposeAI Tables
+
+export interface ContentRow {
+  id: string
+  user_id: number
+  source_type: 'text' | 'url' | 'file'
+  source_url?: string | null
+  title?: string | null
+  raw_text?: string | null
+  language?: string | null
+  created_at: Date
+}
+
+export interface GenerationRow {
+  id: string
+  user_id: number
+  content_id?: string | null
+  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  tone: string
+  options_json?: any
+  output_json?: any
+  token_usage: number
+  status: string
+  created_at: Date
+}
+
+export interface PostRow {
+  id: string
+  user_id: number
+  generation_id?: string | null
+  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  body: string
+  hashtags?: string[] | null
+  status: 'draft' | 'scheduled' | 'posted'
+  external_post_id?: string | null
+  created_at: Date
+}
+
+export async function createContent(params: {
+  userId: number
+  source_type: 'text' | 'url' | 'file'
+  source_url?: string | null
+  title?: string | null
+  raw_text?: string | null
+  language?: string | null
+}): Promise<ContentRow> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `INSERT INTO contents (user_id, source_type, source_url, title, raw_text, language)
+       VALUES ($1,$2,$3,$4,$5,$6)
+       RETURNING *`,
+      [params.userId, params.source_type, params.source_url || null, params.title || null, params.raw_text || null, params.language || null]
+    )
+    return result.rows[0] as ContentRow
+  } finally {
+    client.release()
+  }
+}
+
+export async function insertGeneration(params: {
+  userId: number
+  contentId?: string | null
+  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  tone: string
+  options?: any
+  output?: any
+  tokenUsage?: number
+  status?: string
+}): Promise<GenerationRow> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `INSERT INTO generations (user_id, content_id, platform, tone, options_json, output_json, token_usage, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       RETURNING *`,
+      [params.userId, params.contentId || null, params.platform, params.tone, params.options || null, params.output || null, params.tokenUsage || 0, params.status || 'completed']
+    )
+    return result.rows[0] as GenerationRow
+  } finally {
+    client.release()
+  }
+}
+
+export async function insertPost(params: {
+  userId: number
+  generationId?: string | null
+  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  body: string
+  hashtags?: string[] | null
+  status?: 'draft' | 'scheduled' | 'posted'
+}): Promise<PostRow> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `INSERT INTO posts (user_id, generation_id, platform, body, hashtags, status)
+       VALUES ($1,$2,$3,$4,$5,$6)
+       RETURNING *`,
+      [params.userId, params.generationId || null, params.platform, params.body, params.hashtags || null, params.status || 'draft']
+    )
+    return result.rows[0] as PostRow
+  } finally {
+    client.release()
+  }
+}
+
+export async function listRecentGenerations(userId: number, limit = 20): Promise<GenerationRow[]> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `SELECT * FROM generations WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2`,
+      [userId, limit]
+    )
+    return result.rows as GenerationRow[]
+  } finally {
+    client.release()
+  }
+}
+
+export async function listRecentPosts(userId: number, limit = 20): Promise<PostRow[]> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `SELECT * FROM posts WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2`,
+      [userId, limit]
+    )
+    return result.rows as PostRow[]
+  } finally {
+    client.release()
+  }
+}
+
+export interface ScheduleRow {
+  id: string
+  user_id: number
+  post_id: string
+  scheduled_at: Date
+  timezone: string
+  status: 'pending' | 'sent' | 'failed'
+  best_time_score?: number | null
+  error?: string | null
+  created_at: Date
+}
+
+export async function insertSchedule(params: {
+  userId: number
+  postId: string
+  scheduledAt: Date
+  timezone?: string
+  bestTimeScore?: number | null
+}): Promise<ScheduleRow> {
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      `INSERT INTO schedules (user_id, post_id, scheduled_at, timezone, best_time_score)
+       VALUES ($1,$2,$3,$4,$5)
+       RETURNING *`,
+      [params.userId, params.postId, params.scheduledAt, params.timezone || 'UTC', params.bestTimeScore ?? null]
+    )
+    return result.rows[0] as ScheduleRow
+  } finally {
+    client.release()
+  }
+}
+
 // Billing Functions
 
 // Update user subscription status

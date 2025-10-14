@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { saveUserToDatabase } from "@/lib/user-actions";
+import { isAdminEmail } from "@/lib/admin-config";
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,9 @@ export default async function DashboardLayout({
     // Continue even if database save fails
   }
 
-  return <DashboardClient session={session}>{children}</DashboardClient>
+  const isAdmin = isAdminEmail(session.user.email)
+
+  return <DashboardClient session={session} isAdmin={isAdmin}>{children}</DashboardClient>
 }
 
 

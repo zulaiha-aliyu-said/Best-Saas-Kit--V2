@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { UserButtonClient } from "@/components/auth/user-button-client"
 import { CreditsDisplay } from "@/components/credits/credits-display"
-import { isAdminEmail } from "@/lib/admin-config"
 import { cn } from "@/lib/utils"
 import {
   Home,
@@ -18,38 +17,43 @@ import {
   Menu,
   X,
   MessageSquare,
-  CreditCard
+  CreditCard,
+  Calendar
 } from "lucide-react"
 
-// Regular user navigation items
+// Regular user navigation items (RepurposeAI)
 const regularUserItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "AI Chat", href: "/dashboard/chat", icon: MessageSquare },
+  { name: "Repurpose", href: "/dashboard/repurpose", icon: MessageSquare },
+  { name: "Trends", href: "/dashboard/trends", icon: BarChart3 },
+  { name: "Schedule", href: "/dashboard/schedule", icon: Calendar },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { name: "History", href: "/dashboard/history", icon: Home },
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
-  { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 // Admin user navigation items (includes everything)
 const adminUserItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "AI Chat", href: "/dashboard/chat", icon: MessageSquare },
-  { name: "Users", href: "/dashboard/users", icon: Users },
+  { name: "Repurpose", href: "/dashboard/repurpose", icon: MessageSquare },
+  { name: "Trends", href: "/dashboard/trends", icon: BarChart3 },
+  { name: "Schedule", href: "/dashboard/schedule", icon: Calendar },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "Profile", href: "/dashboard/profile", icon: User },
+  { name: "History", href: "/dashboard/history", icon: Home },
+  { name: "Users", href: "/dashboard/users", icon: Users },
+  { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 interface DashboardClientProps {
   children: React.ReactNode
   session: any
+  isAdmin: boolean
 }
 
-export function DashboardClient({ children, session }: DashboardClientProps) {
+export function DashboardClient({ children, session, isAdmin }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Determine if user is admin and get appropriate navigation items
-  const isAdmin = isAdminEmail(session.user.email)
+  // Determine navigation items from server-provided isAdmin to avoid hydration mismatch
   const sidebarItems = isAdmin ? adminUserItems : regularUserItems
 
   return (
@@ -68,12 +72,12 @@ export function DashboardClient({ children, session }: DashboardClientProps) {
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" />
+            <div className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg repurpose-gradient">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-semibold">RepurposeAI</span>
             </div>
-            <span className="text-lg font-semibold">Best SAAS Kit</span>
-          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -97,6 +101,23 @@ export function DashboardClient({ children, session }: DashboardClientProps) {
                 {item.name}
               </Link>
             ))}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-6 rounded-xl bg-secondary/60 p-4 card-soft-shadow">
+            <p className="text-xs uppercase text-muted-foreground tracking-wide mb-2">Quick Stats</p>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between"><span>Content Repurposed</span><span className="font-medium">1,247</span></div>
+              <div className="flex justify-between"><span>This Month</span><span className="text-green-600 font-medium">+87</span></div>
+              <div className="flex justify-between"><span>Credits Left</span><span className="font-medium">342</span></div>
+            </div>
+          </div>
+
+          {/* Upgrade Card */}
+          <div className="mt-4 rounded-xl p-4 repurpose-gradient text-white">
+            <p className="text-sm font-medium mb-2">Upgrade to Pro</p>
+            <p className="text-xs/5 opacity-90 mb-3">Get unlimited repurposing and advanced features</p>
+            <Link href="/dashboard/billing" className="inline-flex items-center rounded-md bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-white">Upgrade Now</Link>
           </div>
         </nav>
       </div>
@@ -130,6 +151,9 @@ export function DashboardClient({ children, session }: DashboardClientProps) {
         {/* Page content */}
         <main className="p-6">
           {children}
+          <div className="mt-10 text-center text-xs text-muted-foreground">
+            💖 Built with love by Zulaiha Aliyu — RepurposeAI © 2025.
+          </div>
         </main>
       </div>
     </div>
