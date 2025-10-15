@@ -149,8 +149,21 @@ class OpenRouterClient {
   }
 }
 
-// Export a singleton instance
-export const openRouterClient = new OpenRouterClient();
+// Lazy-loaded singleton instance
+let openRouterClientInstance: OpenRouterClient | null = null;
+
+function getOpenRouterClient(): OpenRouterClient {
+  if (!openRouterClientInstance) {
+    openRouterClientInstance = new OpenRouterClient();
+  }
+  return openRouterClientInstance;
+}
+
+export const openRouterClient = {
+  get instance() {
+    return getOpenRouterClient();
+  }
+};
 
 // Helper function to create a simple chat completion
 export async function createChatCompletion(
@@ -159,7 +172,7 @@ export async function createChatCompletion(
 ): Promise<ChatCompletionResponse> {
   const defaultModel = process.env.OPENROUTER_MODEL || 'qwen/qwen3-235b-a22b-2507';
   
-  return openRouterClient.createChatCompletion({
+  return openRouterClient.instance.createChatCompletion({
     model: defaultModel,
     messages,
     temperature: 0.7,
@@ -175,7 +188,7 @@ export async function createStreamingChatCompletion(
 ): Promise<ReadableStream<Uint8Array>> {
   const defaultModel = process.env.OPENROUTER_MODEL || 'qwen/qwen3-235b-a22b-2507';
   
-  return openRouterClient.createStreamingChatCompletion({
+  return openRouterClient.instance.createStreamingChatCompletion({
     model: defaultModel,
     messages,
     temperature: 0.7,

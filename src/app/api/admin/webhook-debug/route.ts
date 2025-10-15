@@ -10,13 +10,13 @@ export async function GET(request: NextRequest) {
     await requireAdminAccess();
 
     // Get recent webhook events from Stripe
-    const events = await stripe.events.list({
+    const events = await stripe.instance.events.list({
       limit: 10,
       types: ['checkout.session.completed', 'payment_intent.succeeded', 'payment_intent.payment_failed']
     });
 
     // Get recent checkout sessions
-    const sessions = await stripe.checkout.sessions.list({
+    const sessions = await stripe.instance.checkout.sessions.list({
       limit: 10
     });
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get specific checkout session details
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.instance.checkout.sessions.retrieve(sessionId);
 
     return NextResponse.json({
       session: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Copy, Repeat2, Download, Sparkles, Calendar as CalendarIcon } from "lucide-react";
+import ErrorBoundary from "@/components/error-boundary";
 
 // Types for the API response
 type ThreadItem = string | { id?: number; text: string };
@@ -25,8 +26,9 @@ interface GeneratedOutput {
 
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { Suspense } from "react";
 
-export default function RepurposePage() {
+function RepurposePageContent() {
   const [tab, setTab] = useState<"text"|"url"|"file">("text");
   const search = useSearchParams();
   const [includeHashtags, setIncludeHashtags] = useState(true);
@@ -41,35 +43,70 @@ export default function RepurposePage() {
     const pad = (n:number)=> String(n).padStart(2,'0');
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   });
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  
+  // Safe timezone detection
+  const [tz, setTz] = useState('UTC');
+  
+  useEffect(() => {
+    try {
+      const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      setTz(detectedTz);
+    } catch (e) {
+      setTz('UTC');
+    }
+  }, []);
 
   const tweets = useMemo(() => {
     if (!output?.x_thread) return [] as string[];
     return output.x_thread.map((t) => typeof t === 'string' ? t : t?.text || "");
   }, [output]);
 
-  const copy = async (text: string) => {
-    toast.success('Copied to clipboard');
-    await navigator.clipboard.writeText(text);
-  };
+  const copy = useCallback(async (text: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard');
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast.success('Copied to clipboard');
+      }
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+      toast.error('Failed to copy to clipboard');
+    }
+  }, []);
 
   useEffect(()=>{
     const prefill = search.get('prefill');
     const platforms = (search.get('platforms') || '').split(',').filter(Boolean);
     const num = search.get('num');
+    
     if (prefill) {
       const textarea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
-      if (textarea) textarea.value = prefill;
+      if (textarea) {
+        textarea.value = prefill;
+      }
     }
+    
     if (platforms.length) {
-      const container = document.getElementById('rp-platforms');
-      container?.querySelectorAll('button[data-key]')?.forEach((btn)=>{
-        const b = btn as HTMLButtonElement;
-        b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
-      });
-    }
-    if (num) {
-      // best-effort: not strictly controlling Select; ok to ignore
+      // Use a more robust approach for platform selection
+      setTimeout(() => {
+        const container = document.getElementById('rp-platforms');
+        if (container) {
+          container.querySelectorAll('button[data-key]')?.forEach((btn)=>{
+            const b = btn as HTMLButtonElement;
+            if (b.dataset.key) {
+              b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
+            }
+          });
+        }
+      }, 100);
     }
   }, [search]);
 
@@ -198,12 +235,22 @@ export default function RepurposePage() {
                   // Collect selected platforms
                   const container = document.getElementById('rp-platforms');
                   const platforms: string[] = [];
-                  container?.querySelectorAll('button[data-key]')?.forEach((btn) => {
-                    const b = btn as HTMLButtonElement;
-                    if (b.dataset.active === 'true') platforms.push(String(b.dataset.key));
-                  });
+                  if (container) {
+                    container.querySelectorAll('button[data-key]')?.forEach((btn) => {
+                      const b = btn as HTMLButtonElement;
+                      if (b.dataset.active === 'true' && b.dataset.key) {
+                        platforms.push(String(b.dataset.key));
+                      }
+                    });
+                  }
+                  
+                  // Get number of posts - simplified approach
                   const numSelect = document.getElementById('rp-num') as HTMLButtonElement | null;
-                  const numPosts = Number(numSelect?.dataset.state ? numSelect.textContent : (document.querySelector('[aria-labelledby="rp-num"]') as HTMLElement)?.innerText) || 3;
+                  let numPosts = 3;
+                  if (numSelect) {
+                    const selectedValue = numSelect.getAttribute('data-value') || numSelect.textContent;
+                    numPosts = Number(selectedValue) || 3;
+                  }
 
                   const res = await fetch('/api/repurpose', {
                     method: 'POST',
@@ -369,5 +416,22 @@ export default function RepurposePage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function RepurposePage() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading repurpose tool...</p>
+          </div>
+        </div>
+      }>
+        <RepurposePageContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
