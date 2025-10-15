@@ -1,9 +1,26 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-  typescript: true,
-});
+// Lazy-loaded Stripe client
+let stripeInstance: Stripe | null = null;
+
+function getStripeClient(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is required');
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+      typescript: true,
+    });
+  }
+  return stripeInstance;
+}
+
+export const stripe = {
+  get instance() {
+    return getStripeClient();
+  }
+};
 
 export const STRIPE_CONFIG = {
   PRO_PLAN: {
@@ -16,7 +33,7 @@ export const STRIPE_CONFIG = {
 
 // Create Stripe customer
 export async function createStripeCustomer(email: string, name?: string) {
-  return await stripe.customers.create({
+  return await stripe.instance.customers.create({
     email,
     name: name || undefined,
   });
@@ -30,7 +47,7 @@ export async function createCheckoutSession(
   successUrl: string,
   cancelUrl: string
 ) {
-  return await stripe.checkout.sessions.create({
+  return await stripe.instance.checkout.sessions.create({
     customer: customerId,
     payment_method_types: ['card'],
     line_items: [
@@ -82,7 +99,7 @@ export async function createStripeCoupon(
     }
 
     console.log('Creating Stripe coupon with data:', couponData);
-    return await stripe.coupons.create(couponData);
+    return await stripe.instance.coupons.create(couponData);
   } catch (error) {
     console.error('Stripe coupon creation error:', error);
     throw error;
@@ -92,7 +109,7 @@ export async function createStripeCoupon(
 // Delete Stripe coupon
 export async function deleteStripeCoupon(couponId: string) {
   try {
-    return await stripe.coupons.del(couponId);
+    return await stripe.instance.coupons.del(couponId);
   } catch (error) {
     console.error('Error deleting Stripe coupon:', error);
     throw error;
@@ -143,12 +160,12 @@ export async function createCheckoutSessionWithDiscount(
     ];
   }
 
-  return await stripe.checkout.sessions.create(sessionData);
+  return await stripe.instance.checkout.sessions.create(sessionData);
 }
 
 // Verify webhook signature
 export function verifyWebhookSignature(body: string, signature: string) {
-  return stripe.webhooks.constructEvent(
+  return stripe.instance.webhooks.constructEvent(
     body,
     signature,
     process.env.STRIPE_WEBHOOK_SECRET!
