@@ -176,44 +176,11 @@ export async function POST(req: NextRequest) {
     
     const system = {
       role: 'system',
-      content: `You are RepurposeAI. Convert long-form content into platform-specific social media posts.
-
-🚨 CRITICAL REQUIREMENTS - READ CAREFULLY:
-
-1. CONTENT LENGTH SETTING: ${contentLength.toUpperCase()}
-   ${lengthDescriptions[contentLength as keyof typeof lengthDescriptions]}
-
-2. EXACT SPECIFICATIONS:
-   - x_thread: EXACTLY ${numPosts} tweets, each ${currentLength.tweet}
-   - linkedin_post: ${currentLength.linkedin}
-   - instagram_caption: ${currentLength.instagram}  
-   - email_newsletter body: ${currentLength.email}
-
-3. ${contentLength === 'short' ? '⚡ SHORT MODE: Be extremely concise. Cut unnecessary words. No fluff.' : contentLength === 'detailed' ? '📚 DETAILED MODE: Elaborate fully. Add examples, data, and explanations. Be thorough.' : contentLength === 'long' ? '📝 LONG MODE: Provide comprehensive information with context and details.' : '⚖️ MEDIUM MODE: Balance brevity with informativeness.'}
-
-4. FORMAT: Return ONLY valid JSON (no markdown blocks):
-   {"x_thread": ["tweet1", "tweet2", ...], "linkedin_post": "...", "instagram_caption": "...", "email_newsletter": {"subject": "...", "body": "..."}}
-
-5. TONE: ${tone} throughout all content
-
-6. HASHTAGS: ${includeHashtags ? '✅ Include 3-5 relevant hashtags at the end' : '❌ DO NOT include any hashtags'}
-7. EMOJIS: ${includeEmojis ? '😊 Use 1-3 relevant emojis per post to add personality and engagement' : '❌ DO NOT include any emojis'}
-8. CALL-TO-ACTION: ${includeCTA ? '📢 End each post with a clear call-to-action (e.g., "Comment below", "Share your thoughts", "Learn more at...", "Try it today")' : '❌ DO NOT include any call-to-action'}`
-    } as const;
+      content: `You are RepurposeAI. Convert long-form content into platform-specific social media posts.\n\n🚨 CRITICAL REQUIREMENTS - READ CAREFULLY:\n\n1. CONTENT LENGTH SETTING: ${contentLength.toUpperCase()}\n\n2. EXACT SPECIFICATIONS:\n   - x_thread: EXACTLY ${numPosts} tweets, each ${currentLength.tweet}\n   - linkedin_post: ${currentLength.linkedin}\n   - instagram_caption: ${currentLength.instagram}  \n   - email_newsletter body: ${currentLength.email}\n\n3. ${contentLength === 'short' ? '⚡ SHORT MODE: Be extremely concise. Cut unnecessary words. No fluff.' : contentLength === 'detailed' ? '📚 DETAILED MODE: Elaborate fully. Add examples, data[...]' : ''}\n\n4. FORMAT: Return ONLY valid JSON (no markdown blocks):\n   {"x_thread": ["tweet1", "tweet2", ...], "linkedin_post": "...", "instagram_caption": "...", "email_newsletter": {"subject": "...", "body": "..."}}\n\n5. TONE: ${tone} throughout all content\n\n6. HASHTAGS: ${includeHashtags ? '✅ Include 3-5 relevant hashtags at the end' : '❌ DO NOT include any hashtags'}\n7. EMOJIS: ${includeEmojis ? '😊 Use 1-3 relevant emojis per post to add personality and engagement' : '❌ DO NOT include any emojis'}\n8. CALL-TO-ACTION: ${includeCTA ? '📢 End each post with a clear call-to-action (e.g., "Comment below", "Share your thoughts", "Learn more at...", "Try it today")' : '❌ DO NOT include any cal[...]'}\n    } as const;
 
     const userMsg = {
       role: 'user',
-      content: `Content length requirement: ${contentLength.toUpperCase()}
-
-${contentLength === 'short' ? '⚡ Make it VERY SHORT and concise!' : contentLength === 'detailed' ? '📚 Make it VERY DETAILED with examples and explanations!' : contentLength === 'long' ? '📝 Make it LONG and comprehensive!' : 'Make it medium length.'}
-
-Generate EXACTLY ${numPosts} tweets (each ${currentLength.tweet}).
-Tone: ${tone}
-
-Content:
-${sourceText.slice(0, 3000)}
-
-Return ONLY the JSON.`
+      content: `Content length requirement: ${contentLength.toUpperCase()}\n\n${contentLength === 'short' ? '⚡ Make it VERY SHORT and concise!' : contentLength === 'detailed' ? '📚 Make it VERY DETAILED with examples and explanations!' : contentLength === 'long' ? '���[...]' : ''}\n\nGenerate EXACTLY ${numPosts} tweets (each ${currentLength.tweet}).\nTone: ${tone}\n\nContent:\n${sourceText.slice(0, 3000)}\n\nReturn ONLY the JSON.`
     } as const;
 
     // Decide AI path: OpenRouter if configured, otherwise deterministic fallback
@@ -298,7 +265,7 @@ Return ONLY the JSON.`
       
       // Pad if too few (split longest tweet or duplicate)
       while (parsed.x_thread.length < targetNum) {
-        const longest = parsed.x_thread.reduce((a, b) => a.length > b.length ? a : b, '');
+        const longest = parsed.x_thread.reduce((a: string, b: string) => a.length > b.length ? a : b, '');
         if (longest.length > 140) {
           const mid = Math.floor(longest.length / 2);
           const splitAt = longest.lastIndexOf('. ', mid) || longest.lastIndexOf(' ', mid) || mid;
