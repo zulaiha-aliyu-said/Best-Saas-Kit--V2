@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
@@ -18,8 +18,7 @@ export async function POST(
       );
     }
 
-    const resolvedParams = await params;
-    const userId = parseInt(resolvedParams.id);
+    const userId = parseInt(params.id);
     if (isNaN(userId)) {
       return NextResponse.json(
         { error: 'Invalid user ID' },

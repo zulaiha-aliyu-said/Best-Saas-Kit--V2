@@ -13,14 +13,13 @@ export const runtime = 'nodejs';
 // GET /api/admin/discounts/[id] - Get specific discount code
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
     await requireAdminAccess();
 
-    const { id } = await params;
-    const discountId = parseInt(id);
+    const discountId = parseInt(params.id);
     if (isNaN(discountId)) {
       return NextResponse.json(
         { error: 'Invalid discount ID' },
@@ -55,14 +54,13 @@ export async function GET(
 // PUT /api/admin/discounts/[id] - Update discount code
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
     await requireAdminAccess();
 
-    const { id } = await params;
-    const discountId = parseInt(id);
+    const discountId = parseInt(params.id);
     if (isNaN(discountId)) {
       return NextResponse.json(
         { error: 'Invalid discount ID' },
@@ -188,14 +186,13 @@ export async function PUT(
 // DELETE /api/admin/discounts/[id] - Delete discount code
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
     await requireAdminAccess();
 
-    const { id } = await params;
-    const discountId = parseInt(id);
+    const discountId = parseInt(params.id);
     if (isNaN(discountId)) {
       return NextResponse.json(
         { error: 'Invalid discount ID' },

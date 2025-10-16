@@ -149,8 +149,17 @@ class OpenRouterClient {
   }
 }
 
-// Export a singleton instance
-export const openRouterClient = new OpenRouterClient();
+// Lazy singleton getter to avoid import-time crashes when key is missing
+let _openRouterClient: OpenRouterClient | null = null;
+function getOpenRouterClient(): OpenRouterClient {
+  if (_openRouterClient) return _openRouterClient;
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error('OpenRouter API key is not configured');
+  }
+  _openRouterClient = new OpenRouterClient();
+  return _openRouterClient;
+}
 
 // Helper function to create a simple chat completion
 export async function createChatCompletion(
@@ -158,8 +167,9 @@ export async function createChatCompletion(
   options: Partial<ChatCompletionRequest> = {}
 ): Promise<ChatCompletionResponse> {
   const defaultModel = process.env.OPENROUTER_MODEL || 'qwen/qwen3-235b-a22b-2507';
-  
-  return openRouterClient.createChatCompletion({
+
+  const client = getOpenRouterClient();
+  return client.createChatCompletion({
     model: defaultModel,
     messages,
     temperature: 0.7,
@@ -174,8 +184,9 @@ export async function createStreamingChatCompletion(
   options: Partial<ChatCompletionRequest> = {}
 ): Promise<ReadableStream<Uint8Array>> {
   const defaultModel = process.env.OPENROUTER_MODEL || 'qwen/qwen3-235b-a22b-2507';
-  
-  return openRouterClient.createStreamingChatCompletion({
+
+  const client = getOpenRouterClient();
+  return client.createStreamingChatCompletion({
     model: defaultModel,
     messages,
     temperature: 0.7,

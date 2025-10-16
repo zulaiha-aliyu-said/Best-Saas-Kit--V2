@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
@@ -18,8 +18,7 @@ export async function GET(
       );
     }
 
-    const resolvedParams = await params;
-    const userId = parseInt(resolvedParams.id);
+    const userId = parseInt(params.id);
     if (isNaN(userId)) {
       return NextResponse.json(
         { error: 'Invalid user ID' },
@@ -49,7 +48,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
@@ -61,8 +60,7 @@ export async function DELETE(
       );
     }
 
-    const resolvedParams = await params;
-    const userId = parseInt(resolvedParams.id);
+    const userId = parseInt(params.id);
     if (isNaN(userId)) {
       return NextResponse.json(
         { error: 'Invalid user ID' },
