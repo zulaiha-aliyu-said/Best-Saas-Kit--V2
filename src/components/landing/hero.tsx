@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Code, Rocket, Github } from "lucide-react"
+import { ArrowRight, Sparkles, Zap, Code, Rocket, Github, Shield } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
@@ -56,8 +56,8 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4"
           >
-            The complete toolkit for developers to create, customize, and launch
-            AI-powered SAAS applications with authentication, payments, and modern UI components.
+            Production-ready starter kit with NextAuth, Stripe payments, admin panel, 
+            PostgreSQL database, and AI integration. Everything you need to launch your SAAS.
           </motion.p>
 
           {/* Feature Pills */}
@@ -68,16 +68,16 @@ const Hero = () => {
             className="flex flex-wrap justify-center gap-4 text-sm"
           >
             <div className="flex items-center space-x-2 bg-muted/30 backdrop-blur-sm border border-border rounded-full px-4 py-2">
-              <Zap className="w-4 h-4 text-primary" />
-              <span>Next.js 15 + TypeScript</span>
+              <Shield className="w-4 h-4 text-primary" />
+              <span>NextAuth + Google OAuth</span>
             </div>
             <div className="flex items-center space-x-2 bg-muted/30 backdrop-blur-sm border border-border rounded-full px-4 py-2">
               <Code className="w-4 h-4 text-primary" />
-              <span>ShadCN UI + Tailwind</span>
+              <span>Stripe + Admin Panel</span>
             </div>
             <div className="flex items-center space-x-2 bg-muted/30 backdrop-blur-sm border border-border rounded-full px-4 py-2">
               <Rocket className="w-4 h-4 text-primary" />
-              <span>AI Integration Ready</span>
+              <span>PostgreSQL + AI Ready</span>
             </div>
           </motion.div>
 

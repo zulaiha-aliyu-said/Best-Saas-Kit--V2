@@ -4,15 +4,106 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
+import { 
+  CalendarIcon, 
+  Clock, 
+  Edit, 
+  Trash2, 
+  Eye,
+  MoreVertical,
+  Plus,
+  Filter,
+  Download
+} from "lucide-react";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface ScheduledPost {
+  id: string;
+  platform: string;
+  content: string;
+  scheduledDate: Date;
+  status: 'scheduled' | 'published' | 'failed';
+}
 
 export default function SchedulePage(){
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([
+    {
+      id: '1',
+      platform: 'x',
+      content: 'Excited to share our latest AI insights! Check out how machine learning is transforming content creation.',
+      scheduledDate: new Date(2024, 11, 15, 9, 0),
+      status: 'scheduled'
+    },
+    {
+      id: '2',
+      platform: 'linkedin',
+      content: 'New blog post: The Future of AI in Marketing. Learn how to leverage AI tools for better engagement.',
+      scheduledDate: new Date(2024, 11, 15, 13, 30),
+      status: 'scheduled'
+    },
+    {
+      id: '3',
+      platform: 'instagram',
+      content: 'Behind the scenes of our content creation process! ✨📱 #ContentCreation #AI',
+      scheduledDate: new Date(2024, 11, 16, 18, 0),
+      status: 'scheduled'
+    },
+  ]);
+
   useEffect(() => {
     setDate(new Date());
   }, []);
 
+  const platformIcons: Record<string, { icon: string; color: string; bg: string }> = {
+    x: { icon: "𝕏", color: "text-blue-600", bg: "bg-blue-50" },
+    linkedin: { icon: "in", color: "text-blue-700", bg: "bg-blue-50" },
+    instagram: { icon: "📷", color: "text-pink-600", bg: "bg-pink-50" },
+    email: { icon: "✉️", color: "text-green-600", bg: "bg-green-50" },
+  };
+
+  const formatScheduledDate = (date: Date) => {
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 60) return `in ${diffMins}m`;
+    if (diffHours < 24) return `in ${diffHours}h`;
+    if (diffDays < 7) return `in ${diffDays}d`;
+    return date.toLocaleDateString();
+  };
+
+  const handleDeletePost = (id: string) => {
+    setScheduledPosts(scheduledPosts.filter(p => p.id !== id));
+    toast.success('Post removed from schedule');
+  };
+
+  const handleEditPost = (id: string) => {
+    toast.info('Edit functionality coming soon!');
+  };
+
+  const filteredPosts = selectedPlatform === "all" 
+    ? scheduledPosts 
+    : scheduledPosts.filter(p => p.platform === selectedPlatform);
+
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Calendar and Scheduler Section */}
       <div className="grid gap-4 lg:grid-cols-[1fr_400px]">
         {/* Main Calendar */}
@@ -353,6 +444,151 @@ export default function SchedulePage(){
               <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      {/* Scheduled Posts List */}
+      <Card className="border-0 bg-white shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                <CalendarIcon className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-semibold">Scheduled Posts</CardTitle>
+                <CardDescription className="text-xs">Manage your upcoming content</CardDescription>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                <SelectTrigger className="w-[150px] h-8 text-xs">
+                  <Filter className="h-3 w-3 mr-2" />
+                  <SelectValue placeholder="All Platforms" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Platforms</SelectItem>
+                  <SelectItem value="x">Twitter/X</SelectItem>
+                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button size="sm" className="h-8 text-xs gap-1">
+                <Plus className="h-3 w-3" />
+                Schedule New
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 pb-4">
+          {filteredPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                <CalendarIcon className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No scheduled posts</h3>
+              <p className="text-muted-foreground mb-6">
+                {selectedPlatform !== "all" 
+                  ? `No posts scheduled for ${selectedPlatform}`
+                  : "Start scheduling content to see it here"}
+              </p>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule Your First Post
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredPosts.map((post) => {
+                const platformInfo = platformIcons[post.platform];
+                const statusColors = {
+                  scheduled: 'bg-blue-50 text-blue-700 border-blue-200',
+                  published: 'bg-green-50 text-green-700 border-green-200',
+                  failed: 'bg-red-50 text-red-700 border-red-200'
+                };
+
+                return (
+                  <Card key={post.id} className="hover:shadow-md transition-all">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        {/* Platform Icon */}
+                        <div className={`w-12 h-12 rounded-lg ${platformInfo.bg} flex items-center justify-center text-xl font-bold ${platformInfo.color} flex-shrink-0`}>
+                          {platformInfo.icon}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="outline" className="capitalize text-xs">
+                                {post.platform}
+                              </Badge>
+                              <Badge className={`text-xs ${statusColors[post.status]}`}>
+                                {post.status}
+                              </Badge>
+                            </div>
+                            
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditPost(post.id)}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Preview
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Export
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+
+                          <p className="text-sm text-foreground line-clamp-2 mb-3">
+                            {post.content}
+                          </p>
+
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>{post.scheduledDate.toLocaleString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                hour: 'numeric', 
+                                minute: '2-digit' 
+                              })}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="font-semibold text-primary">
+                                {formatScheduledDate(post.scheduledDate)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

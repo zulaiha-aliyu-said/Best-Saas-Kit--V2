@@ -25,6 +25,7 @@ interface GeneratedOutput {
 
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function RepurposePage() {
   const [tab, setTab] = useState<"text"|"url"|"file">("text");
@@ -47,6 +48,10 @@ export default function RepurposePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [loadedTemplate, setLoadedTemplate] = useState<string | null>(null);
+  const [urlContent, setUrlContent] = useState<string>("");
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [showYouTubeHelp, setShowYouTubeHelp] = useState(false);
 
   const tweets = useMemo(() => {
     if (!output?.x_thread) return [] as string[];
@@ -56,6 +61,107 @@ export default function RepurposePage() {
   const copy = async (text: string) => {
     toast.success('Copied to clipboard');
     await navigator.clipboard.writeText(text);
+  };
+
+  // Parse content to extract title, body, and CTA
+  const parseContent = (text: string) => {
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    // First line is often the title/hook
+    const title = lines[0] || '';
+    
+    // Find CTA patterns
+    const ctaPatterns = [
+      /visit our/i,
+      /learn more/i,
+      /get started/i,
+      /read more/i,
+      /click here/i,
+      /sign up/i,
+      /try it/i,
+      /check out/i,
+      /discover/i,
+      /explore/i
+    ];
+    
+    let ctaIndex = -1;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (ctaPatterns.some(pattern => pattern.test(lines[i]))) {
+        ctaIndex = i;
+        break;
+      }
+    }
+    
+    const cta = ctaIndex >= 0 ? lines.slice(ctaIndex).join(' ') : '';
+    const bodyLines = ctaIndex >= 0 ? lines.slice(1, ctaIndex) : lines.slice(1);
+    const body = bodyLines.join('\n\n');
+    
+    return { title, body, cta };
+  };
+
+  const handleUrlFetch = async (url: string) => {
+    if (!url.trim()) {
+      setError('Please enter a valid URL');
+      return;
+    }
+
+    setUrlLoading(true);
+    setError(null);
+    setUrlContent('');
+
+    // Check if it's a YouTube URL
+    const isYouTube = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/.test(url);
+
+    try {
+
+      if (isYouTube) {
+        // Fetch YouTube transcript
+        const response = await fetch('/api/youtube-transcript', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch YouTube transcript');
+        }
+
+        const data = await response.json();
+        setUrlContent(data.transcript.text);
+        setShowYouTubeHelp(false);
+        toast.success(`YouTube transcript extracted: ${data.transcript.title}`);
+      } else {
+        // Fetch regular web page content
+        const response = await fetch('/api/extract-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch URL content');
+        }
+
+        const data = await response.json();
+        setUrlContent(data.text);
+        toast.success('Content extracted successfully');
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to fetch content from URL';
+      setError(errorMessage);
+      
+      // If it's a YouTube error, show help UI
+      if (isYouTube) {
+        setShowYouTubeHelp(true);
+        toast.error('Could not extract YouTube transcript automatically');
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setUrlLoading(false);
+    }
   };
 
   const handleFileUpload = async (file: File) => {
@@ -124,23 +230,55 @@ export default function RepurposePage() {
   };
 
   useEffect(()=>{
-    const prefill = search.get('prefill');
-    const platforms = (search.get('platforms') || '').split(',').filter(Boolean);
-    const num = search.get('num');
-    if (prefill) {
-      const textarea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
-      if (textarea) textarea.value = prefill;
-    }
-    if (platforms.length) {
-      const container = document.getElementById('rp-platforms');
-      container?.querySelectorAll('button[data-key]')?.forEach((btn)=>{
-        const b = btn as HTMLButtonElement;
-        b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
-      });
-    }
-    if (num) {
-      // best-effort: not strictly controlling Select; ok to ignore
-    }
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const prefill = search.get('prefill');
+      const platforms = (search.get('platforms') || '').split(',').filter(Boolean);
+      const num = search.get('num');
+      const tone = search.get('tone');
+      const hashtags = search.get('hashtags');
+      const emojis = search.get('emojis');
+      const cta = search.get('cta');
+      const templateId = search.get('templateId');
+      
+      // Show toast if template is being applied
+      if (templateId) {
+        setLoadedTemplate(templateId);
+        toast.success('Template settings applied! Customize as needed.');
+      }
+      
+      if (prefill) {
+        const textarea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
+        if (textarea) textarea.value = prefill;
+      }
+      
+      if (platforms.length) {
+        const container = document.getElementById('rp-platforms');
+        container?.querySelectorAll('button[data-key]')?.forEach((btn)=>{
+          const b = btn as HTMLButtonElement;
+          b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
+        });
+      }
+      
+      if (tone) {
+        document.querySelectorAll('[data-tone]').forEach(el => {
+          const button = el as HTMLElement;
+          button.dataset.selected = button.dataset.tone === tone ? 'true' : 'false';
+        });
+      }
+      
+      if (hashtags !== null) {
+        setIncludeHashtags(hashtags === 'true');
+      }
+      if (emojis !== null) {
+        setIncludeEmojis(emojis === 'true');
+      }
+      if (cta !== null) {
+        setIncludeCTA(cta === 'true');
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [search]);
 
   return (
@@ -206,6 +344,37 @@ export default function RepurposePage() {
         </div>
       </div>
 
+      {/* Template Loaded Banner */}
+      {loadedTemplate && (
+        <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-primary/20">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Template Applied</p>
+                <p className="text-xs text-muted-foreground">
+                  Settings have been pre-configured. Customize them below as needed.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/templates">Browse Templates</Link>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLoadedTemplate(null)}
+              >
+                Dismiss
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Input */}
         <Card className="card-soft-shadow border-0">
@@ -266,7 +435,155 @@ export default function RepurposePage() {
                 />
               )}
               {tab === "url" && (
-                <Input id="rp-url" placeholder="https://example.com/your-article" className="h-12" />
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input 
+                      id="rp-url" 
+                      placeholder="https://youtube.com/watch?v=... or https://example.com/article" 
+                      className="h-12 flex-1" 
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const input = e.currentTarget as HTMLInputElement;
+                          handleUrlFetch(input.value);
+                        }
+                      }}
+                    />
+                    <Button 
+                      onClick={() => {
+                        const input = document.getElementById('rp-url') as HTMLInputElement;
+                        if (input) handleUrlFetch(input.value);
+                      }}
+                      disabled={urlLoading}
+                      className="h-12 px-6"
+                    >
+                      {urlLoading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Fetching...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Fetch
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {urlContent && (
+                    <div className="rounded-lg border-2 border-green-200 bg-green-50 p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-sm font-semibold text-green-800">Content extracted successfully</p>
+                      </div>
+                      <p className="text-xs text-green-700">{urlContent.length} characters extracted</p>
+                    </div>
+                  )}
+
+                  {/* YouTube Manual Workaround Help */}
+                  {showYouTubeHelp && (
+                    <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                          </div>
+                          <div className="flex-1 space-y-4">
+                            <div>
+                              <h3 className="font-bold text-lg text-orange-900 mb-1">YouTube Transcript - Manual Method</h3>
+                              <p className="text-sm text-orange-800">Automatic extraction failed. Follow these simple steps to get the transcript:</p>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Open the YouTube video</p>
+                                  <p className="text-xs text-gray-600">Go to the video page in your browser</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Click the "..." (More) button</p>
+                                  <p className="text-xs text-gray-600">Located below the video, next to Share and Save</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Select "Show transcript"</p>
+                                  <p className="text-xs text-gray-600">A panel will open with the full video transcript</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">4</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Copy the transcript text</p>
+                                  <p className="text-xs text-gray-600">Select all text and copy it</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">5</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Paste in the "Text/Article" tab</p>
+                                  <p className="text-xs text-gray-600">Switch to the Text tab above and paste the transcript</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2">
+                              <Button 
+                                variant="default" 
+                                size="sm"
+                                onClick={() => {
+                                  setTab('text');
+                                  setShowYouTubeHelp(false);
+                                  toast.success('Switched to Text tab - paste your transcript here');
+                                }}
+                                className="bg-orange-500 hover:bg-orange-600"
+                              >
+                                Switch to Text Tab
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setShowYouTubeHelp(false)}
+                              >
+                                Dismiss
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-xs text-blue-800">
+                      <p className="font-semibold mb-1">Supports:</p>
+                      <ul className="space-y-0.5 list-disc list-inside">
+                        <li>YouTube videos (transcript extraction)</li>
+                        <li>Blog posts and articles</li>
+                        <li>Any public web page with text content</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               )}
               {tab === "file" && (
                 <div className="space-y-3">
@@ -719,7 +1036,9 @@ export default function RepurposePage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Quick Start Templates</h2>
-          <Button variant="link" className="text-primary">View All Templates →</Button>
+          <Button variant="link" className="text-primary" asChild>
+            <Link href="/dashboard/templates">View All Templates →</Link>
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -775,163 +1094,292 @@ export default function RepurposePage() {
 
       {/* Output */}
       {(output || error) && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Recent Repurposing Activity</h2>
-            <Button variant="link" className="text-primary">View All →</Button>
+            <div>
+              <h2 className="text-2xl font-bold">Generated Content</h2>
+              <p className="text-sm text-muted-foreground mt-1">Review, copy, or schedule your repurposed content</p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/history">View History →</Link>
+            </Button>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Twitter/X Thread */}
-            <Card className="card-soft-shadow border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                      </svg>
-                    </div>
-                    <div className="text-white">
-                      <h3 className="font-semibold">Twitter/X Thread</h3>
-                      <p className="text-xs text-white/80">Generated {tweets.length} tweets • {tweets.length > 0 ? '2 hours ago' : 'Not generated'}</p>
-                    </div>
+          
+          {/* Error Display */}
+          {error && (
+            <Card className="border-2 border-destructive/50 bg-destructive/5">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(tweets.join('\n\n'))}>
-                      <Copy className="h-4 w-4" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2 text-destructive">Generation Error</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{error}</p>
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setError(null)}>
+                      Dismiss
                     </Button>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                {error && (
-                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">Error: {error}</div>
-                )}
-                {tweets.length === 0 && !error && (
-                  <div className="text-center py-8 text-muted-foreground text-sm">No thread yet. Generate to see results.</div>
-                )}
-                <div className="space-y-3">
-                  {tweets.map((t, idx) => (
-                    <div key={idx} className="rounded-xl border-2 bg-white p-4 hover:border-primary/30 transition-all">
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-semibold">{idx + 1}</div>
-                          <span className="text-xs text-muted-foreground">{t.length}/280 chars</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button size="sm" variant="ghost" onClick={() => copy(t)}><Copy className="h-3 w-3"/></Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setSchedulePlatform('x'); setScheduleBody(t); setScheduleOpen(true); }}><CalendarIcon className="h-3 w-3"/></Button>
+              </CardContent>
+            </Card>
+          )}
+          
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Twitter/X Thread */}
+            {tweets.length > 0 && (
+              <Card className="overflow-hidden border-2">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="font-semibold text-lg">Twitter/X Thread</h3>
+                        <p className="text-sm text-white/90">{tweets.length} tweet{tweets.length > 1 ? 's' : ''} • Ready to post</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(tweets.join('\n\n'))}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy All
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <CardContent className="p-6 bg-gradient-to-b from-blue-50/50 to-transparent">
+                  <div className="space-y-4">
+                    {tweets.map((t, idx) => (
+                      <div key={idx} className="group relative">
+                        {/* Thread connector line */}
+                        {idx < tweets.length - 1 && (
+                          <div className="absolute left-[19px] top-[60px] bottom-[-16px] w-0.5 bg-gradient-to-b from-blue-300 to-blue-100" />
+                        )}
+                        
+                        <div className="relative bg-white rounded-2xl border-2 border-border hover:border-blue-300 hover:shadow-lg transition-all p-5">
+                          {/* Tweet header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm flex items-center justify-center font-bold shadow-md">
+                                {idx + 1}
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tweet {idx + 1}</p>
+                                <p className="text-xs text-muted-foreground">{t.length}/280 characters</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button size="sm" variant="ghost" onClick={() => copy(t)} title="Copy tweet">
+                                <Copy className="h-4 w-4"/>
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => { setSchedulePlatform('x'); setScheduleBody(t); setScheduleOpen(true); }} title="Schedule">
+                                <CalendarIcon className="h-4 w-4"/>
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {/* Tweet content */}
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                            {t}
+                          </p>
                         </div>
                       </div>
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{t}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* LinkedIn Post */}
-            <Card className="card-soft-shadow border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-700 to-blue-800 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                      </svg>
+            {output?.linkedin_post && (
+              <Card className="overflow-hidden border-2">
+                <div className="bg-gradient-to-r from-blue-700 to-blue-800 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="font-semibold text-lg">LinkedIn Post</h3>
+                        <p className="text-sm text-white/90">Professional format • Ready to share</p>
+                      </div>
                     </div>
-                    <div className="text-white">
-                      <h3 className="font-semibold">LinkedIn Post</h3>
-                      <p className="text-xs text-white/80">Generated 5 posts • {output?.linkedin_post ? '5 hours ago' : 'Not generated'}</p>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.linkedin_post || '')}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Post
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output?.linkedin_post || '')}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4 max-h-96 overflow-y-auto">
-                {output?.linkedin_post ? (
-                  <div className="rounded-xl border-2 bg-white p-5 text-sm whitespace-pre-wrap leading-relaxed">
-                    {output.linkedin_post}
+                <CardContent className="p-6 bg-gradient-to-b from-blue-50/30 to-transparent">
+                  <div className="bg-white rounded-2xl border-2 border-border p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4 pb-4 border-b">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-700 to-blue-800 flex items-center justify-center text-white font-bold text-lg">
+                        U
+                      </div>
+                      <div>
+                        <p className="font-semibold">Your Company</p>
+                        <p className="text-xs text-muted-foreground">Professional Post</p>
+                      </div>
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                      {output.linkedin_post}
+                    </p>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground text-sm">No LinkedIn post yet.</div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Instagram Caption */}
-            <Card className="card-soft-shadow border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
+            {output?.instagram_caption && (
+              <Card className="overflow-hidden border-2">
+                <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="font-semibold text-lg">Instagram Caption</h3>
+                        <p className="text-sm text-white/90">Visual storytelling • Ready to post</p>
+                      </div>
                     </div>
-                    <div className="text-white">
-                      <h3 className="font-semibold">Instagram Caption</h3>
-                      <p className="text-xs text-white/80">Generated 6 captions • {output?.instagram_caption ? 'Yesterday' : 'Not generated'}</p>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.instagram_caption || '')}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Caption
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output?.instagram_caption || '')}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4 max-h-96 overflow-y-auto">
-                {output?.instagram_caption ? (
-                  <div className="rounded-xl border-2 bg-white p-5 text-sm whitespace-pre-wrap leading-relaxed">
-                    {output.instagram_caption}
+                <CardContent className="p-6 bg-gradient-to-b from-pink-50/30 to-transparent">
+                  <div className="bg-white rounded-2xl border-2 border-border overflow-hidden shadow-sm">
+                    {/* Mock Instagram Post Header */}
+                    <div className="flex items-center gap-3 p-4 border-b">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                        Y
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">your_brand</p>
+                        <p className="text-xs text-muted-foreground">Just now</p>
+                      </div>
+                    </div>
+                    {/* Mock Image Placeholder */}
+                    <div className="aspect-square bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center">
+                      <div className="text-center text-muted-foreground">
+                        <svg className="w-16 h-16 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-xs">Your image here</p>
+                      </div>
+                    </div>
+                    {/* Caption */}
+                    <div className="p-4">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                        {output.instagram_caption}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground text-sm">No Instagram caption yet.</div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Email Newsletter */}
-            <Card className="card-soft-shadow border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-green-500 to-green-600 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
+            {output?.email_newsletter && (
+              <Card className="overflow-hidden border-2">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="font-semibold text-lg">Email Newsletter</h3>
+                        <p className="text-sm text-white/90">Professional format • Ready to send</p>
+                      </div>
                     </div>
-                    <div className="text-white">
-                      <h3 className="font-semibold">Email Newsletter</h3>
-                      <p className="text-xs text-white/80">Newsletter format • {output?.email_newsletter ? 'Yesterday' : 'Not generated'}</p>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(`Subject: ${output.email_newsletter?.subject || ''}\n\n${output.email_newsletter?.body || ''}`)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Email
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(`${output?.email_newsletter?.subject || ''}\n\n${output?.email_newsletter?.body || ''}`)}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                {output?.email_newsletter ? (
-                  <>
-                    <div className="rounded-lg border-2 bg-secondary/40 p-3 text-sm">
-                      <span className="text-xs text-muted-foreground font-medium">Subject Line</span>
-                      <div className="font-semibold mt-1">{output.email_newsletter.subject}</div>
+                <CardContent className="p-6 bg-gradient-to-b from-green-50/30 to-transparent">
+                  <div className="bg-white rounded-2xl border-2 border-border overflow-hidden shadow-sm">
+                    {/* Email Header */}
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b-2">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">From</p>
+                            <p className="text-sm font-medium">Your Company &lt;hello@yourcompany.com&gt;</p>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">Draft</Badge>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">To</p>
+                          <p className="text-sm font-medium">subscribers@yourlist.com</p>
+                        </div>
+                        <div className="pt-2 border-t">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Subject</p>
+                          <p className="text-base font-semibold text-foreground">{output.email_newsletter.subject}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="rounded-xl border-2 bg-white p-5 text-sm whitespace-pre-wrap leading-relaxed">{output.email_newsletter.body}</div>
-                  </>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground text-sm">No email content yet.</div>
-                )}
-              </CardContent>
-            </Card>
+                    
+                    {/* Email Body */}
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        {/* Greeting */}
+                        <div className="pb-4 border-b border-dashed">
+                          <p className="text-sm text-muted-foreground italic">Email greeting will appear here</p>
+                        </div>
+                        
+                        {/* Main Content */}
+                        <div className="prose prose-sm max-w-none">
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground m-0">
+                            {output.email_newsletter.body}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Email Footer */}
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-t-2">
+                      <div className="space-y-3 text-center">
+                        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                          <button className="hover:text-foreground transition-colors">View in browser</button>
+                          <span>•</span>
+                          <button className="hover:text-foreground transition-colors">Unsubscribe</button>
+                          <span>•</span>
+                          <button className="hover:text-foreground transition-colors">Update preferences</button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          © 2024 Your Company. All rights reserved.
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          123 Business St, City, State 12345
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       )}

@@ -4,104 +4,177 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { TrendingUp, RefreshCw, Copy, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function TrendsPage() {
   const router = useRouter();
   const [selectedPlatform, setSelectedPlatform] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [timeRange, setTimeRange] = useState('24');
+  const [loading, setLoading] = useState(true);
+  const [trends, setTrends] = useState<any[]>([]);
+  const [hashtags, setHashtags] = useState<any>({});
+  const [autoInsert, setAutoInsert] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+
+  // Fetch trends data
+  useEffect(() => {
+    fetchTrends();
+  }, [selectedPlatform, selectedCategory]);
+
+  const fetchTrends = async () => {
+    setLoading(true);
+    try {
+      // Call real API endpoint
+      const params = new URLSearchParams({
+        platform: selectedPlatform,
+        category: selectedCategory,
+        timeRange,
+      });
+      
+      const response = await fetch(`/api/trends?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch trends');
+      }
+      
+      const data = await response.json();
+      
+      setTrends(data.topics || []);
+      setHashtags(data.hashtags || {});
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Fetch trends error:', error);
+      toast.error('Failed to fetch trends');
+      // Set empty data on error
+      setTrends([]);
+      setHashtags({});
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyHashtags = (platform: string) => {
+    const tags = hashtags[platform] || [];
+    const text = tags.map((t: string) => t.startsWith('#') ? t : `#${t}`).join(' ');
+    navigator.clipboard.writeText(text);
+    toast.success(`${platform} hashtags copied!`);
+  };
+
+  const copyAllHashtags = () => {
+    const allTags = Object.values(hashtags).flat() as string[];
+    const text = allTags.map(t => t.startsWith('#') ? t : `#${t}`).join(' ');
+    navigator.clipboard.writeText(text);
+    toast.success('All hashtags copied!');
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return `${seconds} seconds ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4 mb-5">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Trending Topics & Hashtags 🔥</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Discover what's hot and boost your content reach</p>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            Trending Topics & Hashtags 🔥
+          </h1>
+          <p className="text-muted-foreground mt-1">Discover what's hot and boost your content reach</p>
         </div>
-        <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/20">
-          <span className="text-xs font-medium">Auto-insert trending hashtags</span>
-          <Switch defaultChecked />
+        <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/5 border border-primary/20">
+          <span className="text-sm font-medium">Auto-insert trending hashtags</span>
+          <Switch checked={autoInsert} onCheckedChange={setAutoInsert} />
         </div>
       </div>
 
       {/* Filter by Platform */}
-      <Card className="border-0 bg-white shadow-sm">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
-              <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-            </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-semibold">Filter by Platform</CardTitle>
-              <CardDescription className="text-xs">See trending topics for specific platforms</CardDescription>
+              <CardTitle className="text-lg">Filter by Platform</CardTitle>
+              <CardDescription>See trending topics for specific platforms</CardDescription>
             </div>
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="gap-2"
+              onClick={fetchTrends}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh Trends
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 pb-3">
-          <div className="flex flex-wrap gap-2 mb-2">
-            {[
-              { key: 'all', label: 'All Platforms', icon: '🌐' },
-              { key: 'twitter', label: 'Twitter', icon: '🐦' },
-              { key: 'linkedin', label: 'LinkedIn', icon: '💼' },
-              { key: 'instagram', label: 'Instagram', icon: '📸' },
-              { key: 'email', label: 'Email', icon: '✉️' },
-            ].map((p) => (
-              <Button
-                key={p.key}
-                variant={selectedPlatform === p.key ? 'default' : 'outline'}
-                onClick={() => setSelectedPlatform(p.key)}
-                className={selectedPlatform === p.key ? 'repurpose-gradient' : ''}
-              >
-                <span className="mr-2">{p.icon}</span>
-                {p.label}
-              </Button>
-            ))}
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedPlatform === 'all' ? 'default' : 'outline'}
+              onClick={() => setSelectedPlatform('all')}
+              className={selectedPlatform === 'all' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+            >
+              📱 All Platforms
+            </Button>
+            <Button
+              variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
+              onClick={() => setSelectedPlatform('twitter')}
+            >
+              𝕏 Twitter
+            </Button>
+            <Button
+              variant={selectedPlatform === 'linkedin' ? 'default' : 'outline'}
+              onClick={() => setSelectedPlatform('linkedin')}
+            >
+              💼 LinkedIn
+            </Button>
+            <Button
+              variant={selectedPlatform === 'instagram' ? 'default' : 'outline'}
+              onClick={() => setSelectedPlatform('instagram')}
+            >
+              📸 Instagram
+            </Button>
+            <Button
+              variant={selectedPlatform === 'email' ? 'default' : 'outline'}
+              onClick={() => setSelectedPlatform('email')}
+            >
+              ✉️ Email
+            </Button>
           </div>
-          <Button variant="link" className="text-primary p-0 h-auto">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh Trends
-          </Button>
         </CardContent>
       </Card>
 
       {/* Filter by Category */}
-      <Card className="border-0 bg-white shadow-sm">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-pink-100 flex items-center justify-center">
-              <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-              </svg>
-            </div>
-            <CardTitle className="text-sm font-semibold">Filter by Category</CardTitle>
-          </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Filter by Category</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0 pb-3">
+        <CardContent>
           <div className="flex flex-wrap gap-2">
-            {[
-              { key: 'all', label: 'All Categories' },
-              { key: 'tech', label: 'Technology' },
-              { key: 'business', label: 'Business' },
-              { key: 'marketing', label: 'Marketing' },
-              { key: 'lifestyle', label: 'Lifestyle' },
-              { key: 'health', label: 'Health' },
-              { key: 'education', label: 'Education' },
-              { key: 'finance', label: 'Finance' },
-            ].map((c) => (
+            <Button
+              variant={selectedCategory === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCategory('all')}
+              className={selectedCategory === 'all' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+            >
+              All Categories
+            </Button>
+            {['Technology', 'Business', 'Marketing', 'Lifestyle', 'Health', 'Education', 'Finance'].map((cat) => (
               <Button
-                key={c.key}
-                variant={selectedCategory === c.key ? 'default' : 'outline'}
+                key={cat}
+                variant={selectedCategory === cat.toLowerCase() ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setSelectedCategory(c.key)}
-                className={selectedCategory === c.key ? 'bg-primary' : ''}
+                onClick={() => setSelectedCategory(cat.toLowerCase())}
               >
-                {c.label}
+                {cat}
               </Button>
             ))}
           </div>
@@ -109,185 +182,145 @@ export default function TrendsPage() {
       </Card>
 
       {/* Performance Chart */}
-      <Card className="border-0 bg-white shadow-sm">
-        <CardHeader className="pb-2">
+      <Card>
+        <CardHeader>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <CardTitle className="text-sm font-semibold">Trending Performance Over Time</CardTitle>
-              <CardDescription className="text-xs">See how trending topics perform across platforms</CardDescription>
+              <CardTitle className="text-lg">Trending Performance Over Time</CardTitle>
+              <CardDescription>See how trending topics perform across platforms</CardDescription>
             </div>
             <div className="flex gap-2">
-              {[
-                { key: '24', label: '24 Hours' },
-                { key: '7', label: '7 Days' },
-                { key: '30', label: '30 Days' },
-              ].map((t) => (
-                <Button
-                  key={t.key}
-                  variant={timeRange === t.key ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeRange(t.key)}
-                  className={timeRange === t.key ? 'bg-primary' : ''}
-                >
-                  {t.label}
-                </Button>
-              ))}
+              <Button
+                variant={timeRange === '24' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimeRange('24')}
+              >
+                24 Hours
+              </Button>
+              <Button
+                variant={timeRange === '7' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimeRange('7')}
+              >
+                7 Days
+              </Button>
+              <Button
+                variant={timeRange === '30' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimeRange('30')}
+              >
+                30 Days
+              </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 pb-3">
-          {/* Chart Placeholder with Lines */}
-          <div className="relative h-48 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/5 border border-border p-3">
-            <div className="absolute inset-0 flex items-end justify-around p-6">
-              {/* Simulated line chart */}
-              <div className="flex items-end gap-8 w-full">
-                {[40, 55, 65, 75, 82, 88, 95].map((height, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                    <div className="text-xs text-muted-foreground">{i * 4}:00</div>
-                    <div
-                      className="w-full bg-gradient-to-t from-primary/60 to-primary/20 rounded-t-lg transition-all"
-                      style={{ height: `${height}%` }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Legend */}
+        <CardContent>
+          <div className="relative h-64 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
+            {/* Simple line chart visualization */}
             <div className="absolute top-4 right-4 flex gap-4 text-xs">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-purple-500" />
                 <span>AI Content</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-pink-500" />
                 <span>Remote Work</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-green-500" />
                 <span>Sustainability</span>
               </div>
+            </div>
+            <div className="h-full flex items-end justify-between gap-4 pt-12">
+              {[30, 45, 60, 75, 85, 95, 100].map((height, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div
+                    className="w-full bg-gradient-to-t from-purple-500 to-purple-300 rounded-t transition-all"
+                    style={{ height: `${height}%` }}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {i === 0 ? '00:00' : i === 3 ? '12:00' : i === 6 ? '24:00' : ''}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Hot Topics Right Now */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
-              <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-base font-bold">Hot Topics Right Now 🔥</h2>
-              <p className="text-xs text-muted-foreground">Trending topics with high engagement potential</p>
-            </div>
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              Hot Topics Right Now 🔥
+            </h2>
+            <p className="text-muted-foreground mt-1">Trending topics with high engagement potential</p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground">Updated 2 minutes ago</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-green-600 font-medium">Live Updates</span>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Updated {formatTimeAgo(lastUpdated)}</span>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-green-600 font-medium">Live Updates</span>
+            </div>
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          {[
-            {
-              title: 'AI Content Revolution',
-              desc: 'How artificial intelligence is transforming content creation and marketing strategies worldwide.',
-              views: '2.3M',
-              growth: '+347%',
-              badge: '#1 Trending',
-              badgeColor: 'bg-red-500',
-              tags: ['#AIContent', '#ContentMarketing', '#AI'],
-              platforms: ['twitter', 'linkedin'],
-            },
-            {
-              title: 'Remote Work Productivity',
-              desc: 'Best practices and tools for maintaining high productivity while working from home.',
-              views: '1.8M',
-              growth: '+289%',
-              badge: '#2 Rising',
-              badgeColor: 'bg-blue-500',
-              tags: ['#RemoteWork', '#Productivity', '#WorkFromHome'],
-              platforms: ['linkedin', 'twitter'],
-            },
-            {
-              title: 'Sustainable Business',
-              desc: 'How companies are adopting eco-friendly practices and green technologies for better future.',
-              views: '1.2M',
-              growth: '+156%',
-              badge: '#3 Popular',
-              badgeColor: 'bg-green-500',
-              tags: ['#Sustainability', '#GreenTech', '#EcoFriendly'],
-              platforms: ['linkedin', 'twitter', 'email'],
-            },
-            {
-              title: 'Mental Health Awareness',
-              desc: 'Breaking stigmas and promoting mental wellness in workplace and personal life.',
-              views: '956K',
-              growth: '+198%',
-              badge: '#4 Viral',
-              badgeColor: 'bg-purple-500',
-              tags: ['#MentalHealth', '#Wellness', '#SelfCare'],
-              platforms: ['instagram', 'twitter'],
-            },
-            {
-              title: 'Crypto & Web3',
-              desc: 'Latest developments in cryptocurrency, blockchain, and decentralized technologies.',
-              views: '743K',
-              growth: '+134%',
-              badge: '#8 Emerging',
-              badgeColor: 'bg-yellow-500',
-              tags: ['#Crypto', '#Web3', '#Blockchain'],
-              platforms: ['twitter', 'linkedin'],
-            },
-            {
-              title: 'Future of Work',
-              desc: 'Exploring new work models, automation, and the changing landscape of employment.',
-              views: '621K',
-              growth: '+87%',
-              badge: '#6 Innovation',
-              badgeColor: 'bg-indigo-500',
-              tags: ['#FutureOfWork', '#Automation', '#WorkTrends'],
-              platforms: ['linkedin', 'twitter'],
-            },
-          ].map((topic, idx) => (
-            <Card key={idx} className="border-0 bg-white shadow-sm hover:shadow-md transition-all group">
-              <CardContent className="p-3">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Badge className={`${topic.badgeColor} text-white border-0 text-xs px-2 py-0`}>{topic.badge}</Badge>
-                    <div className="flex gap-0.5">
-                      {topic.platforms.map((p) => (
-                        <div key={p} className="text-xs">
-                          {p === 'twitter' && '🐦'}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : trends.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <p className="text-muted-foreground">No trending topics found for the selected filters.</p>
+              <Button 
+                className="mt-4" 
+                onClick={() => {
+                  setSelectedPlatform('all');
+                  setSelectedCategory('all');
+                }}
+              >
+                Clear Filters
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {trends.map((topic, idx) => (
+            <Card key={idx} className="hover:shadow-lg transition-all group">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge className={`${topic.badgeColor} text-white border-0 text-xs`}>{topic.badge}</Badge>
+                    <div className="flex gap-1">
+                      {topic.platforms.map((p: string) => (
+                        <span key={p} className="text-sm">
+                          {p === 'twitter' && '𝕏'}
                           {p === 'linkedin' && '💼'}
                           {p === 'instagram' && '📸'}
                           {p === 'email' && '✉️'}
-                        </div>
+                        </span>
                       ))}
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-green-600">{topic.growth}</span>
+                  <span className="text-sm font-bold text-green-600">{topic.growth}</span>
                 </div>
 
-                <h3 className="text-sm font-bold mb-1 group-hover:text-primary transition-colors">{topic.title}</h3>
-                <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{topic.desc}</p>
+                <h3 className="text-base font-bold mb-2 group-hover:text-primary transition-colors">{topic.title}</h3>
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{topic.description}</p>
 
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {topic.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs px-2 py-0">
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {topic.tags.map((tag: string) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center justify-between pt-3 border-t">
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
@@ -295,7 +328,6 @@ export default function TrendsPage() {
                   </div>
                   <Button
                     size="sm"
-                    className="repurpose-gradient text-xs h-7 px-3"
                     onClick={() => {
                       const params = new URLSearchParams({
                         prefill: topic.title,
@@ -310,53 +342,58 @@ export default function TrendsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Trending Hashtags by Platform */}
-      <Card className="border-0 bg-white shadow-sm">
-        <CardHeader className="pb-2">
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                </svg>
-              </div>
-              <div>
-                <CardTitle className="text-sm font-semibold">Trending Hashtags by Platform</CardTitle>
-                <CardDescription className="text-xs">Most effective hashtags for maximum reach</CardDescription>
-              </div>
+            <div>
+              <CardTitle className="text-lg\">Trending Hashtags by Platform</CardTitle>
+              <CardDescription>Most effective hashtags for maximum reach</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="gap-2 text-xs h-7">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
+            <Button variant="outline" size="sm" className="gap-2" onClick={copyAllHashtags}>
+              <Copy className="h-4 w-4" />
               Copy All
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 pt-0 pb-3">
+        <CardContent className="space-y-4">
           {/* Twitter */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                <h3 className="text-sm font-semibold">Twitter Trending</h3>
+          {hashtags.twitter && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  <h3 className="text-sm font-semibold">Twitter Trending</h3>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 gap-1"
+                  onClick={() => copyHashtags('twitter')}
+                >
+                  <Copy className="h-3 w-3" />
+                  Copy
+                </Button>
               </div>
-              <span className="text-xs text-muted-foreground">Updated 5 min ago</span>
+              <div className="flex flex-wrap gap-2">
+                {hashtags.twitter.map((h: string) => (
+                  <Badge key={h} className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0 cursor-pointer" onClick={() => {
+                    navigator.clipboard.writeText(h);
+                    toast.success(`${h} copied!`);
+                  }}>
+                    {h}
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {['#AIRevolution', '#TechTrends', '#Innovation', '#DigitalTransformation', '#StartupLife', '#ContentCreation', '#RemoteWork', '#Productivity'].map((h) => (
-                <Badge key={h} className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0 px-2.5 py-0.5 text-xs">
-                  {h}
-                </Badge>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* LinkedIn */}
           <div className="space-y-1.5">

@@ -21,75 +21,75 @@ import Image from "next/image"
 const Features = () => {
   const features = [
     {
-      icon: <Zap className="w-8 h-8" />,
-      title: "Lightning Fast Setup",
-      description: "Get your AI SAAS running in under 30 minutes with our pre-configured Next.js foundation.",
-      color: "text-yellow-500"
-    },
-    {
       icon: <Shield className="w-8 h-8" />,
-      title: "Secure Authentication",
-      description: "Complete auth system with Clerk.com including social login, MFA, and user management.",
+      title: "Google OAuth Authentication",
+      description: "Secure authentication with NextAuth.js and Google OAuth. Automatic user creation, session management, and protected routes out of the box.",
       color: "text-green-500"
     },
     {
+      icon: <CreditCard className="w-8 h-8" />,
+      title: "Stripe Payment Integration",
+      description: "Complete payment system with Stripe checkout, webhook handling, and one-time Pro subscription ($99). Discount code system included.",
+      color: "text-emerald-500"
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Admin Panel",
+      description: "Full-featured admin dashboard with user management, analytics, discount code creation, and system settings. Role-based access control.",
+      color: "text-indigo-500"
+    },
+    {
       icon: <Database className="w-8 h-8" />,
-      title: "Scalable Database",
-      description: "PostgreSQL with Neon.tech and Prisma ORM for type-safe, scalable data operations.",
+      title: "PostgreSQL Database",
+      description: "Neon serverless PostgreSQL with custom functions for user management, credit tracking, and subscription handling. Fully optimized queries.",
       color: "text-blue-500"
     },
     {
       icon: <Bot className="w-8 h-8" />,
-      title: "AI Integration",
-      description: "OpenRouter integration with multiple AI models, usage tracking, and cost optimization.",
+      title: "AI Integration Ready",
+      description: "OpenRouter API integration with credit-based usage system. Track AI usage, manage costs, and implement usage limits per user.",
       color: "text-purple-500"
+    },
+    {
+      icon: <BarChart3 className="w-8 h-8" />,
+      title: "Analytics Dashboard",
+      description: "Real-time user analytics, revenue tracking, credit usage monitoring, and detailed statistics. Admin and user-level insights.",
+      color: "text-cyan-500"
     },
     {
       icon: <Palette className="w-8 h-8" />,
       title: "Modern UI Components",
-      description: "Beautiful, accessible components with ShadCN UI and Tailwind CSS for rapid development.",
+      description: "Beautiful, accessible components with ShadCN UI and Tailwind CSS v4. Dark/light theme support and responsive design.",
       color: "text-pink-500"
     },
     {
-      icon: <CreditCard className="w-8 h-8" />,
-      title: "Payment Processing",
-      description: "Stripe integration with subscription management, usage-based billing, and webhooks.",
-      color: "text-emerald-500"
-    },
-    {
       icon: <Code className="w-8 h-8" />,
-      title: "Developer Experience",
-      description: "TypeScript, ESLint, Prettier, and comprehensive documentation for smooth development.",
+      title: "TypeScript & Best Practices",
+      description: "Fully typed with TypeScript, ESLint configured, and following Next.js 15 best practices. Clean, maintainable codebase.",
       color: "text-orange-500"
     },
     {
-      icon: <BarChart3 className="w-8 h-8" />,
-      title: "Analytics & Monitoring",
-      description: "Built-in analytics, error tracking, and performance monitoring for production apps.",
-      color: "text-cyan-500"
+      icon: <Zap className="w-8 h-8" />,
+      title: "Credit Management System",
+      description: "Built-in credit system for usage tracking. Automatic credit allocation, deduction, and balance management with database transactions.",
+      color: "text-yellow-500"
     },
     {
-      icon: <Users className="w-8 h-8" />,
-      title: "Team Management",
-      description: "Multi-tenant architecture with role-based access control and team collaboration.",
-      color: "text-indigo-500"
+      icon: <Lock className="w-8 h-8" />,
+      title: "Discount Code System",
+      description: "Create and manage promotional codes from admin panel. Percentage or fixed discounts, usage limits, and expiration dates with Stripe sync.",
+      color: "text-red-500"
     },
     {
       icon: <Rocket className="w-8 h-8" />,
       title: "Production Ready",
-      description: "Optimized for deployment with Vercel, including CI/CD pipelines and monitoring.",
-      color: "text-red-500"
-    },
-    {
-      icon: <Lock className="w-8 h-8" />,
-      title: "Security First",
-      description: "OWASP compliance, data encryption, and security best practices built-in.",
-      color: "text-gray-500"
+      description: "Optimized for Vercel deployment with environment configuration, error handling, and webhook endpoints ready for production.",
+      color: "text-violet-500"
     },
     {
       icon: <Globe className="w-8 h-8" />,
-      title: "Global Scale",
-      description: "CDN integration, edge functions, and optimizations for worldwide performance.",
+      title: "User Dashboard",
+      description: "Complete user dashboard with billing management, subscription status, credit balance, and profile settings. Seamless user experience.",
       color: "text-teal-500"
     }
   ]

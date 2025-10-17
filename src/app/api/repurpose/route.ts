@@ -166,6 +166,8 @@ export async function POST(req: NextRequest) {
     const includeHashtags = options.includeHashtags !== false;
     const includeEmojis = options.includeEmojis === true;
     const includeCTA = options.includeCTA === true;
+    const customHook = options.customHook || '';
+    const customCTA = options.customCTA || '';
     
     const lengthDescriptions = {
       short: 'VERY BRIEF and to the point. Each tweet 100-150 characters. Focus on the core message only.',
@@ -198,7 +200,8 @@ export async function POST(req: NextRequest) {
 
 6. HASHTAGS: ${includeHashtags ? '✅ Include 3-5 relevant hashtags at the end' : '❌ DO NOT include any hashtags'}
 7. EMOJIS: ${includeEmojis ? '😊 Use 1-3 relevant emojis per post to add personality and engagement' : '❌ DO NOT include any emojis'}
-8. CALL-TO-ACTION: ${includeCTA ? '📢 End each post with a clear call-to-action (e.g., "Comment below", "Share your thoughts", "Learn more at...", "Try it today")' : '❌ DO NOT include any call-to-action'}`
+8. CALL-TO-ACTION: ${includeCTA ? (customCTA ? `📢 Use this specific CTA: "${customCTA}"` : '📢 End each post with a clear call-to-action (e.g., "Comment below", "Share your thoughts", "Learn more at...", "Try it today")') : '❌ DO NOT include any call-to-action'}
+9. OPENING HOOK: ${customHook ? `🎣 Start the first tweet/post with this hook: "${customHook}"` : 'Create an engaging opening hook'}`
     } as const;
 
     const userMsg = {
@@ -209,6 +212,8 @@ ${contentLength === 'short' ? '⚡ Make it VERY SHORT and concise!' : contentLen
 
 Generate EXACTLY ${numPosts} tweets (each ${currentLength.tweet}).
 Tone: ${tone}
+${customHook ? `\n🎣 IMPORTANT: Start with this hook: "${customHook}"` : ''}
+${customCTA ? `\n📢 IMPORTANT: Use this CTA: "${customCTA}"` : ''}
 
 Content:
 ${sourceText.slice(0, 3000)}
@@ -264,22 +269,93 @@ Return ONLY the JSON.`
     }
 
     if (!parsed) {
-      // Local deterministic fallback for dev without keys or on provider errors
+      // Enhanced local fallback for dev without keys or on provider errors
       const src = sourceText || `See: ${url}`;
       const clean = src.replace(/\s+/g,' ').trim();
+      
+      // Create better formatted tweets
+      const sentences = clean.split(/[.!?]+/).filter(s => s.trim().length > 20);
       const tweetChunks: string[] = [];
-      let i = 0;
-      while (i < clean.length && tweetChunks.length < 8) {
-        const slice = clean.slice(i, i + 260);
-        tweetChunks.push(`${tweetChunks.length+1}/ ${slice}`);
-        i += 260;
+      
+      // First tweet with custom hook if provided
+      if (customHook && sentences.length > 0) {
+        tweetChunks.push(customHook + '\n\n' + sentences[0].trim() + '.');
+      } else if (sentences.length > 0) {
+        tweetChunks.push(sentences[0].trim() + '.');
       }
+      
+      // Add more tweets from content
+      for (let i = 1; i < Math.min(sentences.length, numPosts); i++) {
+        let tweet = sentences[i].trim();
+        if (tweet.length > 250) {
+          tweet = tweet.slice(0, 247) + '...';
+        }
+        if (!tweet.endsWith('.') && !tweet.endsWith('!') && !tweet.endsWith('?')) {
+          tweet += '.';
+        }
+        tweetChunks.push(tweet);
+      }
+      
+      // Add CTA to last tweet if provided
+      if (customCTA && tweetChunks.length > 0 && includeCTA) {
+        const lastIdx = tweetChunks.length - 1;
+        tweetChunks[lastIdx] = tweetChunks[lastIdx] + '\n\n' + customCTA;
+      }
+      
+      // Ensure we have the right number of tweets
+      while (tweetChunks.length < Math.min(numPosts, 3)) {
+        if (sentences.length > tweetChunks.length) {
+          tweetChunks.push(sentences[tweetChunks.length].trim() + '.');
+        } else {
+          break;
+        }
+      }
+      
+      // Create LinkedIn post
+      let linkedinPost = '';
+      if (customHook) {
+        linkedinPost = customHook + '\n\n';
+      }
+      linkedinPost += sentences.slice(0, 5).join('. ').trim();
+      if (includeCTA && customCTA) {
+        linkedinPost += '\n\n' + customCTA;
+      }
+      if (includeHashtags) {
+        linkedinPost += '\n\n#content #marketing #business';
+      }
+      
+      // Create Instagram caption
+      let instagramCaption = '';
+      if (customHook) {
+        instagramCaption = customHook + '\n\n';
+      }
+      instagramCaption += sentences.slice(0, 3).join('. ').trim();
+      if (includeCTA && customCTA) {
+        instagramCaption += '\n\n' + customCTA;
+      }
+      if (includeHashtags) {
+        instagramCaption += '\n\n#content #marketing #business #socialmedia';
+      }
+      if (includeEmojis) {
+        instagramCaption = '✨ ' + instagramCaption + ' 🚀';
+      }
+      
+      // Create email
+      const emailSubject = customHook || sentences[0]?.trim().slice(0, 60) || 'Your Content';
+      let emailBody = sentences.slice(0, 8).join('. ').trim();
+      if (includeCTA && customCTA) {
+        emailBody += '\n\n' + customCTA;
+      }
+      
       parsed = {
         x_thread: tweetChunks.length ? tweetChunks : [clean.slice(0, 260)],
-        linkedin_post: clean.slice(0, 1100) + (clean.length > 1100 ? '…' : ''),
-        instagram_caption: clean.slice(0, 1800) + (clean.length > 1800 ? '…' : ''),
-        email_newsletter: { subject: 'Repurposed Content', body: clean.slice(0, 4000) },
-        _fallback_note: lastError ? `Used local fallback due to: ${String(lastError?.message || lastError)}` : undefined
+        linkedin_post: linkedinPost,
+        instagram_caption: instagramCaption,
+        email_newsletter: { 
+          subject: emailSubject, 
+          body: emailBody 
+        },
+        _fallback_note: 'Using basic mode. Configure GROQ_API_KEY or OPENROUTER_API_KEY for AI-powered generation.'
       } as any;
       tokenUsage = 0;
     }
