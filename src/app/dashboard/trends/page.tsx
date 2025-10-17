@@ -512,7 +512,7 @@ export default function TrendsPage() {
               
               {/* Chart */}
               <div className="h-full flex items-end justify-between gap-2 pt-16">
-                {performanceData[0]?.points.map((_, i) => (
+                {performanceData[0]?.points.map((_: number, i: number) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-2 relative">
                     {/* Bars for each series */}
                     <div className="w-full flex justify-center items-end gap-0.5 h-full">
