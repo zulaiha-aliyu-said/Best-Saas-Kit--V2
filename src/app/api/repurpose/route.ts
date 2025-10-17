@@ -374,7 +374,7 @@ Return ONLY the JSON.`
       
       // Pad if too few (split longest tweet or duplicate)
       while (parsed.x_thread.length < targetNum) {
-        const longest = parsed.x_thread.reduce((a, b) => a.length > b.length ? a : b, '');
+        const longest = parsed.x_thread.reduce((a: string, b: string) => a.length > b.length ? a : b, '');
         if (longest.length > 140) {
           const mid = Math.floor(longest.length / 2);
           const splitAt = longest.lastIndexOf('. ', mid) || longest.lastIndexOf(' ', mid) || mid;
