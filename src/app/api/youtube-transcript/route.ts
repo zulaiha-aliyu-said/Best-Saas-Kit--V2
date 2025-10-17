@@ -21,8 +21,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Fetch video metadata using YouTube Data API v3 (if available)
+    let videoMetadata = null;
+    if (process.env.YOUTUBE_API_KEY) {
+      try {
+        videoMetadata = await fetchYouTubeMetadata(videoId);
+        console.log('YouTube metadata fetched successfully');
+      } catch (error: any) {
+        console.log('YouTube Data API failed:', error.message);
+        // Continue without metadata
+      }
+    }
+
     // Fetch transcript using YouTube's API or third-party service
-    const transcript = await fetchYouTubeTranscript(videoId);
+    let transcript = null;
+    try {
+      transcript = await fetchYouTubeTranscript(videoId);
+      console.log('Transcript fetched:', transcript ? 'success' : 'failed');
+    } catch (transcriptError: any) {
+      console.error('Transcript fetch error:', transcriptError.message);
+      return NextResponse.json(
+        { error: `Could not fetch transcript: ${transcriptError.message}` },
+        { status: 404 }
+      );
+    }
 
     if (!transcript) {
       return NextResponse.json(
@@ -31,17 +53,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    // Merge metadata with transcript
+    const response = {
       success: true,
-      transcript,
+      transcript: {
+        ...transcript,
+        title: videoMetadata?.title || transcript.title || 'YouTube Video',
+      },
       videoId,
-      title: transcript.title || 'YouTube Video',
-    });
+      title: videoMetadata?.title || transcript.title || 'YouTube Video',
+      description: videoMetadata?.description || '',
+      channelTitle: videoMetadata?.channelTitle || '',
+      publishedAt: videoMetadata?.publishedAt || '',
+      viewCount: videoMetadata?.viewCount || '',
+      likeCount: videoMetadata?.likeCount || '',
+    };
+
+    return NextResponse.json(response);
 
   } catch (error: any) {
     console.error('YouTube transcript error:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch YouTube transcript' },
+      { 
+        error: error.message || 'Failed to fetch YouTube transcript',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
@@ -62,6 +99,40 @@ function extractVideoId(url: string): string | null {
   }
 
   return null;
+}
+
+async function fetchYouTubeMetadata(videoId: string): Promise<any> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('YouTube API key not configured');
+  }
+
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${apiKey}`;
+  
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`YouTube API request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data.items || data.items.length === 0) {
+    throw new Error('Video not found');
+  }
+
+  const video = data.items[0];
+  
+  return {
+    title: video.snippet.title,
+    description: video.snippet.description,
+    channelTitle: video.snippet.channelTitle,
+    publishedAt: video.snippet.publishedAt,
+    viewCount: video.statistics.viewCount,
+    likeCount: video.statistics.likeCount,
+    thumbnails: video.snippet.thumbnails,
+  };
 }
 
 async function fetchYouTubeTranscript(videoId: string): Promise<any> {
@@ -204,7 +275,9 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
 
   } catch (error: any) {
     console.error('Error fetching transcript:', error);
-    throw new Error(error.message || 'Failed to fetch transcript');
+    console.error('Error details:', error.message);
+    // Return null instead of throwing to allow better error handling upstream
+    return null;
   }
 }
 

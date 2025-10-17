@@ -444,10 +444,14 @@ Return ONLY the JSON.`
       raw_text: text || null,
     });
 
+    // Only use platforms supported by the database
+    const supportedPlatforms = ['x', 'linkedin', 'instagram', 'email'];
+    const validPlatform = platforms?.find((p: string) => supportedPlatforms.includes(p)) || 'x';
+
     const generation = await insertGeneration({
       userId: user.id,
       contentId: content.id,
-      platform: (platforms?.[0] || 'x') as any,
+      platform: validPlatform as any,
       tone,
       options,
       output: parsed,

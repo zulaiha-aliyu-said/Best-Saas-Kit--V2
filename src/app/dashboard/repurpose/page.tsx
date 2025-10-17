@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 export default function RepurposePage() {
-  const [tab, setTab] = useState<"text"|"url"|"file">("text");
+  const [tab, setTab] = useState<"text"|"url"|"youtube"|"file">("text");
   const search = useSearchParams();
   const [includeHashtags, setIncludeHashtags] = useState(true);
   const [includeEmojis, setIncludeEmojis] = useState(false);
@@ -52,6 +52,10 @@ export default function RepurposePage() {
   const [urlContent, setUrlContent] = useState<string>("");
   const [urlLoading, setUrlLoading] = useState(false);
   const [showYouTubeHelp, setShowYouTubeHelp] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState<string>("");
+  const [youtubeLoading, setYoutubeLoading] = useState(false);
+  const [youtubeContent, setYoutubeContent] = useState<string>("");
+  const [youtubeMetadata, setYoutubeMetadata] = useState<{title?: string; description?: string; channelTitle?: string} | null>(null);
 
   const tweets = useMemo(() => {
     if (!output?.x_thread) return [] as string[];
@@ -161,6 +165,63 @@ export default function RepurposePage() {
       }
     } finally {
       setUrlLoading(false);
+    }
+  };
+
+  const handleYoutubeFetch = async (url: string) => {
+    if (!url.trim()) {
+      setError('Please enter a valid YouTube URL');
+      return;
+    }
+
+    // Validate YouTube URL
+    const isYouTube = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/.test(url);
+    if (!isYouTube) {
+      setError('Please enter a valid YouTube URL');
+      return;
+    }
+
+    setYoutubeLoading(true);
+    setError(null);
+    setYoutubeContent('');
+    setYoutubeMetadata(null);
+
+    try {
+      // Fetch YouTube transcript and metadata
+      const response = await fetch('/api/youtube-transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('YouTube API error:', errorData);
+        throw new Error(errorData.error || 'Failed to fetch YouTube content');
+      }
+
+      const data = await response.json();
+      console.log('YouTube data received:', data);
+      
+      if (!data.transcript || !data.transcript.text) {
+        throw new Error('No transcript data received from API');
+      }
+      
+      setYoutubeContent(data.transcript.text);
+      setYoutubeMetadata({
+        title: data.transcript.title || data.title,
+        description: data.description,
+        channelTitle: data.channelTitle,
+      });
+      toast.success(`YouTube content extracted: ${data.transcript.title || 'Video'}`);
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to fetch YouTube content';
+      console.error('YouTube fetch error:', errorMessage, err);
+      setError(errorMessage);
+      setShowYouTubeHelp(true);
+      toast.error(`Could not extract YouTube content: ${errorMessage}`);
+    } finally {
+      setYoutubeLoading(false);
     }
   };
 
@@ -391,11 +452,11 @@ export default function RepurposePage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-2 p-1 bg-secondary/40 rounded-xl">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-secondary/40 rounded-xl">
               <Button 
                 variant={tab==="text"?"default":"ghost"} 
                 onClick={()=>setTab("text")}
-                className={tab==="text" ? "flex-1 bg-white shadow-sm" : "flex-1"}
+                className={tab==="text" ? "bg-white shadow-sm" : ""}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -405,7 +466,7 @@ export default function RepurposePage() {
               <Button 
                 variant={tab==="url"?"default":"ghost"} 
                 onClick={()=>setTab("url")}
-                className={tab==="url" ? "flex-1 bg-white shadow-sm" : "flex-1"}
+                className={tab==="url" ? "bg-white shadow-sm" : ""}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -413,9 +474,19 @@ export default function RepurposePage() {
                 URL/Link
               </Button>
               <Button 
+                variant={tab==="youtube"?"default":"ghost"} 
+                onClick={()=>setTab("youtube")}
+                className={tab==="youtube" ? "bg-white shadow-sm" : ""}
+              >
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                YouTube
+              </Button>
+              <Button 
                 variant={tab==="file"?"default":"ghost"} 
                 onClick={()=>setTab("file")}
-                className={tab==="file" ? "flex-1 bg-white shadow-sm" : "flex-1"}
+                className={tab==="file" ? "bg-white shadow-sm" : ""}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -585,6 +656,169 @@ export default function RepurposePage() {
                   </div>
                 </div>
               )}
+              {tab === "youtube" && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input 
+                      id="rp-youtube" 
+                      placeholder="https://youtube.com/watch?v=... or https://youtu.be/..." 
+                      className="h-12 flex-1" 
+                      value={youtubeUrl}
+                      onChange={(e) => setYoutubeUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleYoutubeFetch(youtubeUrl);
+                        }
+                      }}
+                    />
+                    <Button 
+                      onClick={() => handleYoutubeFetch(youtubeUrl)}
+                      disabled={youtubeLoading}
+                      className="h-12 px-6"
+                    >
+                      {youtubeLoading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Fetching...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Extract
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {youtubeContent && youtubeMetadata && (
+                    <div className="rounded-lg border-2 border-red-200 bg-red-50 p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-sm font-semibold text-red-900">Video content extracted successfully</p>
+                          </div>
+                          <h3 className="font-bold text-base text-red-900 mb-1">{youtubeMetadata.title}</h3>
+                          {youtubeMetadata.channelTitle && (
+                            <p className="text-xs text-red-700 mb-2">Channel: {youtubeMetadata.channelTitle}</p>
+                          )}
+                          <p className="text-xs text-red-700">{youtubeContent.length} characters • Transcript ready for repurposing</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* YouTube Help Section */}
+                  {showYouTubeHelp && (
+                    <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50">
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                          </div>
+                          <div className="flex-1 space-y-4">
+                            <div>
+                              <h3 className="font-bold text-lg text-orange-900 mb-1">YouTube Transcript - Manual Method</h3>
+                              <p className="text-sm text-orange-800">Automatic extraction failed. Follow these simple steps to get the transcript:</p>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Open the YouTube video</p>
+                                  <p className="text-xs text-gray-600">Go to the video page in your browser</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Click the "..." (More) button</p>
+                                  <p className="text-xs text-gray-600">Located below the video, next to Share and Save</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Select "Show transcript"</p>
+                                  <p className="text-xs text-gray-600">A panel will open with the full video transcript</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">4</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Copy the transcript text</p>
+                                  <p className="text-xs text-gray-600">Select all text and copy it</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
+                                <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">5</div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-sm text-gray-900 mb-1">Paste in the "Text/Article" tab</p>
+                                  <p className="text-xs text-gray-600">Switch to the Text tab above and paste the transcript</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2">
+                              <Button 
+                                variant="default" 
+                                size="sm"
+                                onClick={() => {
+                                  setTab('text');
+                                  setShowYouTubeHelp(false);
+                                  toast.success('Switched to Text tab - paste your transcript here');
+                                }}
+                                className="bg-orange-500 hover:bg-orange-600"
+                              >
+                                Switch to Text Tab
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setShowYouTubeHelp(false)}
+                              >
+                                Dismiss
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <div className="text-xs text-red-800">
+                      <p className="font-semibold mb-1">YouTube Video Repurposing:</p>
+                      <ul className="space-y-0.5 list-disc list-inside">
+                        <li>Paste any YouTube video URL</li>
+                        <li>Automatic transcript extraction</li>
+                        <li>Works with videos that have captions/subtitles</li>
+                        <li>Perfect for turning video content into social posts</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
               {tab === "file" && (
                 <div className="space-y-3">
                   <div 
@@ -695,7 +929,9 @@ export default function RepurposePage() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {tab === 'file' && fileContent ? `${fileContent.length} characters` : '0 characters'}
+              {tab === 'file' && fileContent ? `${fileContent.length} characters` : 
+               tab === 'youtube' && youtubeContent ? `${youtubeContent.length} characters` :
+               tab === 'url' && urlContent ? `${urlContent.length} characters` : '0 characters'}
             </p>
           </CardContent>
         </Card>
@@ -857,8 +1093,21 @@ export default function RepurposePage() {
                 try {
                   const textArea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
                   const urlInput = document.getElementById('rp-url') as HTMLInputElement | null;
-                  const text = tab === 'file' ? fileContent : (textArea?.value || '');
-                  const url = urlInput?.value || '';
+                  let text = '';
+                  let url = '';
+                  
+                  // Get content based on active tab
+                  if (tab === 'text') {
+                    text = textArea?.value || '';
+                  } else if (tab === 'file') {
+                    text = fileContent;
+                  } else if (tab === 'youtube') {
+                    text = youtubeContent;
+                    url = youtubeUrl;
+                  } else if (tab === 'url') {
+                    text = urlContent;
+                    url = urlInput?.value || '';
+                  }
 
                   // Validate input
                   if (tab === 'text' && !text) {
@@ -868,6 +1117,11 @@ export default function RepurposePage() {
                   }
                   if (tab === 'url' && !url) {
                     setError('Please enter a URL');
+                    setLoading(false);
+                    return;
+                  }
+                  if (tab === 'youtube' && !youtubeContent) {
+                    setError('Please fetch YouTube content first');
                     setLoading(false);
                     return;
                   }
