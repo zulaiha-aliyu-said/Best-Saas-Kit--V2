@@ -1,7 +1,26 @@
 import { Resend } from 'resend';
 
-// Initialize Resend with API key
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors when env vars are not available
+let resendInstance: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resendInstance) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+    resendInstance = new Resend(apiKey);
+  }
+  return resendInstance;
+}
+
+// Export for backwards compatibility
+export const resend = new Proxy({} as Resend, {
+  get: (target, prop) => {
+    const resendClient = getResend();
+    return (resendClient as any)[prop];
+  }
+});
 
 // Email configuration
 export const EMAIL_CONFIG = {
