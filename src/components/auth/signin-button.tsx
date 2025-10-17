@@ -15,7 +15,10 @@ export function SignInButton({ children, className }: SignInButtonProps) {
       {children ? (
         React.isValidElement(children)
           // If a React element (e.g., <Button />) is provided, make it the submit control
-          ? React.cloneElement(children as React.ReactElement, { type: "submit", className: (children as any).props?.className ?? className })
+          ? React.cloneElement(children as React.ReactElement<any>, { 
+              type: "submit", 
+              className: (children as any).props?.className ?? className 
+            })
           // If non-element content is provided, render a native button
           : <button type="submit" className={className}>{children}</button>
       ) : (
