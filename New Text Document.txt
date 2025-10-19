@@ -1,0 +1,20 @@
+I TRY TO GENERATA A CONTENT IN THE TREND PAGE, BUT SHOWS AND ERROR, Error: getaddrinfo ENOTFOUND ep-steep-glade-ad73tcpx-pooler.c-2.us-east-1.aws.neon.tech
+    at handleGenerateContent (http://localhost:3000/_next/static/chunks/src_28856f4d._.js:763:23)
+
+I ALSO FOUND THIS IN THE TERMINAL
+repurpose error Error: getaddrinfo ENOTFOUND ep-steep-glade-ad73tcpx-pooler.c-2.us-east-1.aws.neon.tech
+    at async getUserByGoogleId (src\lib\database.ts:120:17)
+    at async POST (src\app\api\repurpose\route.ts:143:17)
+  118 | // Get user by Google ID
+  119 | export async function getUserByGoogleId(googleId: string): Promise<User | null> {
+> 120 |   const client = await pool.connect()
+      |                 ^
+  121 |
+  122 |   try {
+  123 |     const query = 'SELECT * FROM users WHERE google_id = $1' {
+  errno: -3008,
+  code: 'ENOTFOUND',
+  syscall: 'getaddrinfo',
+  hostname: 'ep-steep-glade-ad73tcpx-pooler.c-2.us-east-1.aws.neon.tech'
+}
+ POST /api/repurpose 500 in 302ms

@@ -8,29 +8,29 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: <UserPlus className="w-12 h-12" />,
-      title: "Sign Up & Authenticate",
-      description: "Create your account instantly with Google OAuth. Secure authentication powered by NextAuth.js with automatic user creation in PostgreSQL.",
+      title: "Discover Trends",
+      description: "Monitor real-time signals from YouTube, Reddit, and News. Spot breakout topics before they peak with AI-powered insight.",
       color: "text-blue-500",
       bgColor: "bg-blue-500/10"
     },
     {
       icon: <Code2 className="w-12 h-12" />,
-      title: "Customize & Build",
-      description: "Clone the repository, configure your environment variables, and start customizing. Pre-built components, API routes, and database schemas ready to use.",
+      title: "Generate Content",
+      description: "Turn any trend into tailored posts with AI. Choose tone, format, and platforms—Twitter, LinkedIn, Instagram, Email, and more.",
       color: "text-purple-500",
       bgColor: "bg-purple-500/10"
     },
     {
       icon: <CheckCircle className="w-12 h-12" />,
-      title: "Configure Payments",
-      description: "Set up Stripe integration with our pre-configured checkout flow. Manage subscriptions, discount codes, and billing from the admin panel.",
+      title: "Optimize Hashtags",
+      description: "Auto-select platform-specific hashtag sets, then copy with one click. Mix in AI suggestions to boost discoverability.",
       color: "text-green-500",
       bgColor: "bg-green-500/10"
     },
     {
       icon: <Rocket className="w-12 h-12" />,
-      title: "Deploy & Scale",
-      description: "Deploy to Vercel with one click. Your app is production-ready with user management, analytics, and payment processing working out of the box.",
+      title: "Publish & Analyze",
+      description: "Push content live and track performance trends over time. Use alerts and charts to iterate on what works next.",
       color: "text-orange-500",
       bgColor: "bg-orange-500/10"
     }
@@ -50,7 +50,7 @@ const HowItWorks = () => {
             How It Works
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            From zero to production in four simple steps. Launch your AI-powered SAAS faster than ever.
+            Go from emerging trend to published content in four guided steps. Everything stays synced across platforms and formats.
           </p>
         </motion.div>
 

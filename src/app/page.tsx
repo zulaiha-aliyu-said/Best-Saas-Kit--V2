@@ -7,6 +7,7 @@ import UseCases from "@/components/landing/use-cases"
 import TechStack from "@/components/landing/tech-stack"
 import Pricing from "@/components/landing/pricing"
 import Testimonials from "@/components/landing/testimonials"
+import FAQ from "@/components/landing/faq"
 import Footer from "@/components/landing/footer"
 import { SmoothScroll } from "@/components/ui/smooth-scroll"
 import { ScrollToTop } from "@/components/ui/scroll-to-top"
@@ -24,6 +25,7 @@ export default function Home() {
       <TechStack />
       <Pricing />
       <Testimonials />
+      <FAQ />
       <Footer />
       <ScrollToTop />
     </div>

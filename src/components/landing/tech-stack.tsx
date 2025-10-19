@@ -9,58 +9,58 @@ const TechStack = () => {
     {
       name: "Next.js 15",
       category: "Framework",
-      description: "React framework with App Router",
+      description: "React App Router + streaming UI",
       logo: "/next.svg",
       color: "from-black to-gray-800"
     },
     {
       name: "TypeScript",
       category: "Language",
-      description: "Type-safe development",
+      description: "Strict typing for reliable builds",
       icon: "TS",
       color: "from-blue-600 to-blue-400"
     },
     {
       name: "Tailwind CSS",
       category: "Styling",
-      description: "Utility-first CSS framework",
+      description: "Responsive creator-first layouts",
       icon: "TW",
       color: "from-cyan-500 to-blue-500"
     },
     {
-      name: "NextAuth.js",
-      category: "Authentication",
-      description: "Google OAuth integration",
-      icon: "🔐",
-      color: "from-purple-600 to-purple-400"
+      name: "ShadCN UI",
+      category: "Components",
+      description: "Accessible components & modals",
+      icon: "UI",
+      color: "from-gray-800 to-gray-600"
     },
     {
-      name: "PostgreSQL",
+      name: "Neon Postgres",
       category: "Database",
-      description: "Neon serverless database",
+      description: "Serverless analytics & history",
       icon: "🐘",
       color: "from-blue-700 to-blue-500"
     },
     {
-      name: "Stripe",
-      category: "Payments",
-      description: "Payment processing & billing",
-      icon: "💳",
-      color: "from-indigo-600 to-purple-500"
-    },
-    {
-      name: "OpenRouter",
-      category: "AI",
-      description: "Multiple AI model access",
+      name: "OpenRouter AI",
+      category: "Generation",
+      description: "Multi-model content repurposing",
       icon: "🤖",
       color: "from-green-600 to-emerald-400"
     },
     {
-      name: "ShadCN UI",
-      category: "Components",
-      description: "Beautiful UI components",
-      icon: "UI",
-      color: "from-gray-800 to-gray-600"
+      name: "YouTube Data API",
+      category: "Data Source",
+      description: "Fetch 15+ trending videos hourly",
+      icon: "🎥",
+      color: "from-red-600 to-orange-500"
+    },
+    {
+      name: "Google Trends",
+      category: "Insights",
+      description: "Spot breakout topics in real time",
+      icon: "📈",
+      color: "from-purple-600 to-purple-400"
     }
   ]
 
@@ -75,14 +75,13 @@ const TechStack = () => {
           className="text-center mb-16"
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            Built With
+            Powered By
             <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              {" "}Modern Tech
+              {" "}Creator Tech
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Powered by industry-leading technologies and best practices for performance, 
-            scalability, and developer experience.
+            A battle-tested stack combining AI generation, live trend data, and modern UI so you can launch content experiences fast.
           </p>
         </motion.div>
 
@@ -124,22 +123,22 @@ const TechStack = () => {
           <div className="inline-flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Production Ready
+              Real-Time Trends
             </span>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-blue-500" />
-              Type Safe
+              AI Generation
             </span>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-purple-500" />
-              Fully Documented
+              Multi-Platform Ready
             </span>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-orange-500" />
-              Open Source
+              Secure Infrastructure
             </span>
           </div>
         </motion.div>

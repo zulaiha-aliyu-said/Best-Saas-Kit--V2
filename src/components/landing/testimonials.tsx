@@ -9,49 +9,49 @@ const Testimonials = () => {
   const testimonials = [
     {
       name: "Sarah Chen",
-      role: "Founder, AI Startup",
-      company: "TechFlow",
-      content: "This kit saved me months of development time. I went from idea to MVP in just 2 weeks. The AI integrations are seamless and the code quality is exceptional.",
+      role: "Content Creator",
+      company: "TechFlow Media",
+      content: "This AI-powered repurposing tool has revolutionized my content strategy. I can now turn one YouTube video into 10+ pieces of content across all platforms in minutes. My engagement has increased by 300%!",
       rating: 5,
       avatar: "/api/placeholder/40/40"
     },
     {
       name: "Marcus Rodriguez",
-      role: "Senior Developer",
+      role: "Marketing Director",
       company: "InnovateLabs",
-      content: "The best SAAS starter kit I've used. Clean architecture, modern stack, and excellent documentation. My team was productive from day one.",
+      content: "The AI content repurposing features are incredible. We're now creating consistent, high-quality content across LinkedIn, Twitter, and Instagram without hiring additional team members. ROI is through the roof!",
       rating: 5,
       avatar: "/api/placeholder/40/40"
     },
     {
       name: "Emily Watson",
-      role: "Product Manager",
+      role: "Social Media Manager",
       company: "DataCorp",
-      content: "We launched our AI-powered analytics platform using this kit. The built-in authentication and payment processing saved us countless hours.",
+      content: "I love how the AI understands context and adapts content for different platforms. The LinkedIn posts feel professional, Twitter posts are punchy, and Instagram captions are engaging. It's like having a content team in one tool.",
       rating: 5,
       avatar: "/api/placeholder/40/40"
     },
     {
       name: "David Kim",
-      role: "Indie Hacker",
-      company: "Solo Founder",
-      content: "As a solo founder, this kit was a game-changer. I could focus on my unique features instead of rebuilding the same boilerplate code.",
+      role: "Solo Entrepreneur",
+      company: "Personal Brand",
+      content: "As a solo founder, this tool is a game-changer. I can maintain a consistent presence across all platforms without spending hours on content creation. The AI-generated content is surprisingly good and saves me 20+ hours per week.",
       rating: 5,
       avatar: "/api/placeholder/40/40"
     },
     {
       name: "Lisa Thompson",
-      role: "CTO",
+      role: "Content Strategist",
       company: "StartupXYZ",
-      content: "The scalability and performance optimizations are impressive. We're handling thousands of users without any issues. Highly recommended!",
+      content: "The platform's ability to analyze trends and suggest content angles is phenomenal. We've seen a 250% increase in organic reach since using this tool. The AI really understands what resonates with our audience.",
       rating: 5,
       avatar: "/api/placeholder/40/40"
     },
     {
       name: "Alex Johnson",
-      role: "Full Stack Developer",
+      role: "Digital Marketing Consultant",
       company: "FreelanceForce",
-      content: "I've built multiple client projects with this kit. The TypeScript setup and component library make development a breeze. Worth every penny.",
+      content: "I use this tool for all my client projects. The AI-powered repurposing saves me hours of work, and clients love the consistent, high-quality content across all their channels. It's become an essential part of my workflow.",
       rating: 5,
       avatar: "/api/placeholder/40/40"
     }
@@ -70,12 +70,12 @@ const Testimonials = () => {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             Loved by
             <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              {" "}Developers
+              {" "}Content Creators
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Join thousands of developers who have successfully launched their AI SAAS applications 
-            using our comprehensive toolkit.
+            Join thousands of content creators, marketers, and entrepreneurs who have transformed 
+            their content strategy with our AI-powered repurposing platform.
           </p>
         </motion.div>
 
@@ -88,20 +88,20 @@ const Testimonials = () => {
           className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
         >
           <div className="text-center">
-            <div className="text-3xl font-bold text-primary mb-2">1000+</div>
-            <div className="text-muted-foreground">Happy Developers</div>
+            <div className="text-3xl font-bold text-primary mb-2">10,000+</div>
+            <div className="text-muted-foreground">Content Pieces Created</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-primary mb-2">500+</div>
-            <div className="text-muted-foreground">Apps Launched</div>
+            <div className="text-muted-foreground">Active Creators</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-primary mb-2">4.9/5</div>
             <div className="text-muted-foreground">Average Rating</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-primary mb-2">99%</div>
-            <div className="text-muted-foreground">Satisfaction Rate</div>
+            <div className="text-3xl font-bold text-primary mb-2">95%</div>
+            <div className="text-muted-foreground">Time Saved</div>
           </div>
         </motion.div>
 
@@ -158,10 +158,10 @@ const Testimonials = () => {
           className="text-center mt-16"
         >
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-2xl p-8 border border-primary/20">
-            <h3 className="text-2xl font-bold mb-4">Join the Success Stories</h3>
+            <h3 className="text-2xl font-bold mb-4">Join the Content Revolution</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Don't just take our word for it. Start building your AI SAAS today and 
-              see why developers love our toolkit.
+              Don't just take our word for it. Start transforming your content strategy today and 
+              see why creators love our AI-powered repurposing platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.button
@@ -169,14 +169,14 @@ const Testimonials = () => {
                 whileTap={{ scale: 0.95 }}
                 className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
               >
-                Start Your Success Story
+                Start Creating Content
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="border border-border px-8 py-3 rounded-lg font-medium hover:bg-muted/50 transition-colors"
               >
-                Read More Reviews
+                See More Success Stories
               </motion.button>
             </div>
           </div>

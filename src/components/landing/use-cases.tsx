@@ -2,55 +2,55 @@
 
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, Image, FileText, Code, TrendingUp, Sparkles } from "lucide-react"
+import { MessageSquare, Sparkles, Youtube, Megaphone, Share2, BarChart3 } from "lucide-react"
 
 const UseCases = () => {
   const useCases = [
     {
       icon: <MessageSquare className="w-10 h-10" />,
-      title: "AI Chat Applications",
-      description: "Build intelligent chatbots and conversational AI apps with OpenRouter integration, credit management, and real-time streaming.",
-      examples: ["Customer Support Bots", "Virtual Assistants", "AI Tutors"],
+      title: "Social Media Teams",
+      description: "Plan and publish daily content across Twitter, LinkedIn, Instagram, and TikTok using AI-powered repurposing workflows.",
+      examples: ["Campaign Calendars", "Thread Builders", "Carousel Copy"],
       color: "text-blue-500",
       bgColor: "bg-blue-500/10"
     },
     {
-      icon: <Image className="w-10 h-10" />,
-      title: "Content Generation",
-      description: "Create AI-powered content creation platforms with user management, subscription billing, and usage tracking.",
-      examples: ["Blog Post Generators", "Social Media Tools", "Marketing Copy"],
+      icon: <Youtube className="w-10 h-10" />,
+      title: "YouTube Creators",
+      description: "Turn trending videos into companion social posts, newsletter summaries, and podcast scripts within minutes.",
+      examples: ["Episode Highlights", "Short Form Hooks", "Community Posts"],
+      color: "text-red-500",
+      bgColor: "bg-red-500/10"
+    },
+    {
+      icon: <Megaphone className="w-10 h-10" />,
+      title: "Marketing Agencies",
+      description: "Monitor trend alerts for clients, generate branded content variations, and deliver analytics in a single dashboard.",
+      examples: ["Client Trend Reports", "Brand Voice Presets", "Content Calendars"],
       color: "text-purple-500",
       bgColor: "bg-purple-500/10"
     },
     {
-      icon: <Code className="w-10 h-10" />,
-      title: "Developer Tools",
-      description: "Launch code generation, debugging, or documentation tools with built-in authentication and payment processing.",
-      examples: ["Code Assistants", "API Documentation", "Testing Tools"],
+      icon: <Share2 className="w-10 h-10" />,
+      title: "Community Managers",
+      description: "Respond to momentum in real time with curated hashtags, ready-to-send announcements, and automated engagement prompts.",
+      examples: ["Discord Announcements", "Newsletter Segments", "Event Promos"],
       color: "text-green-500",
       bgColor: "bg-green-500/10"
     },
     {
-      icon: <FileText className="w-10 h-10" />,
-      title: "Document Processing",
-      description: "Build document analysis, summarization, or extraction tools with secure user accounts and credit systems.",
-      examples: ["PDF Analyzers", "Text Summarizers", "Data Extractors"],
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/10"
-    },
-    {
-      icon: <TrendingUp className="w-10 h-10" />,
-      title: "Business Analytics",
-      description: "Create AI-powered analytics dashboards with admin panels, user management, and subscription tiers.",
-      examples: ["Market Analysis", "Trend Prediction", "Report Generation"],
+      icon: <BarChart3 className="w-10 h-10" />,
+      title: "Growth Teams",
+      description: "Track content performance over time, experiment with AI-written variations, and double down on what converts.",
+      examples: ["A/B Copy Testing", "Trend Attribution", "Engagement Dashboards"],
       color: "text-cyan-500",
       bgColor: "bg-cyan-500/10"
     },
     {
       icon: <Sparkles className="w-10 h-10" />,
-      title: "Creative Tools",
-      description: "Launch creative AI applications with payment integration, user galleries, and usage-based pricing.",
-      examples: ["Design Assistants", "Music Generators", "Story Writers"],
+      title: "Solo Creators",
+      description: "Automate ideation, convert long-form content into snackable clips, and keep every channel active without burnout.",
+      examples: ["Blog-to-Thread", "Video Clip Scripts", "Email Drips"],
       color: "text-pink-500",
       bgColor: "bg-pink-500/10"
     }
@@ -67,14 +67,13 @@ const UseCases = () => {
           className="text-center mb-16"
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            Perfect For Any
+            Built For Modern
             <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              {" "}AI Use Case
+              {" "}Content Teams
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Whether you're building chatbots, content generators, or developer tools, 
-            our kit provides everything you need to launch quickly.
+            Discover how creators, marketers, and growth teams turn real-time trends into platform-ready content with one unified workflow.
           </p>
         </motion.div>
 

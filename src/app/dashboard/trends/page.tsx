@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 export default function TrendsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedPlatform, setSelectedPlatform] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [timeRange, setTimeRange] = useState('24');
@@ -25,6 +26,7 @@ export default function TrendsPage() {
   const [performanceData, setPerformanceData] = useState<any[]>([]);
   const [autoInsert, setAutoInsert] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [highlightedTopic, setHighlightedTopic] = useState<string | null>(null);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,6 +149,27 @@ export default function TrendsPage() {
     
     setTrendAlerts(alerts.slice(0, 4)); // Keep top 4 alerts
   };
+
+  // Handle topic query parameter from dashboard
+  useEffect(() => {
+    const topicParam = searchParams.get('topic');
+    if (topicParam) {
+      setHighlightedTopic(decodeURIComponent(topicParam));
+      // Show a toast notification about the highlighted topic
+      toast.success(`Highlighting topic: ${decodeURIComponent(topicParam)}`);
+      
+      // Scroll to the highlighted topic after trends are loaded
+      setTimeout(() => {
+        const highlightedElement = document.querySelector('[data-highlighted-topic="true"]');
+        if (highlightedElement) {
+          highlightedElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 1000);
+    }
+  }, [searchParams]);
 
   // Fetch trends data
   useEffect(() => {
@@ -630,10 +653,18 @@ export default function TrendsPage() {
               
               const colors = getCategoryColor(topic.badge);
               
+              // Check if this topic should be highlighted
+              const isHighlighted = highlightedTopic && topic.title.toLowerCase().includes(highlightedTopic.toLowerCase());
+              
               return (
                 <div 
                   key={idx} 
-                  className={`group relative overflow-hidden rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${colors.bg} ${colors.border}`}
+                  data-highlighted-topic={isHighlighted ? "true" : "false"}
+                  className={`group relative overflow-hidden rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${
+                    isHighlighted 
+                      ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg ring-2 ring-purple-200' 
+                      : `${colors.bg} ${colors.border}`
+                  }`}
                 >
                   {/* Accent bar */}
                   <div className={`absolute top-0 left-0 right-0 h-1 ${colors.accent}`} />
@@ -642,6 +673,11 @@ export default function TrendsPage() {
                     {/* Header with badge and growth */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-2 flex-wrap">
+                        {isHighlighted && (
+                          <Badge className="bg-purple-600 text-white border-0 font-semibold px-3 py-1 text-xs rounded-full animate-pulse">
+                            ✨ Selected Topic
+                          </Badge>
+                        )}
                         <Badge className={`${colors.bg} ${colors.text} border ${colors.border} font-semibold px-3 py-1 text-xs rounded-full`}>
                           {topic.badge}
                         </Badge>
