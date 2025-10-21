@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserPredictionAnalytics } from "@/components/ai/user-prediction-analytics";
 import { UserRepurposedContentAnalytics } from "@/components/repurpose/user-repurposed-content-analytics";
 import { UserScheduleAnalytics } from "@/components/schedule/user-schedule-analytics";
+import { UserOptimizationAnalytics } from "@/components/platform/user-optimization-analytics";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -353,6 +354,9 @@ export default function AnalyticsPage() {
         </div>
         <UserPredictionAnalytics />
       </div>
+
+      {/* Platform Optimization Analytics Section */}
+      <UserOptimizationAnalytics />
     </div>
   );
 }

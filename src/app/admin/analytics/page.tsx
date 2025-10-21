@@ -2,6 +2,7 @@ import { requireAdminAccess } from "@/lib/admin-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAnalyticsData, getGrowthMetrics, getPredictionAccuracyStats, getAdminPredictionAnalytics, getAdminRepurposedContentAnalytics, getAdminScheduleAnalytics } from "@/lib/database";
 import { getSimpleAnalytics, getSimpleGrowthMetrics } from "@/lib/simple-analytics";
+import { AdminOptimizationAnalytics } from "@/components/platform/admin-optimization-analytics";
 
 import { 
   Users, 
@@ -619,6 +620,17 @@ export default async function AnalyticsPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Platform Optimization Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Platform Optimization Analytics</h2>
+          <p className="text-muted-foreground">
+            Platform-specific content optimization feature usage and metrics
+          </p>
+        </div>
+        <AdminOptimizationAnalytics />
       </div>
     </div>
   );
