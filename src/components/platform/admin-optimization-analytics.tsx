@@ -110,6 +110,40 @@ export function AdminOptimizationAnalytics() {
     );
   }
 
+  // Check if the error is because the database schema doesn't exist
+  const isSchemaError = error?.includes('does not exist') || error?.includes('relation') || error?.includes('function');
+  
+  if (isSchemaError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Platform Optimization Analytics - Setup Required</CardTitle>
+          <CardDescription>
+            The analytics database schema needs to be initialized.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+              🔧 Database Setup Required
+            </h4>
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+              Run the setup endpoint to create the platform optimization analytics schema:
+            </p>
+            <div className="bg-black text-green-400 p-3 rounded font-mono text-xs overflow-x-auto">
+              {`fetch('/api/admin/setup-platform-analytics', { method: 'POST' })
+  .then(r => r.json())
+  .then(data => console.log('✅ Setup:', data));`}
+            </div>
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-3">
+              Copy the command above, open your browser console (F12), paste it, and press Enter.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (error) {
     return (
       <Card>
@@ -318,5 +352,6 @@ export function AdminOptimizationAnalytics() {
     </div>
   );
 }
+
 
 

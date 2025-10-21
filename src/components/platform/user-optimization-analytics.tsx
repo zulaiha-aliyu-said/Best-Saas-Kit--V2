@@ -104,6 +104,28 @@ export function UserOptimizationAnalytics() {
     );
   }
 
+  // Check if the error is because the database schema doesn't exist
+  const isSchemaError = error?.includes('does not exist') || error?.includes('relation') || error?.includes('function');
+  
+  if (isSchemaError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Platform Optimization Analytics</CardTitle>
+          <CardDescription>
+            Analytics system is being set up. Please contact an administrator to initialize the database schema.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-muted-foreground space-y-2">
+            <p>The platform optimization analytics feature requires database initialization.</p>
+            <p className="font-medium">Admin: Run the setup endpoint to enable analytics.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!stats || stats.total_optimizations === 0) {
     return (
       <Card>
@@ -273,5 +295,6 @@ export function UserOptimizationAnalytics() {
     </div>
   );
 }
+
 
 
