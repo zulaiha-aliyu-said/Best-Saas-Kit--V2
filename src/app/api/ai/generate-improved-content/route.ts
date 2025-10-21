@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
-import { getUserByGoogleId, deductCredits } from '@/lib/database';
+import { getUserByGoogleId, deductCredits, getUserCredits } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
