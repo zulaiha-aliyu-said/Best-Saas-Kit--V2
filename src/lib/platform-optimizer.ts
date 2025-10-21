@@ -596,7 +596,7 @@ export function optimizeForPlatform(
  */
 export function getCharacterCountColor(count: number, platform: Platform): 'green' | 'yellow' | 'red' {
   const limits = PLATFORM_LIMITS[platform];
-  const maxChars = limits.maxChars;
+  const maxChars = 'maxChars' in limits ? limits.maxChars : limits.optimalBodyChars?.max || 500;
   const percentage = (count / maxChars) * 100;
   
   if (percentage >= 100) return 'red';
@@ -609,7 +609,8 @@ export function getCharacterCountColor(count: number, platform: Platform): 'gree
  */
 export function formatCharacterCount(count: number, platform: Platform): string {
   const limits = PLATFORM_LIMITS[platform];
-  return `${count}/${limits.maxChars}`;
+  const maxChars = 'maxChars' in limits ? limits.maxChars : limits.optimalBodyChars?.max || 500;
+  return `${count}/${maxChars}`;
 }
 
 

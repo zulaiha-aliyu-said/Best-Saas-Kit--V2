@@ -240,7 +240,7 @@ export function UserOptimizationAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-3">
-              <Badge className={platformColors[stats.most_optimized_platform] || "bg-gray-600 text-white"} className="text-lg px-4 py-2">
+              <Badge className={`${platformColors[stats.most_optimized_platform] || "bg-gray-600 text-white"} text-lg px-4 py-2`}>
                 {platformNames[stats.most_optimized_platform] || stats.most_optimized_platform}
               </Badge>
             </div>

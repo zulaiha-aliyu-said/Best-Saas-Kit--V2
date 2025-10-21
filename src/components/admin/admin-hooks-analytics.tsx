@@ -153,7 +153,7 @@ export default function AdminHooksAnalytics() {
               <TrendingUp className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {parseFloat(overallStats.avg_engagement_score || '0').toFixed(1)}
+              {parseFloat(String(overallStats.avg_engagement_score || '0')).toFixed(1)}
             </p>
           </div>
 
@@ -163,7 +163,7 @@ export default function AdminHooksAnalytics() {
               <BarChart3 className="w-5 h-5 text-orange-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {parseFloat(overallStats.overall_copy_rate || '0').toFixed(1)}%
+              {parseFloat(String(overallStats.overall_copy_rate || '0')).toFixed(1)}%
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function AdminHooksAnalytics() {
                     <div>
                       <span className="block text-gray-500">Avg Score</span>
                       <span className="font-semibold">
-                        {parseFloat(platform.avg_engagement_score).toFixed(1)}
+                        {parseFloat(String(platform.avg_engagement_score)).toFixed(1)}
                       </span>
                     </div>
                     <div>
@@ -237,7 +237,7 @@ export default function AdminHooksAnalytics() {
                     <div>
                       <span className="block text-gray-500">Avg Score</span>
                       <span className="font-semibold">
-                        {parseFloat(category.avg_engagement_score).toFixed(1)}
+                        {parseFloat(String(category.avg_engagement_score)).toFixed(1)}
                       </span>
                     </div>
                     <div>
@@ -270,7 +270,7 @@ export default function AdminHooksAnalytics() {
                 </div>
                 <div className="text-xs text-gray-600 space-y-1">
                   <div>{niche.hooks_generated.toLocaleString()} hooks</div>
-                  <div>Score: {parseFloat(niche.avg_engagement_score).toFixed(1)}</div>
+                  <div>Score: {parseFloat(String(niche.avg_engagement_score)).toFixed(1)}</div>
                   <div>{niche.unique_users} users</div>
                 </div>
               </div>
@@ -298,7 +298,7 @@ export default function AdminHooksAnalytics() {
                   <span>{day.hooks_copied} copied</span>
                   <span>{day.unique_users} users</span>
                   <span className="font-semibold">
-                    Avg: {parseFloat(day.avg_engagement_score).toFixed(1)}
+                    Avg: {parseFloat(String(day.avg_engagement_score)).toFixed(1)}
                   </span>
                 </div>
               </div>
@@ -388,7 +388,7 @@ export default function AdminHooksAnalytics() {
                         {user.hooks_copied}
                       </td>
                       <td className="text-center py-3 px-4 text-sm text-gray-600">
-                        {parseFloat(user.avg_engagement_score).toFixed(1)}
+                        {parseFloat(String(user.avg_engagement_score)).toFixed(1)}
                       </td>
                       <td className="text-center py-3 px-4 text-sm text-gray-600">
                         {copyRate}%
@@ -433,7 +433,7 @@ export default function AdminHooksAnalytics() {
                       {pattern.usage_count || 0}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Avg: {parseFloat(pattern.avg_engagement_score || '0').toFixed(1)}
+                      Avg: {parseFloat(String(pattern.avg_engagement_score || '0')).toFixed(1)}
                     </div>
                   </div>
                 </div>

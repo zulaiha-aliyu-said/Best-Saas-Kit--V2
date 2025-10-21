@@ -14,7 +14,7 @@ interface CharacterCounterProps {
 export function CharacterCounter({ content, platform, className }: CharacterCounterProps) {
   const limits = PLATFORM_LIMITS[platform];
   const charCount = useMemo(() => countCharacters(content), [content]);
-  const maxChars = limits.maxChars;
+  const maxChars = 'maxChars' in limits ? limits.maxChars : limits.optimalBodyChars?.max || 500;
   const percentage = (charCount / maxChars) * 100;
   
   const color = useMemo(() => {
@@ -40,7 +40,6 @@ export function CharacterCounter({ content, platform, className }: CharacterCoun
       <Progress 
         value={Math.min(percentage, 100)} 
         className="h-2"
-        indicatorClassName={progressColor}
       />
       {percentage > 100 && (
         <p className="text-xs text-red-600 dark:text-red-400">

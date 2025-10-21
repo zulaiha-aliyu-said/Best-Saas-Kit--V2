@@ -124,7 +124,7 @@ export default function HookAnalytics() {
               <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {parseFloat(totals.avg_engagement_score || '0').toFixed(1)}
+              {parseFloat(String(totals.avg_engagement_score || '0')).toFixed(1)}
             </p>
           </div>
 

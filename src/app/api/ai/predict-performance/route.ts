@@ -373,9 +373,9 @@ function generateMockPrediction(content: string, platform: string, tone?: string
   return {
     score: finalScore,
     breakdown,
-    insights: platformInsights[platform] || platformInsights['x'],
-    recommendations: platformRecommendations[platform] || platformRecommendations['x'],
-    riskFactors: platformRisks[platform] || platformRisks['x'],
+    insights: platformInsights[platform as keyof typeof platformInsights] || platformInsights['x'],
+    recommendations: platformRecommendations[platform as keyof typeof platformRecommendations] || platformRecommendations['x'],
+    riskFactors: platformRisks[platform as keyof typeof platformRisks] || platformRisks['x'],
     predictedMetrics: {
       likes: `${Math.floor(finalScore * 10)}-${Math.floor(finalScore * 15)}`,
       comments: `${Math.floor(finalScore * 0.3)}-${Math.floor(finalScore * 0.5)}`,
