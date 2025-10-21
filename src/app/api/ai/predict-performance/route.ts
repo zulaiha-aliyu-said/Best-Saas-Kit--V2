@@ -370,12 +370,17 @@ function generateMockPrediction(content: string, platform: string, tone?: string
     ]
   };
   
+  type PlatformKey = keyof typeof platformInsights;
+  const platformKey = (platform as PlatformKey) in platformInsights 
+    ? (platform as PlatformKey) 
+    : 'x';
+  
   return {
     score: finalScore,
     breakdown,
-    insights: platformInsights[platform] || platformInsights['x'],
-    recommendations: platformRecommendations[platform] || platformRecommendations['x'],
-    riskFactors: platformRisks[platform] || platformRisks['x'],
+    insights: platformInsights[platformKey],
+    recommendations: platformRecommendations[platformKey],
+    riskFactors: platformRisks[platformKey],
     predictedMetrics: {
       likes: `${Math.floor(finalScore * 10)}-${Math.floor(finalScore * 15)}`,
       comments: `${Math.floor(finalScore * 0.3)}-${Math.floor(finalScore * 0.5)}`,
