@@ -8,6 +8,11 @@ export async function isCurrentUserAdmin(): Promise<boolean> {
   return isAdminEmail(session?.user?.email);
 }
 
+// Check if an email is admin (synchronous version for direct email checks)
+export function isAdmin(email: string | null | undefined): boolean {
+  return isAdminEmail(email);
+}
+
 // Get current admin user or null
 export async function getCurrentAdminUser() {
   const session = await auth();

@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -16,7 +16,7 @@ export async function POST(
     }
 
     const { action } = await request.json();
-    const postId = params.id;
+    const { id: postId } = await params;
 
     if (!action) {
       return NextResponse.json(
