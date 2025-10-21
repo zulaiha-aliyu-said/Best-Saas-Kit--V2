@@ -3,6 +3,13 @@ import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 
 export async function POST(request: NextRequest) {
+  // Declare variables outside try block for catch block access
+  let content = '';
+  let platform = 'instagram';
+  let tone = 'casual';
+  let includeHashtags = true;
+  let maxLength = 280;
+
   try {
     // Check authentication
     const session = await auth();
@@ -13,7 +20,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { content, platform, tone, includeHashtags, maxLength } = await request.json();
+    const body = await request.json();
+    content = body.content;
+    platform = body.platform;
+    tone = body.tone;
+    includeHashtags = body.includeHashtags;
+    maxLength = body.maxLength;
 
     if (!content) {
       return NextResponse.json(
