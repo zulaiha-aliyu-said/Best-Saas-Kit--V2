@@ -382,7 +382,11 @@ function generateMockImprovements(originalContent: string, platform: string, ton
     }
   };
 
-  const platformData = platformImprovements[platform] || platformImprovements['x'];
+  type PlatformKey = keyof typeof platformImprovements;
+  const platformKey = (platform as PlatformKey) in platformImprovements 
+    ? (platform as PlatformKey) 
+    : 'x';
+  const platformData = platformImprovements[platformKey];
   
   return {
     suggestions: platformData.suggestions,
