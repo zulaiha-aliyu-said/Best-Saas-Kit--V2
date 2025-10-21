@@ -15,7 +15,8 @@ import {
   Menu,
   X,
   ArrowLeft,
-  Percent
+  Percent,
+  Sparkles
 } from "lucide-react"
 import { UserButtonClient } from "@/components/auth/user-button-client"
 
@@ -28,6 +29,7 @@ const sidebarItems = [
   { name: "Admin Dashboard", href: "/admin", icon: Shield },
   { name: "User Management", href: "/admin/users", icon: Users },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { name: "Hooks Analytics", href: "/admin/hooks-analytics", icon: Sparkles },
   { name: "Discount Codes", href: "/admin/discounts", icon: Percent },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ]

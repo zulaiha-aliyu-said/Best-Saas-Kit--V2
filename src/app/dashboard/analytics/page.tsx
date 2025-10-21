@@ -1,6 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { UserPredictionAnalytics } from "@/components/ai/user-prediction-analytics";
+import { UserRepurposedContentAnalytics } from "@/components/repurpose/user-repurposed-content-analytics";
+import { UserScheduleAnalytics } from "@/components/schedule/user-schedule-analytics";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -317,6 +320,39 @@ export default function AnalyticsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Repurposed Content Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Repurposed Content Analytics</h2>
+          <p className="text-muted-foreground">
+            Track your content repurposing activity and performance
+          </p>
+        </div>
+        <UserRepurposedContentAnalytics />
+      </div>
+
+      {/* Schedule Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Schedule Analytics</h2>
+          <p className="text-muted-foreground">
+            Track your content scheduling performance and patterns
+          </p>
+        </div>
+        <UserScheduleAnalytics />
+      </div>
+
+      {/* AI Prediction Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">AI Prediction Analytics</h2>
+          <p className="text-muted-foreground">
+            Track your AI-powered content performance predictions
+          </p>
+        </div>
+        <UserPredictionAnalytics />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getUserByGoogleId, getUserCredits, deductCredits, createContent, insertGeneration, insertPost } from "@/lib/database";
+import { getUserByGoogleId, getUserCredits, deductCredits, createContent, insertGeneration, insertPost, getUserPreferences, insertOptimizationAnalytics } from "@/lib/database";
 import * as cheerio from 'cheerio';
+import { optimizeForPlatform, Platform, countCharacters, countWords } from "@/lib/platform-optimizer";
 
 export const runtime = 'nodejs';
 
@@ -143,6 +144,33 @@ export async function POST(req: NextRequest) {
     const user = await getUserByGoogleId(session.user.id);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 400 });
 
+    // Get user's writing style if enabled
+    let userStyleProfile = null;
+    let styleEnabled = false;
+    try {
+      const { getUserWritingStyle } = await import("@/lib/database");
+      const styleData = await getUserWritingStyle(user.id);
+      if (styleData.style_enabled && styleData.profile && styleData.confidence_score >= 60) {
+        userStyleProfile = styleData.profile;
+        styleEnabled = true;
+      }
+    } catch (error) {
+      console.error('Error fetching user writing style:', error);
+      // Continue without style if there's an error
+    }
+
+    // Get user's platform optimization setting
+    let platformOptimizationEnabled = false;
+    try {
+      const userPrefs = await getUserPreferences(user.id);
+      platformOptimizationEnabled = userPrefs.platform_optimization_enabled || false;
+      console.log('🎯 Platform Optimization Enabled:', platformOptimizationEnabled);
+      console.log('📋 Full User Preferences:', JSON.stringify(userPrefs, null, 2));
+    } catch (error) {
+      console.error('❌ Error fetching platform optimization setting:', error);
+      // Continue without optimization if there's an error
+    }
+
     // Check credits (1 per generation request)
     const credits = await getUserCredits(session.user.id);
     if (credits <= 0) {
@@ -201,7 +229,24 @@ export async function POST(req: NextRequest) {
 6. HASHTAGS: ${includeHashtags ? '✅ Include 3-5 relevant hashtags at the end' : '❌ DO NOT include any hashtags'}
 7. EMOJIS: ${includeEmojis ? '😊 Use 1-3 relevant emojis per post to add personality and engagement' : '❌ DO NOT include any emojis'}
 8. CALL-TO-ACTION: ${includeCTA ? (customCTA ? `📢 Use this specific CTA: "${customCTA}"` : '📢 End each post with a clear call-to-action (e.g., "Comment below", "Share your thoughts", "Learn more at...", "Try it today")') : '❌ DO NOT include any call-to-action'}
-9. OPENING HOOK: ${customHook ? `🎣 Start the first tweet/post with this hook: "${customHook}"` : 'Create an engaging opening hook'}`
+9. OPENING HOOK: ${customHook ? `🎣 Start the first tweet/post with this hook: "${customHook}"` : 'Create an engaging opening hook'}
+
+${styleEnabled && userStyleProfile ? `
+🎨 WRITING STYLE REQUIREMENTS (Talk Like Me Feature):
+You MUST match the user's unique writing style and voice. Follow these specific characteristics:
+
+- TONE: ${userStyleProfile.tone}
+- PERSONALITY TRAITS: ${userStyleProfile.personality_traits.join(', ')}
+- VOCABULARY: Use these common words/phrases: ${userStyleProfile.vocabulary_patterns.common_words.slice(0, 5).join(', ')}
+- SENTENCE STARTERS: ${userStyleProfile.vocabulary_patterns.sentence_starters.slice(0, 3).join(', ')}
+- SENTENCE STRUCTURE: ${userStyleProfile.sentence_structure.complexity_level} complexity, avg ${userStyleProfile.sentence_structure.avg_sentence_length} words
+- EMOJI USAGE: ${userStyleProfile.emoji_usage.frequency} frequency, preferred: ${userStyleProfile.emoji_usage.preferred_emojis.slice(0, 3).join(', ')}
+- OPENING STYLES: ${userStyleProfile.brand_elements.opening_styles.slice(0, 2).join(', ')}
+- CLOSING STYLES: ${userStyleProfile.brand_elements.closing_styles.slice(0, 2).join(', ')}
+- SIGNATURE PHRASES: ${userStyleProfile.brand_elements.signature_phrases.slice(0, 2).join(', ')}
+
+CRITICAL: Maintain the user's authentic voice and writing patterns while adapting to each platform's requirements. The content should sound like it was written by the user, not a generic AI.
+` : ''}`
     } as const;
 
     const userMsg = {
@@ -433,6 +478,81 @@ Return ONLY the JSON.`
     if (!include.has('instagram') && parsed?.instagram_caption) delete parsed.instagram_caption;
     if (!include.has('email') && parsed?.email_newsletter) delete parsed.email_newsletter;
 
+    // Apply platform-specific optimization if enabled
+    const optimizationResults: any = {};
+    if (platformOptimizationEnabled) {
+      console.log('✨ Applying platform optimization...');
+      console.log('📌 Platforms to optimize:', Array.from(include));
+      const startTime = Date.now();
+      
+      // Optimize for each platform
+      if (include.has('x') && parsed?.x_thread) {
+        console.log('🐦 Processing Twitter/X optimization...');
+        console.log('  📝 Original x_thread type:', Array.isArray(parsed.x_thread) ? 'array' : 'string');
+        console.log('  📝 Original x_thread content:', JSON.stringify(parsed.x_thread).substring(0, 200));
+        
+        const originalContent = Array.isArray(parsed.x_thread) ? parsed.x_thread.join(' ') : parsed.x_thread;
+        console.log('  📝 Joined content length:', originalContent.length);
+        console.log('  📝 First 200 chars of joined content:', originalContent.substring(0, 200));
+        
+        const xOptimization = optimizeForPlatform(originalContent, 'x');
+        console.log('  ✅ Optimization result - isThread:', xOptimization.isThread);
+        console.log('  ✅ Thread posts count:', xOptimization.threadPosts?.length || 0);
+        if (xOptimization.threadPosts) {
+          console.log('  ✅ Thread posts preview:');
+          xOptimization.threadPosts.forEach((post, i) => {
+            console.log(`      Tweet ${i + 1}: "${post.substring(0, 80)}..."`);
+          });
+        }
+        
+        // Update parsed content with optimized version
+        if (xOptimization.isThread && xOptimization.threadPosts) {
+          parsed.x_thread = xOptimization.threadPosts;
+          console.log('  🔄 Updated parsed.x_thread with optimized thread');
+        } else {
+          console.log('  ⚠️  No thread created, keeping original');
+        }
+        
+        optimizationResults.x = xOptimization;
+      } else {
+        if (!include.has('x')) {
+          console.log('  ⏭️  Twitter/X not in selected platforms');
+        } else if (!parsed?.x_thread) {
+          console.log('  ⚠️  parsed.x_thread is missing or undefined');
+        }
+      }
+      
+      if (include.has('linkedin') && parsed?.linkedin_post) {
+        const linkedinOptimization = optimizeForPlatform(String(parsed.linkedin_post), 'linkedin');
+        parsed.linkedin_post = linkedinOptimization.content;
+        optimizationResults.linkedin = linkedinOptimization;
+      }
+      
+      if (include.has('instagram') && parsed?.instagram_caption) {
+        const instagramOptimization = optimizeForPlatform(String(parsed.instagram_caption), 'instagram');
+        parsed.instagram_caption = instagramOptimization.content;
+        optimizationResults.instagram = instagramOptimization;
+      }
+      
+      if (include.has('email') && parsed?.email_newsletter) {
+        const emailSubject = parsed.email_newsletter.subject || '';
+        const emailBody = parsed.email_newsletter.body || '';
+        const emailOptimization = optimizeForPlatform(emailBody, 'email', { subject: emailSubject });
+        parsed.email_newsletter.body = emailOptimization.content;
+        optimizationResults.email = emailOptimization;
+      }
+      
+      const processingTime = Date.now() - startTime;
+      
+      // Store optimization results for later analytics tracking
+      parsed._optimization_results = optimizationResults;
+      parsed._optimization_processing_time = processingTime;
+      console.log('✅ Platform optimization applied. Processing time:', processingTime, 'ms');
+      console.log('📊 Optimizations:', Object.keys(optimizationResults));
+    } else {
+      console.log('⏭️  Platform optimization is disabled');
+    }
+
     // Deduct credit now that we have a result
     await deductCredits(session.user.id, 1);
 
@@ -481,6 +601,47 @@ Return ONLY the JSON.`
       createdPosts.push(pr);
     }
 
+    // Track platform optimization analytics if enabled
+    if (platformOptimizationEnabled && Object.keys(optimizationResults).length > 0) {
+      try {
+        for (const [platform, optResult] of Object.entries(optimizationResults)) {
+          if (optResult && typeof optResult === 'object') {
+            await insertOptimizationAnalytics({
+              user_id: user.id,
+              generation_id: generation.id,
+              platform: platform as any,
+              optimization_applied: true,
+              original_content_length: sourceText.length,
+              optimized_content_length: countCharacters(optResult.content || ''),
+              character_count: optResult.metrics?.characterCount || 0,
+              word_count: optResult.metrics?.wordCount || 0,
+              thread_created: optResult.isThread || false,
+              thread_count: optResult.threadPosts?.length || 0,
+              hashtag_count: optResult.metrics?.hashtagCount || 0,
+              emoji_count: optResult.metrics?.emojiCount || 0,
+              line_breaks_added: optResult.metrics?.lineBreaksAdded || 0,
+              optimizations_applied: optResult.optimizations || [],
+              rules_applied: {
+                platform: platform,
+                maxChars: optResult.preview?.platform ? 280 : 0,
+              },
+              warnings: optResult.warnings || [],
+              processing_time_ms: parsed._optimization_processing_time || 0,
+              model_used: 'platform-optimizer-v1',
+            });
+          }
+        }
+      } catch (analyticsError) {
+        console.error('Error tracking optimization analytics:', analyticsError);
+        // Don't fail the request if analytics tracking fails
+      }
+    }
+
+    console.log('📤 Returning to frontend - x_thread:', Array.isArray(parsed?.x_thread) ? `array[${parsed.x_thread.length}]` : typeof parsed?.x_thread);
+    if (parsed?.x_thread && Array.isArray(parsed.x_thread)) {
+      console.log('📤 First thread item preview:', parsed.x_thread[0]?.substring(0, 100));
+    }
+    
     return NextResponse.json({ success: true, output: parsed, generation, posts: createdPosts });
   } catch (e:any) {
     console.error('repurpose error', e);

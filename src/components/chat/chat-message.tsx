@@ -3,8 +3,9 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Copy, User, Bot } from "lucide-react";
+import { Copy, User, Bot, Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
+import { ScheduleModal } from "@/components/schedule/schedule-modal";
 
 export interface ChatMessage {
   id: string;
@@ -20,6 +21,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const isUser = message.role === 'user';
 
   const copyToClipboard = async () => {
@@ -79,15 +81,27 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
             })}
           </span>
           {!isUser && !isLoading && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={copyToClipboard}
-            >
-              <Copy className="h-3 w-3" />
-              <span className="sr-only">Copy message</span>
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={copyToClipboard}
+              >
+                <Copy className="h-3 w-3" />
+                <span className="sr-only">Copy message</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => setScheduleModalOpen(true)}
+                title="Schedule this content"
+              >
+                <CalendarIcon className="h-3 w-3" />
+                <span className="sr-only">Schedule message</span>
+              </Button>
+            </div>
           )}
           {copied && (
             <span className="text-green-600">Copied!</span>
@@ -102,6 +116,16 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
           </AvatarFallback>
         </Avatar>
       )}
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        content={message.content}
+        platform="all"
+        title="Schedule AI Response"
+        description="Schedule this AI-generated content for posting"
+      />
     </div>
   );
 }

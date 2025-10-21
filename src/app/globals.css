@@ -3,7 +3,7 @@
 @layer base {
   :root {
     /* RepurposeAI Light Theme — pastel, professional */
-    --background: 270 100% 99%; /* very soft lilac background like screenshots */
+    --background: 300 100% 98%; /* soft lavender background #fbf4fd */
     --foreground: 222 47% 11%; /* slate-900 text */
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;

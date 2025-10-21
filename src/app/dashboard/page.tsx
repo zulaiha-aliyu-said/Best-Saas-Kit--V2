@@ -271,12 +271,18 @@ export default function DashboardPage() {
             <RefreshCw className="h-4 w-4" />
             Refresh
           </Button>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/analytics">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics
+            </Link>
+          </Button>
         {isAdmin && (
             <>
               <Button variant="outline" asChild>
                 <Link href="/admin/analytics">
               <BarChart3 className="mr-2 h-4 w-4" />
-              Analytics
+              Admin Analytics
                 </Link>
             </Button>
               <Button asChild>

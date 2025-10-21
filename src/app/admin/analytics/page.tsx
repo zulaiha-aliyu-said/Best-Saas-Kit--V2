@@ -1,6 +1,6 @@
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAnalyticsData, getGrowthMetrics } from "@/lib/database";
+import { getAnalyticsData, getGrowthMetrics, getPredictionAccuracyStats, getAdminPredictionAnalytics, getAdminRepurposedContentAnalytics, getAdminScheduleAnalytics } from "@/lib/database";
 import { getSimpleAnalytics, getSimpleGrowthMetrics } from "@/lib/simple-analytics";
 
 import { 
@@ -11,7 +11,18 @@ import {
   Crown,
   Zap,
   Target,
-  Repeat
+  Repeat,
+  BarChart3,
+  Brain,
+  Star,
+  Sparkles,
+  FileText,
+  Calendar,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Pause
 } from "lucide-react";
 
 export const runtime = 'nodejs';
@@ -23,6 +34,10 @@ export default async function AnalyticsPage() {
   // Get analytics data
   let analyticsData;
   let growthMetrics;
+  let predictionAnalytics;
+  let accuracyStats;
+  let repurposedContentAnalytics;
+  let scheduleAnalytics;
 
   try {
     console.log("Starting analytics data fetch...");
@@ -32,6 +47,21 @@ export default async function AnalyticsPage() {
 
     growthMetrics = await getSimpleGrowthMetrics();
     console.log("Simple growth metrics fetched successfully");
+
+    // Get prediction analytics
+    predictionAnalytics = await getAdminPredictionAnalytics();
+    console.log("Prediction analytics fetched successfully");
+
+    accuracyStats = await getPredictionAccuracyStats();
+    console.log("Accuracy stats fetched successfully");
+
+    // Get repurposed content analytics
+    repurposedContentAnalytics = await getAdminRepurposedContentAnalytics();
+    console.log("Repurposed content analytics fetched successfully");
+
+    // Get schedule analytics
+    scheduleAnalytics = await getAdminScheduleAnalytics();
+    console.log("Schedule analytics fetched successfully");
   } catch (error) {
     console.error("Error fetching analytics:", error);
     console.error("Error details:", {
@@ -220,6 +250,375 @@ export default async function AnalyticsPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Prediction Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">AI Prediction Analytics</h2>
+          <p className="text-muted-foreground">
+            Performance prediction feature usage and accuracy metrics
+          </p>
+        </div>
+
+        {/* Prediction Metrics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Predictions</CardTitle>
+              <BarChart3 className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{predictionAnalytics?.total_predictions || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {predictionAnalytics?.unique_users || 0} unique users
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+              <Target className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{predictionAnalytics?.average_score || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Out of 100 points
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+              <Activity className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{predictionAnalytics?.recent_predictions || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Last 7 days
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Accuracy Rating</CardTitle>
+              <Star className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{accuracyStats?.average_accuracy_rating || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {accuracyStats?.predictions_with_feedback || 0} with feedback
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Platform and Model Breakdown */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Usage</CardTitle>
+              <CardDescription>Predictions by social media platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {predictionAnalytics?.platform_breakdown && Object.entries(predictionAnalytics.platform_breakdown).map(([platform, count]: [string, any]) => (
+                  <div key={platform} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium capitalize">{platform}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {count} predictions
+                    </span>
+                  </div>
+                ))}
+                {(!predictionAnalytics?.platform_breakdown || Object.keys(predictionAnalytics.platform_breakdown).length === 0) && (
+                  <p className="text-sm text-muted-foreground">No prediction data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>AI Model Performance</CardTitle>
+              <CardDescription>Model usage and accuracy</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {accuracyStats?.model_performance && Object.entries(accuracyStats.model_performance).map(([model, data]: [string, any]) => (
+                  <div key={model} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Brain className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">{model}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium">{data.count} predictions</div>
+                      <div className="text-xs text-muted-foreground">
+                        Avg: {data.avg_score} score
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!accuracyStats?.model_performance || Object.keys(accuracyStats.model_performance).length === 0) && (
+                  <p className="text-sm text-muted-foreground">No model data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Repurposed Content Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Repurposed Content Analytics</h2>
+          <p className="text-muted-foreground">
+            Content repurposing feature usage and performance metrics
+          </p>
+        </div>
+
+        {/* Repurposed Content Metrics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Generations</CardTitle>
+              <Sparkles className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{repurposedContentAnalytics?.total_generations || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {repurposedContentAnalytics?.unique_users || 0} unique users
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Posts Created</CardTitle>
+              <FileText className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{repurposedContentAnalytics?.total_posts || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {repurposedContentAnalytics?.published_posts || 0} published
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+              <Activity className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{repurposedContentAnalytics?.recent_generations || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Last 7 days
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tokens Used</CardTitle>
+              <Zap className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{(repurposedContentAnalytics?.total_tokens_used || 0).toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Avg: {repurposedContentAnalytics?.avg_tokens_per_generation || 0} per generation
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Platform and Tone Breakdown */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Usage</CardTitle>
+              <CardDescription>Content repurposing by platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {repurposedContentAnalytics?.platform_breakdown && Object.entries(repurposedContentAnalytics.platform_breakdown).map(([platform, count]: [string, any]) => (
+                  <div key={platform} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium capitalize">{platform}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {count} generations
+                    </span>
+                  </div>
+                ))}
+                {(!repurposedContentAnalytics?.platform_breakdown || Object.keys(repurposedContentAnalytics.platform_breakdown).length === 0) && (
+                  <p className="text-sm text-muted-foreground">No platform data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tone Usage</CardTitle>
+              <CardDescription>Content tone preferences</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {repurposedContentAnalytics?.tone_breakdown && Object.entries(repurposedContentAnalytics.tone_breakdown).map(([tone, count]: [string, any]) => (
+                  <div key={tone} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium capitalize">{tone}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {count} generations
+                    </span>
+                  </div>
+                ))}
+                {(!repurposedContentAnalytics?.tone_breakdown || Object.keys(repurposedContentAnalytics.tone_breakdown).length === 0) && (
+                  <p className="text-sm text-muted-foreground">No tone data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Schedule Analytics Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Schedule Analytics</h2>
+          <p className="text-muted-foreground">
+            Content scheduling feature usage and performance metrics
+          </p>
+        </div>
+
+        {/* Schedule Metrics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Schedules</CardTitle>
+              <Calendar className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{scheduleAnalytics?.total_schedules || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {scheduleAnalytics?.unique_users || 0} unique users
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {scheduleAnalytics?.total_schedules > 0 
+                  ? ((scheduleAnalytics.posted_schedules / scheduleAnalytics.total_schedules) * 100).toFixed(1)
+                  : 0}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {scheduleAnalytics?.posted_schedules || 0} posted successfully
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Posts</CardTitle>
+              <Clock className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{scheduleAnalytics?.pending_schedules || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Awaiting scheduled time
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Best Time Score</CardTitle>
+              <Target className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{scheduleAnalytics?.avg_best_time_score || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Average optimal timing score
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Platform and Status Breakdown */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Usage</CardTitle>
+              <CardDescription>Scheduled posts by platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {scheduleAnalytics?.platform_breakdown && Object.entries(scheduleAnalytics.platform_breakdown).map(([platform, count]: [string, any]) => (
+                  <div key={platform} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium capitalize">{platform}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {count} scheduled posts
+                    </span>
+                  </div>
+                ))}
+                {(!scheduleAnalytics?.platform_breakdown || Object.keys(scheduleAnalytics.platform_breakdown).length === 0) && (
+                  <p className="text-sm text-muted-foreground">No platform data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Status Breakdown</CardTitle>
+              <CardDescription>Schedule status distribution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {scheduleAnalytics?.status_breakdown && Object.entries(scheduleAnalytics.status_breakdown).map(([status, count]: [string, any]) => {
+                  const getStatusIcon = (status: string) => {
+                    switch (status) {
+                      case 'posted': return <CheckCircle className="h-4 w-4 text-green-600" />;
+                      case 'pending': return <Clock className="h-4 w-4 text-yellow-600" />;
+                      case 'failed': return <XCircle className="h-4 w-4 text-red-600" />;
+                      case 'cancelled': return <Pause className="h-4 w-4 text-gray-600" />;
+                      default: return <AlertCircle className="h-4 w-4 text-gray-600" />;
+                    }
+                  };
+                  
+                  return (
+                    <div key={status} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(status)}
+                        <span className="text-sm font-medium capitalize">{status}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {count} posts
+                      </span>
+                    </div>
+                  );
+                })}
+                {(!scheduleAnalytics?.status_breakdown || Object.keys(scheduleAnalytics.status_breakdown).length === 0) && (
+                  <p className="text-sm text-muted-foreground">No status data available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

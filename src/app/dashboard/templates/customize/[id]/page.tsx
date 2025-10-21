@@ -20,8 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Sparkles, Eye, Wand2, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Sparkles, Eye, Wand2, Image as ImageIcon, BarChart3, Copy, Calendar } from "lucide-react"
 import { toast } from "sonner"
+import { PredictivePerformanceModal } from "@/components/ai/predictive-performance-modal"
+import { ScheduleModal } from "@/components/schedule/schedule-modal"
 
 export default function CustomizeTemplatePage() {
   const params = useParams()
@@ -46,6 +48,16 @@ export default function CustomizeTemplatePage() {
   const [inputContent, setInputContent] = useState("")
   const [loading, setLoading] = useState(false)
   const [generatedOutput, setGeneratedOutput] = useState<any>(null)
+  
+  // Prediction modal state
+  const [performanceModalOpen, setPerformanceModalOpen] = useState(false)
+  const [performanceContent, setPerformanceContent] = useState("")
+  const [performancePlatform, setPerformancePlatform] = useState<string>("x")
+  
+  // Schedule modal state
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
+  const [scheduleContent, setScheduleContent] = useState("")
+  const [schedulePlatform, setSchedulePlatform] = useState<string>("x")
 
   useEffect(() => {
     if (template) {
@@ -163,6 +175,23 @@ export default function CustomizeTemplatePage() {
     
     router.push(`/dashboard/repurpose?${params.toString()}`)
     toast.success('Template customized! Ready to generate content.')
+  }
+
+  const handlePerformancePrediction = (content: string, platform: string) => {
+    setPerformanceContent(content)
+    setPerformancePlatform(platform)
+    setPerformanceModalOpen(true)
+  }
+
+  const handleCopyContent = (content: string) => {
+    navigator.clipboard.writeText(content)
+    toast.success('Content copied to clipboard!')
+  }
+
+  const handleScheduleContent = (content: string, platform: string) => {
+    setScheduleContent(content)
+    setSchedulePlatform(platform)
+    setScheduleModalOpen(true)
   }
 
   const platformIcons: Record<string, string> = {
@@ -475,11 +504,42 @@ export default function CustomizeTemplatePage() {
                   {/* Twitter/X Thread */}
                   {generatedOutput.x_thread && generatedOutput.x_thread.length > 0 && (
                     <div className="border-2 border-blue-200 rounded-xl p-4 bg-blue-50/50 space-y-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                          𝕏
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                            𝕏
+                          </div>
+                          <span className="font-semibold text-sm">Twitter/X Thread ({generatedOutput.x_thread.length} tweets)</span>
                         </div>
-                        <span className="font-semibold text-sm">Twitter/X Thread ({generatedOutput.x_thread.length} tweets)</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyContent(generatedOutput.x_thread.join('\n\n'))}
+                            className="gap-1"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleContent(generatedOutput.x_thread.join('\n\n'), 'x')}
+                            className="gap-1"
+                          >
+                            <Calendar className="h-3 w-3" />
+                            Schedule
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePerformancePrediction(generatedOutput.x_thread.join('\n\n'), 'x')}
+                            className="gap-1"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                            Predict
+                          </Button>
+                        </div>
                       </div>
                       {generatedOutput.x_thread.map((tweet: string, idx: number) => (
                         <div key={idx} className="bg-white rounded-lg p-3 border border-blue-200">
@@ -496,11 +556,42 @@ export default function CustomizeTemplatePage() {
                   {/* LinkedIn Post */}
                   {generatedOutput.linkedin_post && (
                     <div className="border-2 border-blue-700/20 rounded-xl p-4 bg-blue-50/30">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded bg-blue-700 text-white flex items-center justify-center font-bold text-xs">
-                          in
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded bg-blue-700 text-white flex items-center justify-center font-bold text-xs">
+                            in
+                          </div>
+                          <span className="font-semibold text-sm">LinkedIn Post</span>
                         </div>
-                        <span className="font-semibold text-sm">LinkedIn Post</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyContent(generatedOutput.linkedin_post)}
+                            className="gap-1"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleContent(generatedOutput.linkedin_post, 'linkedin')}
+                            className="gap-1"
+                          >
+                            <Calendar className="h-3 w-3" />
+                            Schedule
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePerformancePrediction(generatedOutput.linkedin_post, 'linkedin')}
+                            className="gap-1"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                            Predict
+                          </Button>
+                        </div>
                       </div>
                       {selectedImage && (
                         <img src={selectedImage} alt="Preview" className="w-full aspect-video object-cover rounded-lg mb-3" />
@@ -512,11 +603,42 @@ export default function CustomizeTemplatePage() {
                   {/* Instagram Caption */}
                   {generatedOutput.instagram_caption && (
                     <div className="border-2 border-pink-200 rounded-xl p-4 bg-pink-50/50">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center text-lg">
-                          📷
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center text-lg">
+                            📷
+                          </div>
+                          <span className="font-semibold text-sm">Instagram Caption</span>
                         </div>
-                        <span className="font-semibold text-sm">Instagram Caption</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyContent(generatedOutput.instagram_caption)}
+                            className="gap-1"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleContent(generatedOutput.instagram_caption, 'instagram')}
+                            className="gap-1"
+                          >
+                            <Calendar className="h-3 w-3" />
+                            Schedule
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePerformancePrediction(generatedOutput.instagram_caption, 'instagram')}
+                            className="gap-1"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                            Predict
+                          </Button>
+                        </div>
                       </div>
                       {selectedImage && (
                         <img src={selectedImage} alt="Preview" className="w-full aspect-square object-cover rounded-lg mb-3" />
@@ -528,11 +650,42 @@ export default function CustomizeTemplatePage() {
                   {/* Email Newsletter */}
                   {generatedOutput.email_newsletter && (
                     <div className="border-2 border-green-200 rounded-xl p-4 bg-green-50/50">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center text-lg">
-                          ✉️
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center text-lg">
+                            ✉️
+                          </div>
+                          <span className="font-semibold text-sm">Email Newsletter</span>
                         </div>
-                        <span className="font-semibold text-sm">Email Newsletter</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyContent(`Subject: ${generatedOutput.email_newsletter.subject}\n\n${generatedOutput.email_newsletter.body}`)}
+                            className="gap-1"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleContent(`Subject: ${generatedOutput.email_newsletter.subject}\n\n${generatedOutput.email_newsletter.body}`, 'email')}
+                            className="gap-1"
+                          >
+                            <Calendar className="h-3 w-3" />
+                            Schedule
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePerformancePrediction(`Subject: ${generatedOutput.email_newsletter.subject}\n\n${generatedOutput.email_newsletter.body}`, 'email')}
+                            className="gap-1"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                            Predict
+                          </Button>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <p className="text-xs text-muted-foreground">Subject:</p>
@@ -667,6 +820,24 @@ export default function CustomizeTemplatePage() {
           </Card>
         </div>
       </div>
+
+      {/* Predictive Performance Modal */}
+      <PredictivePerformanceModal
+        isOpen={performanceModalOpen}
+        onClose={() => setPerformanceModalOpen(false)}
+        content={performanceContent}
+        platform={performancePlatform}
+        tone={tone}
+        contentType="post"
+      />
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        content={scheduleContent}
+        platform={schedulePlatform}
+      />
     </div>
   )
 }

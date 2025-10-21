@@ -8,8 +8,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { TrendingUp, RefreshCw, Copy, Loader2, Sparkles, X } from "lucide-react";
+import { TrendingUp, RefreshCw, Copy, Loader2, Sparkles, X, Calendar as CalendarIcon, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { ScheduleModal } from "@/components/schedule/schedule-modal";
+import { PredictivePerformanceModal } from "@/components/ai/predictive-performance-modal";
 
 export default function TrendsPage() {
   const router = useRouter();
@@ -35,6 +37,12 @@ export default function TrendsPage() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['x', 'linkedin', 'instagram']);
   const [generatedContent, setGeneratedContent] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleContent, setScheduleContent] = useState("");
+  const [schedulePlatform, setSchedulePlatform] = useState<string>("all");
+  const [performanceModalOpen, setPerformanceModalOpen] = useState(false);
+  const [performanceContent, setPerformanceContent] = useState("");
+  const [performancePlatform, setPerformancePlatform] = useState<string>("x");
 
   // Generate performance chart data from trending topics
   const generatePerformanceData = (topics: any[]) => {
@@ -378,6 +386,18 @@ export default function TrendsPage() {
   const copyToClipboard = (text: string, platform: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${platform} content copied!`);
+  };
+
+  const handleSchedule = (content: string, platform: string) => {
+    setScheduleContent(content);
+    setSchedulePlatform(platform);
+    setScheduleModalOpen(true);
+  };
+
+  const handlePerformancePrediction = (content: string, platform: string) => {
+    setPerformanceContent(content);
+    setPerformancePlatform(platform);
+    setPerformanceModalOpen(true);
   };
 
   return (
@@ -1451,15 +1471,35 @@ export default function TrendsPage() {
                           <span className="text-xl">{colors.icon}</span>
                           <span className="font-bold text-sm capitalize">{item.platform}</span>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => copyToClipboard(item.content, item.platform)}
-                          className="gap-2"
-                        >
-                          <Copy className="h-3 w-3" />
-                          Copy
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copyToClipboard(item.content, item.platform)}
+                            className="gap-2"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSchedule(item.content, item.platform)}
+                            className="gap-2"
+                          >
+                            <CalendarIcon className="h-3 w-3" />
+                            Schedule
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePerformancePrediction(item.content, item.platform)}
+                            className="gap-2"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                            Predict
+                          </Button>
+                        </div>
                       </div>
                       <div className="bg-white rounded-lg p-3 border border-gray-200">
                         <p className="text-sm whitespace-pre-wrap">{item.content}</p>
@@ -1505,6 +1545,26 @@ export default function TrendsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        content={scheduleContent}
+        platform={schedulePlatform}
+        title="Schedule Trend Content"
+        description="Schedule this trending content for posting"
+      />
+
+      {/* Predictive Performance Modal */}
+      <PredictivePerformanceModal
+        isOpen={performanceModalOpen}
+        onClose={() => setPerformanceModalOpen(false)}
+        content={performanceContent}
+        platform={performancePlatform}
+        tone="professional"
+        contentType="post"
+      />
     </div>
   );
 }

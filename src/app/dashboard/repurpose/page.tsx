@@ -11,7 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Repeat2, Download, Sparkles, Calendar as CalendarIcon } from "lucide-react";
+import { Copy, Repeat2, Download, Sparkles, Calendar as CalendarIcon, BarChart3 } from "lucide-react";
+import { ScheduleModal } from "@/components/schedule/schedule-modal";
+import { PredictivePerformanceModal } from "@/components/ai/predictive-performance-modal";
+import { StyleIndicator } from "@/components/style/style-indicator";
 
 // Types for the API response
 type ThreadItem = string | { id?: number; text: string };
@@ -36,15 +39,12 @@ export default function RepurposePage() {
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState<GeneratedOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [schedulePlatform, setSchedulePlatform] = useState<"x"|"linkedin"|"instagram"|"email"|null>(null);
-  const [scheduleBody, setScheduleBody] = useState("");
-  const [scheduleAt, setScheduleAt] = useState<string>(() => {
-    const d = new Date(Date.now() + 60*60*1000);
-    const pad = (n:number)=> String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  });
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleContent, setScheduleContent] = useState("");
+  const [schedulePlatform, setSchedulePlatform] = useState<string>("all");
+  const [performanceModalOpen, setPerformanceModalOpen] = useState(false);
+  const [performanceContent, setPerformanceContent] = useState("");
+  const [performancePlatform, setPerformancePlatform] = useState<string>("x");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -65,6 +65,18 @@ export default function RepurposePage() {
   const copy = async (text: string) => {
     toast.success('Copied to clipboard');
     await navigator.clipboard.writeText(text);
+  };
+
+  const handleSchedule = (content: string, platform: string) => {
+    setScheduleContent(content);
+    setSchedulePlatform(platform);
+    setScheduleModalOpen(true);
+  };
+
+  const handlePerformancePrediction = (content: string, platform: string) => {
+    setPerformanceContent(content);
+    setPerformancePlatform(platform);
+    setPerformanceModalOpen(true);
   };
 
   // Parse content to extract title, body, and CTA
@@ -435,6 +447,9 @@ export default function RepurposePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Style Indicator */}
+      <StyleIndicator />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Input */}
@@ -1175,6 +1190,14 @@ export default function RepurposePage() {
                     })
                   });
                   const data = await res.json();
+                  console.log('📥 FRONTEND: Received data from API');
+                  console.log('  Full response:', data);
+                  console.log('  output.x_thread:', data.output?.x_thread);
+                  if (data.output?.x_thread && Array.isArray(data.output.x_thread)) {
+                    console.log('  First tweet:', data.output.x_thread[0]);
+                    console.log('  First tweet substring:', data.output.x_thread[0]?.substring?.(0, 100));
+                  }
+                  
                   if (!res.ok) {
                     setError(data.error || 'Failed to generate');
                     setOutput(null);
@@ -1403,6 +1426,10 @@ export default function RepurposePage() {
                         <Copy className="h-4 w-4 mr-2" />
                         Copy All
                       </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(tweets.join('\n\n'), 'x')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Predict Performance
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1431,7 +1458,7 @@ export default function RepurposePage() {
                               <Button size="sm" variant="ghost" onClick={() => copy(t)} title="Copy tweet">
                                 <Copy className="h-4 w-4"/>
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => { setSchedulePlatform('x'); setScheduleBody(t); setScheduleOpen(true); }} title="Schedule">
+                              <Button size="sm" variant="ghost" onClick={() => handleSchedule(t, 'x')} title="Schedule">
                                 <CalendarIcon className="h-4 w-4"/>
                               </Button>
                             </div>
@@ -1469,6 +1496,14 @@ export default function RepurposePage() {
                       <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.linkedin_post || '')}>
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Post
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handleSchedule(output.linkedin_post || '', 'linkedin')}>
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(output.linkedin_post || '', 'linkedin')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Predict Performance
                       </Button>
                     </div>
                   </div>
@@ -1512,6 +1547,14 @@ export default function RepurposePage() {
                       <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.instagram_caption || '')}>
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Caption
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handleSchedule(output.instagram_caption || '', 'instagram')}>
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(output.instagram_caption || '', 'instagram')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Predict Performance
                       </Button>
                     </div>
                   </div>
@@ -1568,6 +1611,14 @@ export default function RepurposePage() {
                       <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(`Subject: ${output.email_newsletter?.subject || ''}\n\n${output.email_newsletter?.body || ''}`)}>
                         <Copy className="h-4 w-4 mr-2" />
                         Copy Email
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handleSchedule(`Subject: ${output.email_newsletter?.subject || ''}\n\n${output.email_newsletter?.body || ''}`, 'email')}>
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(`Subject: ${output.email_newsletter?.subject || ''}\n\n${output.email_newsletter?.body || ''}`, 'email')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Predict Performance
                       </Button>
                     </div>
                   </div>
@@ -1642,28 +1693,25 @@ export default function RepurposePage() {
         <div className="text-xs text-muted-foreground">{output._fallback_note}</div>
       )}
 
-      {/* Schedule Dialog */}
-      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule Post</DialogTitle>
-            <DialogDescription>Select a date and time to schedule this {schedulePlatform?.toUpperCase()} post.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="text-xs text-muted-foreground">Timezone: {tz}</div>
-            <Input type="datetime-local" value={scheduleAt} onChange={(e)=>setScheduleAt(e.target.value)} />
-            <div className="rounded-md border p-2 text-sm max-h-40 overflow-auto whitespace-pre-wrap">{scheduleBody}</div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={()=>setScheduleOpen(false)}>Cancel</Button>
-            <Button onClick={async ()=>{
-              if (!schedulePlatform) return;
-              const res = await fetch('/api/schedule', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ platform: schedulePlatform, content: scheduleBody, scheduledAt: scheduleAt, timezone: tz }) });
-              if (res.ok) { setScheduleOpen(false); toast.success('Scheduled successfully', { action: { label: 'View', onClick: ()=> location.assign('/dashboard/schedule') } }); }
-            }}>Schedule</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        content={scheduleContent}
+        platform={schedulePlatform}
+        title="Schedule Content"
+        description="Schedule this repurposed content for posting"
+      />
+
+      {/* Predictive Performance Modal */}
+      <PredictivePerformanceModal
+        isOpen={performanceModalOpen}
+        onClose={() => setPerformanceModalOpen(false)}
+        content={performanceContent}
+        platform={performancePlatform}
+        tone="professional"
+        contentType="post"
+      />
     </div>
   );
 }

@@ -1207,6 +1207,1724 @@ export async function getDiscountAnalytics() {
   }
 }
 
+// Performance Prediction Interfaces
+
+export interface PerformancePrediction {
+  id: number
+  user_id: number
+  content: string
+  platform: 'x' | 'linkedin' | 'instagram' | 'facebook' | 'tiktok' | 'email'
+  tone: string
+  content_type: string
+  score: number
+  breakdown: {
+    contentQuality: number
+    engagementPotential: number
+    algorithmOptimization: number
+    timingTrends: number
+    audienceFit: number
+  }
+  insights: string[]
+  recommendations: string[]
+  risk_factors: string[]
+  predicted_metrics: {
+    likes: string
+    comments: string
+    shares: string
+    reach: string
+  }
+  model_name?: string
+  model_version?: string
+  tokens_used: number
+  created_at: Date
+  updated_at: Date
+}
+
+export interface CreatePerformancePredictionData {
+  user_id: number
+  content: string
+  platform: 'x' | 'linkedin' | 'instagram' | 'facebook' | 'tiktok' | 'email'
+  tone?: string
+  content_type?: string
+  score: number
+  breakdown: {
+    contentQuality: number
+    engagementPotential: number
+    algorithmOptimization: number
+    timingTrends: number
+    audienceFit: number
+  }
+  insights: string[]
+  recommendations: string[]
+  risk_factors: string[]
+  predicted_metrics: {
+    likes: string
+    comments: string
+    shares: string
+    reach: string
+  }
+  model_name?: string
+  model_version?: string
+  tokens_used?: number
+}
+
+export interface PerformanceFeedback {
+  id: number
+  prediction_id: number
+  user_id: number
+  actual_likes: number
+  actual_comments: number
+  actual_shares: number
+  actual_reach: number
+  actual_engagement_rate: number
+  feedback_notes?: string
+  accuracy_rating?: number
+  created_at: Date
+  updated_at: Date
+}
+
+export interface CreatePerformanceFeedbackData {
+  prediction_id: number
+  user_id: number
+  actual_likes?: number
+  actual_comments?: number
+  actual_shares?: number
+  actual_reach?: number
+  actual_engagement_rate?: number
+  feedback_notes?: string
+  accuracy_rating?: number
+}
+
+// Performance Prediction Functions
+
+// Create a new performance prediction
+export async function createPerformancePrediction(predictionData: CreatePerformancePredictionData): Promise<PerformancePrediction> {
+  const client = await pool.connect()
+  
+  try {
+    const query = `
+      INSERT INTO performance_predictions (
+        user_id, content, platform, tone, content_type, score, 
+        breakdown, insights, recommendations, risk_factors, predicted_metrics,
+        model_name, model_version, tokens_used
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING *
+    `
+    
+    const values = [
+      predictionData.user_id,
+      predictionData.content,
+      predictionData.platform,
+      predictionData.tone || 'professional',
+      predictionData.content_type || 'post',
+      predictionData.score,
+      JSON.stringify(predictionData.breakdown),
+      predictionData.insights,
+      predictionData.recommendations,
+      predictionData.risk_factors,
+      JSON.stringify(predictionData.predicted_metrics),
+      predictionData.model_name || null,
+      predictionData.model_version || null,
+      predictionData.tokens_used || 0
+    ]
+    
+    const result = await client.query(query, values)
+    const row = result.rows[0]
+    
+    return {
+      ...row,
+      breakdown: JSON.parse(row.breakdown),
+      predicted_metrics: JSON.parse(row.predicted_metrics)
+    } as PerformancePrediction
+  } finally {
+    client.release()
+  }
+}
+
+// Get user's recent predictions
+export async function getUserPredictions(userId: number, limit: number = 20): Promise<PerformancePrediction[]> {
+  const client = await pool.connect()
+  
+  try {
+    const query = `
+      SELECT * FROM performance_predictions 
+      WHERE user_id = $1 
+      ORDER BY created_at DESC 
+      LIMIT $2
+    `
+    
+    const result = await client.query(query, [userId, limit])
+    
+    return result.rows.map(row => ({
+      ...row,
+      breakdown: JSON.parse(row.breakdown),
+      predicted_metrics: JSON.parse(row.predicted_metrics)
+    })) as PerformancePrediction[]
+  } finally {
+    client.release()
+  }
+}
+
+// Get prediction by ID
+export async function getPredictionById(predictionId: number): Promise<PerformancePrediction | null> {
+  const client = await pool.connect()
+  
+  try {
+    const query = 'SELECT * FROM performance_predictions WHERE id = $1'
+    const result = await client.query(query, [predictionId])
+    
+    if (result.rows.length === 0) return null
+    
+    const row = result.rows[0]
+    return {
+      ...row,
+      breakdown: JSON.parse(row.breakdown),
+      predicted_metrics: JSON.parse(row.predicted_metrics)
+    } as PerformancePrediction
+  } finally {
+    client.release()
+  }
+}
+
+// Create performance feedback
+export async function createPerformanceFeedback(feedbackData: CreatePerformanceFeedbackData): Promise<PerformanceFeedback> {
+  const client = await pool.connect()
+  
+  try {
+    const query = `
+      INSERT INTO performance_feedback (
+        prediction_id, user_id, actual_likes, actual_comments, 
+        actual_shares, actual_reach, actual_engagement_rate, 
+        feedback_notes, accuracy_rating
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `
+    
+    const values = [
+      feedbackData.prediction_id,
+      feedbackData.user_id,
+      feedbackData.actual_likes || 0,
+      feedbackData.actual_comments || 0,
+      feedbackData.actual_shares || 0,
+      feedbackData.actual_reach || 0,
+      feedbackData.actual_engagement_rate || 0,
+      feedbackData.feedback_notes || null,
+      feedbackData.accuracy_rating || null
+    ]
+    
+    const result = await client.query(query, values)
+    return result.rows[0] as PerformanceFeedback
+  } finally {
+    client.release()
+  }
+}
+
+// Get user prediction statistics
+export async function getUserPredictionStats(userId: number) {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic stats
+    const basicStatsQuery = `
+      SELECT 
+        COUNT(*) as total_predictions,
+        ROUND(AVG(score), 2) as average_score,
+        MAX(score) as highest_score,
+        MIN(score) as lowest_score,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_predictions
+      FROM performance_predictions
+      WHERE user_id = $1
+    `
+    
+    // Get platform breakdown
+    const platformQuery = `
+      SELECT platform, COUNT(*) as count
+      FROM performance_predictions
+      WHERE user_id = $1
+      GROUP BY platform
+    `
+    
+    const [basicStats, platformResults] = await Promise.all([
+      client.query(basicStatsQuery, [userId]),
+      client.query(platformQuery, [userId])
+    ])
+    
+    // Build platform breakdown object
+    const platformBreakdown = platformResults.rows.reduce((acc, row) => {
+      acc[row.platform] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const basicStatsData = basicStats.rows[0]
+    
+    return {
+      total_predictions: parseInt(basicStatsData.total_predictions) || 0,
+      average_score: parseFloat(basicStatsData.average_score) || 0,
+      highest_score: parseInt(basicStatsData.highest_score) || 0,
+      lowest_score: parseInt(basicStatsData.lowest_score) || 0,
+      platform_breakdown: platformBreakdown,
+      recent_predictions: parseInt(basicStatsData.recent_predictions) || 0
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get prediction accuracy statistics (admin function)
+export async function getPredictionAccuracyStats() {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic accuracy stats
+    const basicQuery = `
+      SELECT 
+        COUNT(pp.id) as total_predictions,
+        COUNT(pf.id) as predictions_with_feedback,
+        ROUND(AVG(pf.accuracy_rating), 2) as average_accuracy_rating
+      FROM performance_predictions pp
+      LEFT JOIN performance_feedback pf ON pp.id = pf.prediction_id
+    `
+    
+    // Get model performance breakdown
+    const modelQuery = `
+      SELECT 
+        COALESCE(pp.model_name, 'unknown') as model_name,
+        COUNT(pp.id) as count,
+        ROUND(AVG(pp.score), 2) as avg_score,
+        ROUND(AVG(pf.accuracy_rating), 2) as avg_accuracy
+      FROM performance_predictions pp
+      LEFT JOIN performance_feedback pf ON pp.id = pf.prediction_id
+      GROUP BY pp.model_name
+    `
+    
+    const [basicResults, modelResults] = await Promise.all([
+      client.query(basicQuery),
+      client.query(modelQuery)
+    ])
+    
+    // Build model performance object
+    const modelPerformance = modelResults.rows.reduce((acc, row) => {
+      acc[row.model_name] = {
+        count: parseInt(row.count),
+        avg_score: parseFloat(row.avg_score) || 0,
+        avg_accuracy: parseFloat(row.avg_accuracy) || 0
+      }
+      return acc
+    }, {} as Record<string, any>)
+    
+    const basicData = basicResults.rows[0]
+    
+    return {
+      total_predictions: parseInt(basicData.total_predictions) || 0,
+      predictions_with_feedback: parseInt(basicData.predictions_with_feedback) || 0,
+      average_accuracy_rating: parseFloat(basicData.average_accuracy_rating) || 0,
+      model_performance: modelPerformance
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get admin prediction analytics
+export async function getAdminPredictionAnalytics() {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic stats
+    const basicStatsQuery = `
+      SELECT 
+        COUNT(*) as total_predictions,
+        COUNT(DISTINCT user_id) as unique_users,
+        ROUND(AVG(score), 2) as average_score,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_predictions,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_predictions
+      FROM performance_predictions
+    `
+    
+    // Get platform breakdown
+    const platformQuery = `
+      SELECT platform, COUNT(*) as count
+      FROM performance_predictions
+      GROUP BY platform
+    `
+    
+    // Get model breakdown
+    const modelQuery = `
+      SELECT COALESCE(model_name, 'unknown') as model_name, COUNT(*) as count
+      FROM performance_predictions
+      GROUP BY model_name
+    `
+    
+    const [basicStats, platformResults, modelResults] = await Promise.all([
+      client.query(basicStatsQuery),
+      client.query(platformQuery),
+      client.query(modelQuery)
+    ])
+    
+    // Build platform breakdown object
+    const platformBreakdown = platformResults.rows.reduce((acc, row) => {
+      acc[row.platform] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    // Build model breakdown object
+    const modelBreakdown = modelResults.rows.reduce((acc, row) => {
+      acc[row.model_name] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const basicStatsData = basicStats.rows[0]
+    
+    return {
+      total_predictions: parseInt(basicStatsData.total_predictions) || 0,
+      unique_users: parseInt(basicStatsData.unique_users) || 0,
+      average_score: parseFloat(basicStatsData.average_score) || 0,
+      recent_predictions: parseInt(basicStatsData.recent_predictions) || 0,
+      monthly_predictions: parseInt(basicStatsData.monthly_predictions) || 0,
+      platform_breakdown: platformBreakdown,
+      model_breakdown: modelBreakdown
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get predictions with feedback for analytics
+export async function getPredictionsWithFeedback(limit: number = 50): Promise<any[]> {
+  const client = await pool.connect()
+  
+  try {
+    const query = `
+      SELECT 
+        pp.*,
+        pf.actual_likes,
+        pf.actual_comments,
+        pf.actual_shares,
+        pf.actual_reach,
+        pf.actual_engagement_rate,
+        pf.accuracy_rating,
+        pf.feedback_notes,
+        u.email as user_email,
+        u.name as user_name
+      FROM performance_predictions pp
+      LEFT JOIN performance_feedback pf ON pp.id = pf.prediction_id
+      LEFT JOIN users u ON pp.user_id = u.id
+      ORDER BY pp.created_at DESC
+      LIMIT $1
+    `
+    
+    const result = await client.query(query, [limit])
+    
+    return result.rows.map(row => ({
+      ...row,
+      breakdown: JSON.parse(row.breakdown),
+      predicted_metrics: JSON.parse(row.predicted_metrics)
+    }))
+  } finally {
+    client.release()
+  }
+}
+
+// Get user repurposed content statistics
+export async function getUserRepurposedContentStats(userId: number) {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic stats from generations table
+    const basicStatsQuery = `
+      SELECT 
+        COUNT(*) as total_generations,
+        COUNT(DISTINCT platform) as platforms_used,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_generations,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_generations,
+        SUM(token_usage) as total_tokens_used,
+        ROUND(AVG(token_usage), 2) as avg_tokens_per_generation
+      FROM generations
+      WHERE user_id = $1 AND status = 'completed'
+    `
+    
+    // Get platform breakdown
+    const platformQuery = `
+      SELECT platform, COUNT(*) as count
+      FROM generations
+      WHERE user_id = $1 AND status = 'completed'
+      GROUP BY platform
+    `
+    
+    // Get tone breakdown
+    const toneQuery = `
+      SELECT tone, COUNT(*) as count
+      FROM generations
+      WHERE user_id = $1 AND status = 'completed'
+      GROUP BY tone
+    `
+    
+    // Get posts created from generations
+    const postsQuery = `
+      SELECT 
+        COUNT(*) as total_posts,
+        COUNT(CASE WHEN status = 'published' THEN 1 END) as published_posts,
+        COUNT(CASE WHEN status = 'draft' THEN 1 END) as draft_posts,
+        COUNT(DISTINCT platform) as platforms_with_posts
+      FROM posts
+      WHERE user_id = $1
+    `
+    
+    const [basicStats, platformResults, toneResults, postsResults] = await Promise.all([
+      client.query(basicStatsQuery, [userId]),
+      client.query(platformQuery, [userId]),
+      client.query(toneQuery, [userId]),
+      client.query(postsQuery, [userId])
+    ])
+    
+    // Build platform breakdown object
+    const platformBreakdown = platformResults.rows.reduce((acc, row) => {
+      acc[row.platform] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    // Build tone breakdown object
+    const toneBreakdown = toneResults.rows.reduce((acc, row) => {
+      acc[row.tone] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const basicStatsData = basicStats.rows[0]
+    const postsData = postsResults.rows[0]
+    
+    return {
+      total_generations: parseInt(basicStatsData.total_generations) || 0,
+      platforms_used: parseInt(basicStatsData.platforms_used) || 0,
+      recent_generations: parseInt(basicStatsData.recent_generations) || 0,
+      monthly_generations: parseInt(basicStatsData.monthly_generations) || 0,
+      total_tokens_used: parseInt(basicStatsData.total_tokens_used) || 0,
+      avg_tokens_per_generation: parseFloat(basicStatsData.avg_tokens_per_generation) || 0,
+      platform_breakdown: platformBreakdown,
+      tone_breakdown: toneBreakdown,
+      total_posts: parseInt(postsData.total_posts) || 0,
+      published_posts: parseInt(postsData.published_posts) || 0,
+      draft_posts: parseInt(postsData.draft_posts) || 0,
+      platforms_with_posts: parseInt(postsData.platforms_with_posts) || 0
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get admin repurposed content analytics
+export async function getAdminRepurposedContentAnalytics() {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic stats
+    const basicStatsQuery = `
+      SELECT 
+        COUNT(*) as total_generations,
+        COUNT(DISTINCT user_id) as unique_users,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_generations,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_generations,
+        SUM(token_usage) as total_tokens_used,
+        ROUND(AVG(token_usage), 2) as avg_tokens_per_generation
+      FROM generations
+      WHERE status = 'completed'
+    `
+    
+    // Get platform breakdown
+    const platformQuery = `
+      SELECT platform, COUNT(*) as count
+      FROM generations
+      WHERE status = 'completed'
+      GROUP BY platform
+    `
+    
+    // Get tone breakdown
+    const toneQuery = `
+      SELECT tone, COUNT(*) as count
+      FROM generations
+      WHERE status = 'completed'
+      GROUP BY tone
+    `
+    
+    // Get posts stats
+    const postsQuery = `
+      SELECT 
+        COUNT(*) as total_posts,
+        COUNT(CASE WHEN status = 'published' THEN 1 END) as published_posts,
+        COUNT(CASE WHEN status = 'draft' THEN 1 END) as draft_posts
+      FROM posts
+    `
+    
+    const [basicStats, platformResults, toneResults, postsResults] = await Promise.all([
+      client.query(basicStatsQuery),
+      client.query(platformQuery),
+      client.query(toneQuery),
+      client.query(postsQuery)
+    ])
+    
+    // Build breakdown objects
+    const platformBreakdown = platformResults.rows.reduce((acc, row) => {
+      acc[row.platform] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const toneBreakdown = toneResults.rows.reduce((acc, row) => {
+      acc[row.tone] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const basicStatsData = basicStats.rows[0]
+    const postsData = postsResults.rows[0]
+    
+    return {
+      total_generations: parseInt(basicStatsData.total_generations) || 0,
+      unique_users: parseInt(basicStatsData.unique_users) || 0,
+      recent_generations: parseInt(basicStatsData.recent_generations) || 0,
+      monthly_generations: parseInt(basicStatsData.monthly_generations) || 0,
+      total_tokens_used: parseInt(basicStatsData.total_tokens_used) || 0,
+      avg_tokens_per_generation: parseFloat(basicStatsData.avg_tokens_per_generation) || 0,
+      platform_breakdown: platformBreakdown,
+      tone_breakdown: toneBreakdown,
+      total_posts: parseInt(postsData.total_posts) || 0,
+      published_posts: parseInt(postsData.published_posts) || 0,
+      draft_posts: parseInt(postsData.draft_posts) || 0
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get user schedule analytics
+export async function getUserScheduleAnalytics(userId: number) {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic stats from schedules table
+    const schedulesStatsQuery = `
+      SELECT 
+        COUNT(*) as total_schedules,
+        COUNT(CASE WHEN status = 'posted' THEN 1 END) as posted_schedules,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_schedules,
+        COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_schedules,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_schedules,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_schedules,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_schedules,
+        ROUND(AVG(best_time_score), 2) as avg_best_time_score
+      FROM schedules
+      WHERE user_id = $1
+    `
+    
+    // Get platform breakdown from scheduled_posts table
+    const platformQuery = `
+      SELECT platform, COUNT(*) as count
+      FROM scheduled_posts
+      WHERE user_id = $1
+      GROUP BY platform
+    `
+    
+    // Get status breakdown from scheduled_posts table
+    const statusQuery = `
+      SELECT status, COUNT(*) as count
+      FROM scheduled_posts
+      WHERE user_id = $1
+      GROUP BY status
+    `
+    
+    // Get upcoming schedules
+    const upcomingQuery = `
+      SELECT COUNT(*) as upcoming_count
+      FROM schedules
+      WHERE user_id = $1 AND scheduled_at > NOW() AND status = 'pending'
+    `
+    
+    const [schedulesStats, platformResults, statusResults, upcomingResults] = await Promise.all([
+      client.query(schedulesStatsQuery, [userId]),
+      client.query(platformQuery, [userId]),
+      client.query(statusQuery, [userId]),
+      client.query(upcomingQuery, [userId])
+    ])
+    
+    // Build platform breakdown object
+    const platformBreakdown = platformResults.rows.reduce((acc, row) => {
+      acc[row.platform] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    // Build status breakdown object
+    const statusBreakdown = statusResults.rows.reduce((acc, row) => {
+      acc[row.status] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const schedulesData = schedulesStats.rows[0]
+    const upcomingData = upcomingResults.rows[0]
+    
+    return {
+      total_schedules: parseInt(schedulesData.total_schedules) || 0,
+      posted_schedules: parseInt(schedulesData.posted_schedules) || 0,
+      pending_schedules: parseInt(schedulesData.pending_schedules) || 0,
+      failed_schedules: parseInt(schedulesData.failed_schedules) || 0,
+      cancelled_schedules: parseInt(schedulesData.cancelled_schedules) || 0,
+      recent_schedules: parseInt(schedulesData.recent_schedules) || 0,
+      monthly_schedules: parseInt(schedulesData.monthly_schedules) || 0,
+      avg_best_time_score: parseFloat(schedulesData.avg_best_time_score) || 0,
+      platform_breakdown: platformBreakdown,
+      status_breakdown: statusBreakdown,
+      upcoming_schedules: parseInt(upcomingData.upcoming_count) || 0
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// Get admin schedule analytics
+export async function getAdminScheduleAnalytics() {
+  const client = await pool.connect()
+  
+  try {
+    // Get basic stats from schedules table
+    const schedulesStatsQuery = `
+      SELECT 
+        COUNT(*) as total_schedules,
+        COUNT(DISTINCT user_id) as unique_users,
+        COUNT(CASE WHEN status = 'posted' THEN 1 END) as posted_schedules,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_schedules,
+        COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_schedules,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_schedules,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as recent_schedules,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_schedules,
+        ROUND(AVG(best_time_score), 2) as avg_best_time_score
+      FROM schedules
+    `
+    
+    // Get platform breakdown from scheduled_posts table
+    const platformQuery = `
+      SELECT platform, COUNT(*) as count
+      FROM scheduled_posts
+      GROUP BY platform
+    `
+    
+    // Get status breakdown from scheduled_posts table
+    const statusQuery = `
+      SELECT status, COUNT(*) as count
+      FROM scheduled_posts
+      GROUP BY status
+    `
+    
+    // Get upcoming schedules
+    const upcomingQuery = `
+      SELECT COUNT(*) as upcoming_count
+      FROM schedules
+      WHERE scheduled_at > NOW() AND status = 'pending'
+    `
+    
+    const [schedulesStats, platformResults, statusResults, upcomingResults] = await Promise.all([
+      client.query(schedulesStatsQuery),
+      client.query(platformQuery),
+      client.query(statusQuery),
+      client.query(upcomingQuery)
+    ])
+    
+    // Build breakdown objects
+    const platformBreakdown = platformResults.rows.reduce((acc, row) => {
+      acc[row.platform] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const statusBreakdown = statusResults.rows.reduce((acc, row) => {
+      acc[row.status] = parseInt(row.count)
+      return acc
+    }, {} as Record<string, number>)
+    
+    const schedulesData = schedulesStats.rows[0]
+    const upcomingData = upcomingResults.rows[0]
+    
+    return {
+      total_schedules: parseInt(schedulesData.total_schedules) || 0,
+      unique_users: parseInt(schedulesData.unique_users) || 0,
+      posted_schedules: parseInt(schedulesData.posted_schedules) || 0,
+      pending_schedules: parseInt(schedulesData.pending_schedules) || 0,
+      failed_schedules: parseInt(schedulesData.failed_schedules) || 0,
+      cancelled_schedules: parseInt(schedulesData.cancelled_schedules) || 0,
+      recent_schedules: parseInt(schedulesData.recent_schedules) || 0,
+      monthly_schedules: parseInt(schedulesData.monthly_schedules) || 0,
+      avg_best_time_score: parseFloat(schedulesData.avg_best_time_score) || 0,
+      platform_breakdown: platformBreakdown,
+      status_breakdown: statusBreakdown,
+      upcoming_schedules: parseInt(upcomingData.upcoming_count) || 0
+    }
+  } finally {
+    client.release()
+  }
+}
+
+// User Preferences Functions
+export interface UserPreferences {
+  id?: number;
+  user_id: number;
+  // Profile
+  name?: string;
+  email?: string;
+  bio?: string;
+  company?: string;
+  timezone?: string;
+  // AI Preferences
+  preferred_model?: string;
+  temperature?: number;
+  max_tokens?: number;
+  // Content Defaults
+  default_tone?: string;
+  default_length?: string;
+  default_platforms?: string[];
+  include_hashtags?: boolean;
+  include_emojis?: boolean;
+  include_cta?: boolean;
+  custom_hook?: string;
+  custom_cta?: string;
+  // Notifications
+  email_notifications?: boolean;
+  push_notifications?: boolean;
+  marketing_emails?: boolean;
+  usage_alerts?: boolean;
+  // Privacy & Security
+  two_factor_enabled?: boolean;
+  data_export_enabled?: boolean;
+  // Appearance
+  theme?: string;
+  compact_mode?: boolean;
+  // API
+  api_key?: string;
+  // Writing Style (Talk Like Me feature)
+  writing_style_profile?: WritingStyleProfile;
+  style_training_samples?: StyleTrainingSample[];
+  style_confidence_score?: number;
+  style_enabled?: boolean;
+  // Platform Optimization
+  platform_optimization_enabled?: boolean;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+// Writing Style Interfaces
+export interface WritingStyleProfile {
+  tone: string;
+  personality_traits: string[];
+  vocabulary_patterns: {
+    common_words: string[];
+    sentence_starters: string[];
+    transition_words: string[];
+    power_words: string[];
+  };
+  sentence_structure: {
+    avg_sentence_length: number;
+    complexity_level: 'simple' | 'moderate' | 'complex';
+    question_frequency: number;
+    exclamation_frequency: number;
+  };
+  emoji_usage: {
+    frequency: 'none' | 'rare' | 'moderate' | 'frequent';
+    preferred_emojis: string[];
+    placement_pattern: 'beginning' | 'middle' | 'end' | 'throughout';
+  };
+  brand_elements: {
+    opening_styles: string[];
+    closing_styles: string[];
+    call_to_action_patterns: string[];
+    signature_phrases: string[];
+  };
+  platform_preferences: {
+    [platform: string]: {
+      tone_adjustment: string;
+      length_preference: string;
+      emoji_usage: string;
+    };
+  };
+}
+
+export interface StyleTrainingSample {
+  id?: string;
+  content: string;
+  platform: string;
+  content_type: string;
+  word_count: number;
+  character_count: number;
+  uploaded_at: Date;
+  analysis_metadata?: {
+    detected_tone: string;
+    key_phrases: string[];
+    emoji_count: number;
+  };
+}
+
+export interface StyleAnalysisResult {
+  profile: WritingStyleProfile;
+  confidence_score: number;
+  sample_count: number;
+  analysis_summary: {
+    strengths: string[];
+    areas_for_improvement: string[];
+    consistency_score: number;
+  };
+}
+
+export async function getUserPreferences(userId: number): Promise<UserPreferences> {
+  try {
+    const query = `
+      SELECT * FROM user_preferences 
+      WHERE user_id = $1
+    `;
+    
+    const result = await pool.query(query, [userId]);
+    
+    console.log('🗄️  database.ts - getUserPreferences');
+    console.log('  userId:', userId);
+    console.log('  rows found:', result.rows.length);
+    
+    if (result.rows.length === 0) {
+      console.log('  ⚠️  No preferences found, returning defaults');
+      // Return default preferences if none exist
+      return {
+        user_id: userId,
+        name: "",
+        email: "",
+        bio: "",
+        company: "",
+        timezone: "UTC",
+        preferred_model: "qwen/qwen3-235b-a22b-2507",
+        temperature: 0.7,
+        max_tokens: 1000,
+        default_tone: "professional",
+        default_length: "medium",
+        default_platforms: ["x", "linkedin", "instagram"],
+        include_hashtags: true,
+        include_emojis: false,
+        include_cta: false,
+        custom_hook: "",
+        custom_cta: "",
+        email_notifications: true,
+        push_notifications: false,
+        marketing_emails: true,
+        usage_alerts: true,
+        two_factor_enabled: false,
+        data_export_enabled: true,
+        theme: "system",
+        compact_mode: false,
+        platform_optimization_enabled: false,
+      };
+    }
+    
+    const prefs = result.rows[0];
+    
+    console.log('  ✅ Loaded from DB - platform_optimization_enabled:', prefs.platform_optimization_enabled);
+    console.log('  ✅ Type:', typeof prefs.platform_optimization_enabled);
+    
+    // Parse JSON fields
+    if (prefs.default_platforms && typeof prefs.default_platforms === 'string') {
+      prefs.default_platforms = JSON.parse(prefs.default_platforms);
+    }
+    
+    return prefs;
+  } catch (error) {
+    console.error('Error fetching user preferences:', error);
+    throw error;
+  }
+}
+
+export async function updateUserPreferences(userId: number, preferences: Partial<UserPreferences>): Promise<void> {
+  try {
+    const query = `
+      INSERT INTO user_preferences (
+        user_id, name, email, bio, company, timezone,
+        preferred_model, temperature, max_tokens,
+        default_tone, default_length, default_platforms,
+        include_hashtags, include_emojis, include_cta,
+        custom_hook, custom_cta,
+        email_notifications, push_notifications, marketing_emails, usage_alerts,
+        two_factor_enabled, data_export_enabled,
+        theme, compact_mode, platform_optimization_enabled
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9,
+        $10, $11, $12,
+        $13, $14, $15,
+        $16, $17,
+        $18, $19, $20, $21,
+        $22, $23,
+        $24, $25, $26
+      )
+      ON CONFLICT (user_id) 
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email,
+        bio = EXCLUDED.bio,
+        company = EXCLUDED.company,
+        timezone = EXCLUDED.timezone,
+        preferred_model = EXCLUDED.preferred_model,
+        temperature = EXCLUDED.temperature,
+        max_tokens = EXCLUDED.max_tokens,
+        default_tone = EXCLUDED.default_tone,
+        default_length = EXCLUDED.default_length,
+        default_platforms = EXCLUDED.default_platforms,
+        include_hashtags = EXCLUDED.include_hashtags,
+        include_emojis = EXCLUDED.include_emojis,
+        include_cta = EXCLUDED.include_cta,
+        custom_hook = EXCLUDED.custom_hook,
+        custom_cta = EXCLUDED.custom_cta,
+        email_notifications = EXCLUDED.email_notifications,
+        push_notifications = EXCLUDED.push_notifications,
+        marketing_emails = EXCLUDED.marketing_emails,
+        usage_alerts = EXCLUDED.usage_alerts,
+        two_factor_enabled = EXCLUDED.two_factor_enabled,
+        data_export_enabled = EXCLUDED.data_export_enabled,
+        theme = EXCLUDED.theme,
+        compact_mode = EXCLUDED.compact_mode,
+        platform_optimization_enabled = EXCLUDED.platform_optimization_enabled,
+        updated_at = CURRENT_TIMESTAMP
+    `;
+    
+    const values = [
+      userId,
+      preferences.name,
+      preferences.email,
+      preferences.bio,
+      preferences.company,
+      preferences.timezone,
+      preferences.preferred_model,
+      preferences.temperature,
+      preferences.max_tokens,
+      preferences.default_tone,
+      preferences.default_length,
+      preferences.default_platforms ? JSON.stringify(preferences.default_platforms) : null,
+      preferences.include_hashtags,
+      preferences.include_emojis,
+      preferences.include_cta,
+      preferences.custom_hook,
+      preferences.custom_cta,
+      preferences.email_notifications,
+      preferences.push_notifications,
+      preferences.marketing_emails,
+      preferences.usage_alerts,
+      preferences.two_factor_enabled,
+      preferences.data_export_enabled,
+      preferences.theme,
+      preferences.compact_mode,
+      preferences.platform_optimization_enabled,
+    ];
+    
+    console.log('🗄️  database.ts - updateUserPreferences');
+    console.log('  userId:', userId);
+    console.log('  platform_optimization_enabled (value $26):', preferences.platform_optimization_enabled);
+    
+    await pool.query(query, values);
+    
+    console.log('  ✅ SQL query executed successfully');
+  } catch (error) {
+    console.error('Error updating user preferences:', error);
+    throw error;
+  }
+}
+
+export async function generateUserApiKey(userId: number): Promise<string> {
+  try {
+    const apiKey = `sk_user_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+    
+    const query = `
+      UPDATE user_preferences 
+      SET api_key = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE user_id = $2
+    `;
+    
+    await pool.query(query, [apiKey, userId]);
+    return apiKey;
+  } catch (error) {
+    console.error('Error generating API key:', error);
+    throw error;
+  }
+}
+
+export async function exportUserData(userId: number): Promise<any> {
+  try {
+    // Get user data
+    const userQuery = `SELECT * FROM users WHERE id = $1`;
+    const userResult = await pool.query(userQuery, [userId]);
+    
+    if (userResult.rows.length === 0) {
+      throw new Error('User not found');
+    }
+    
+    const user = userResult.rows[0];
+    
+    // Get user preferences
+    const preferences = await getUserPreferences(userId);
+    
+    // Get user's content generations (if any)
+    const contentQuery = `
+      SELECT id, content, platform, created_at 
+      FROM repurposed_content 
+      WHERE user_id = $1 
+      ORDER BY created_at DESC
+    `;
+    const contentResult = await pool.query(contentQuery, [userId]);
+    
+    // Get user's performance predictions (if any)
+    const predictionsQuery = `
+      SELECT id, content, platform, score, created_at 
+      FROM performance_predictions 
+      WHERE user_id = $1 
+      ORDER BY created_at DESC
+    `;
+    const predictionsResult = await pool.query(predictionsQuery, [userId]);
+    
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        created_at: user.created_at,
+        subscription_status: user.subscription_status,
+        credits: user.credits,
+      },
+      preferences,
+      content_generations: contentResult.rows,
+      performance_predictions: predictionsResult.rows,
+      export_date: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Error exporting user data:', error);
+    throw error;
+  }
+}
+
+// System Configuration Functions
+export interface SystemConfig {
+  id?: number;
+  // API Configuration
+  openrouter_api_key?: string;
+  groq_api_key?: string;
+  default_model?: string;
+  fallback_model?: string;
+  max_tokens?: number;
+  temperature?: number;
+  // Database Settings
+  database_url?: string;
+  connection_pool_size?: number;
+  query_timeout?: number;
+  // System Limits
+  free_user_credits?: number;
+  pro_user_credits?: number;
+  max_generations_per_day?: number;
+  max_file_size?: number;
+  // Email Configuration
+  resend_api_key?: string;
+  from_email?: string;
+  support_email?: string;
+  // Security Settings
+  session_timeout?: number;
+  max_login_attempts?: number;
+  enable_2fa?: boolean;
+  allowed_domains?: string[];
+  // Feature Flags
+  enable_predictive_scoring?: boolean;
+  enable_trend_analysis?: boolean;
+  enable_scheduling?: boolean;
+  enable_templates?: boolean;
+  maintenance_mode?: boolean;
+  // Analytics
+  enable_analytics?: boolean;
+  analytics_provider?: string;
+  tracking_id?: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+export async function getSystemConfig(): Promise<SystemConfig> {
+  try {
+    const query = `SELECT * FROM system_config ORDER BY id DESC LIMIT 1`;
+    const result = await pool.query(query);
+    
+    if (result.rows.length === 0) {
+      // Return default configuration
+      return {
+        openrouter_api_key: "",
+        groq_api_key: "",
+        default_model: "qwen/qwen3-235b-a22b-2507",
+        fallback_model: "groq/llama-3.1-8b-instant",
+        max_tokens: 1000,
+        temperature: 0.7,
+        database_url: "",
+        connection_pool_size: 10,
+        query_timeout: 30000,
+        free_user_credits: 10,
+        pro_user_credits: 1000,
+        max_generations_per_day: 50,
+        max_file_size: 10485760,
+        resend_api_key: "",
+        from_email: "noreply@yoursaas.com",
+        support_email: "support@yoursaas.com",
+        session_timeout: 86400,
+        max_login_attempts: 5,
+        enable_2fa: false,
+        allowed_domains: [],
+        enable_predictive_scoring: true,
+        enable_trend_analysis: true,
+        enable_scheduling: true,
+        enable_templates: true,
+        maintenance_mode: false,
+        enable_analytics: true,
+        analytics_provider: "simple-analytics",
+        tracking_id: "",
+      };
+    }
+    
+    const config = result.rows[0];
+    
+    // Parse JSON fields
+    if (config.allowed_domains && typeof config.allowed_domains === 'string') {
+      config.allowed_domains = JSON.parse(config.allowed_domains);
+    }
+    
+    return config;
+  } catch (error) {
+    console.error('Error fetching system config:', error);
+    throw error;
+  }
+}
+
+export async function updateSystemConfig(config: Partial<SystemConfig>): Promise<void> {
+  try {
+    const query = `
+      INSERT INTO system_config (
+        openrouter_api_key, groq_api_key, default_model, fallback_model,
+        max_tokens, temperature, database_url, connection_pool_size, query_timeout,
+        free_user_credits, pro_user_credits, max_generations_per_day, max_file_size,
+        resend_api_key, from_email, support_email,
+        session_timeout, max_login_attempts, enable_2fa, allowed_domains,
+        enable_predictive_scoring, enable_trend_analysis, enable_scheduling, enable_templates, maintenance_mode,
+        enable_analytics, analytics_provider, tracking_id
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
+      )
+      ON CONFLICT (id) 
+      DO UPDATE SET
+        openrouter_api_key = EXCLUDED.openrouter_api_key,
+        groq_api_key = EXCLUDED.groq_api_key,
+        default_model = EXCLUDED.default_model,
+        fallback_model = EXCLUDED.fallback_model,
+        max_tokens = EXCLUDED.max_tokens,
+        temperature = EXCLUDED.temperature,
+        database_url = EXCLUDED.database_url,
+        connection_pool_size = EXCLUDED.connection_pool_size,
+        query_timeout = EXCLUDED.query_timeout,
+        free_user_credits = EXCLUDED.free_user_credits,
+        pro_user_credits = EXCLUDED.pro_user_credits,
+        max_generations_per_day = EXCLUDED.max_generations_per_day,
+        max_file_size = EXCLUDED.max_file_size,
+        resend_api_key = EXCLUDED.resend_api_key,
+        from_email = EXCLUDED.from_email,
+        support_email = EXCLUDED.support_email,
+        session_timeout = EXCLUDED.session_timeout,
+        max_login_attempts = EXCLUDED.max_login_attempts,
+        enable_2fa = EXCLUDED.enable_2fa,
+        allowed_domains = EXCLUDED.allowed_domains,
+        enable_predictive_scoring = EXCLUDED.enable_predictive_scoring,
+        enable_trend_analysis = EXCLUDED.enable_trend_analysis,
+        enable_scheduling = EXCLUDED.enable_scheduling,
+        enable_templates = EXCLUDED.enable_templates,
+        maintenance_mode = EXCLUDED.maintenance_mode,
+        enable_analytics = EXCLUDED.enable_analytics,
+        analytics_provider = EXCLUDED.analytics_provider,
+        tracking_id = EXCLUDED.tracking_id,
+        updated_at = CURRENT_TIMESTAMP
+    `;
+    
+    const values = [
+      config.openrouter_api_key,
+      config.groq_api_key,
+      config.default_model,
+      config.fallback_model,
+      config.max_tokens,
+      config.temperature,
+      config.database_url,
+      config.connection_pool_size,
+      config.query_timeout,
+      config.free_user_credits,
+      config.pro_user_credits,
+      config.max_generations_per_day,
+      config.max_file_size,
+      config.resend_api_key,
+      config.from_email,
+      config.support_email,
+      config.session_timeout,
+      config.max_login_attempts,
+      config.enable_2fa,
+      config.allowed_domains ? JSON.stringify(config.allowed_domains) : null,
+      config.enable_predictive_scoring,
+      config.enable_trend_analysis,
+      config.enable_scheduling,
+      config.enable_templates,
+      config.maintenance_mode,
+      config.enable_analytics,
+      config.analytics_provider,
+      config.tracking_id,
+    ];
+    
+    await pool.query(query, values);
+  } catch (error) {
+    console.error('Error updating system config:', error);
+    throw error;
+  }
+}
+
+// Connection Testing Functions
+export async function testDatabaseConnection(): Promise<void> {
+  try {
+    await pool.query('SELECT 1');
+  } catch (error) {
+    throw new Error('Database connection failed');
+  }
+}
+
+export async function testOpenRouterConnection(): Promise<void> {
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('OpenRouter API connection failed');
+    }
+  } catch (error) {
+    throw new Error('OpenRouter API connection failed');
+  }
+}
+
+export async function testGroqConnection(): Promise<void> {
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Groq API connection failed');
+    }
+  } catch (error) {
+    throw new Error('Groq API connection failed');
+  }
+}
+
+export async function testEmailConnection(): Promise<void> {
+  try {
+    const response = await fetch('https://api.resend.com/domains', {
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Email service connection failed');
+    }
+  } catch (error) {
+    throw new Error('Email service connection failed');
+  }
+}
+
+// Writing Style Functions (Talk Like Me feature)
+
+export async function getUserWritingStyle(userId: number): Promise<{
+  profile: WritingStyleProfile | null;
+  confidence_score: number;
+  sample_count: number;
+  style_enabled: boolean;
+}> {
+  try {
+    const query = `
+      SELECT writing_style_profile, style_confidence_score, style_training_samples, style_enabled
+      FROM user_preferences 
+      WHERE user_id = $1
+    `;
+    
+    const result = await pool.query(query, [userId]);
+    
+    if (result.rows.length === 0) {
+      return {
+        profile: null,
+        confidence_score: 0,
+        sample_count: 0,
+        style_enabled: false,
+      };
+    }
+    
+    const row = result.rows[0];
+    const samples = row.style_training_samples || [];
+    
+    return {
+      profile: row.writing_style_profile,
+      confidence_score: row.style_confidence_score || 0,
+      sample_count: samples.length,
+      style_enabled: row.style_enabled || false,
+    };
+  } catch (error) {
+    console.error('Error fetching user writing style:', error);
+    throw error;
+  }
+}
+
+export async function updateUserWritingStyle(
+  userId: number, 
+  profile: WritingStyleProfile, 
+  samples: StyleTrainingSample[], 
+  confidenceScore: number
+): Promise<void> {
+  try {
+    const query = `
+      INSERT INTO user_preferences (
+        user_id, writing_style_profile, style_training_samples, style_confidence_score
+      ) VALUES (
+        $1, $2, $3, $4
+      )
+      ON CONFLICT (user_id) 
+      DO UPDATE SET
+        writing_style_profile = EXCLUDED.writing_style_profile,
+        style_training_samples = EXCLUDED.style_training_samples,
+        style_confidence_score = EXCLUDED.style_confidence_score,
+        updated_at = CURRENT_TIMESTAMP
+    `;
+    
+    await pool.query(query, [
+      userId,
+      JSON.stringify(profile),
+      JSON.stringify(samples),
+      confidenceScore,
+    ]);
+  } catch (error) {
+    console.error('Error updating user writing style:', error);
+    throw error;
+  }
+}
+
+export async function toggleUserStyleEnabled(userId: number, enabled: boolean): Promise<void> {
+  try {
+    const query = `
+      INSERT INTO user_preferences (user_id, style_enabled)
+      VALUES ($1, $2)
+      ON CONFLICT (user_id) 
+      DO UPDATE SET
+        style_enabled = EXCLUDED.style_enabled,
+        updated_at = CURRENT_TIMESTAMP
+    `;
+    
+    await pool.query(query, [userId, enabled]);
+  } catch (error) {
+    console.error('Error toggling user style enabled:', error);
+    throw error;
+  }
+}
+
+export async function analyzeStyleSamples(samples: StyleTrainingSample[]): Promise<{
+  profile: WritingStyleProfile;
+  confidenceScore: number;
+}> {
+  // This function will be called by the AI analysis API
+  // For now, return a basic analysis structure
+  const wordCounts = samples.reduce((acc, sample) => acc + sample.word_count, 0);
+  const avgWordCount = wordCounts / samples.length;
+  
+  // Calculate confidence based on sample count and diversity
+  let confidenceScore = Math.min(90, samples.length * 12); // 12 points per sample, max 90
+  
+  // Adjust confidence based on sample diversity
+  const platforms = new Set(samples.map(s => s.platform));
+  const contentTypes = new Set(samples.map(s => s.content_type));
+  
+  if (platforms.size > 1) confidenceScore += 3;
+  if (contentTypes.size > 1) confidenceScore += 3;
+  
+  // Ensure confidence is within valid range (0-100)
+  confidenceScore = Math.min(100, Math.max(0, confidenceScore));
+  
+  const profile: WritingStyleProfile = {
+    tone: 'professional', // Will be determined by AI analysis
+    personality_traits: ['professional', 'informative'],
+    vocabulary_patterns: {
+      common_words: [],
+      sentence_starters: [],
+      transition_words: [],
+      power_words: [],
+    },
+    sentence_structure: {
+      avg_sentence_length: avgWordCount,
+      complexity_level: avgWordCount > 20 ? 'complex' : avgWordCount > 12 ? 'moderate' : 'simple',
+      question_frequency: 0.1,
+      exclamation_frequency: 0.05,
+    },
+    emoji_usage: {
+      frequency: 'rare',
+      preferred_emojis: [],
+      placement_pattern: 'end',
+    },
+    brand_elements: {
+      opening_styles: [],
+      closing_styles: [],
+      call_to_action_patterns: [],
+      signature_phrases: [],
+    },
+    platform_preferences: {},
+  };
+  
+  return { profile, confidenceScore };
+}
+
+// Platform Optimization Analytics Functions
+
+export interface PlatformOptimizationAnalytics {
+  id?: number;
+  user_id: number;
+  generation_id?: string;
+  platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'tiktok';
+  optimization_applied: boolean;
+  original_content_length?: number;
+  optimized_content_length?: number;
+  character_count: number;
+  word_count: number;
+  thread_created?: boolean;
+  thread_count?: number;
+  hashtag_count?: number;
+  emoji_count?: number;
+  line_breaks_added?: number;
+  optimizations_applied?: string[];
+  rules_applied?: Record<string, any>;
+  warnings?: string[];
+  engagement_prediction_score?: number;
+  readability_score?: number;
+  seo_score?: number;
+  processing_time_ms?: number;
+  model_used?: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+export async function insertOptimizationAnalytics(
+  data: PlatformOptimizationAnalytics
+): Promise<number> {
+  const client = await pool.connect();
+  
+  try {
+    const query = `
+      SELECT insert_optimization_analytics(
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+      ) as id
+    `;
+    
+    const result = await client.query(query, [
+      data.user_id,
+      data.generation_id || null,
+      data.platform,
+      data.optimization_applied !== false,
+      data.original_content_length || 0,
+      data.optimized_content_length || 0,
+      data.character_count,
+      data.word_count,
+      data.thread_created || false,
+      data.thread_count || 0,
+      data.hashtag_count || 0,
+      data.emoji_count || 0,
+      data.line_breaks_added || 0,
+      JSON.stringify(data.optimizations_applied || []),
+      JSON.stringify(data.rules_applied || {}),
+      JSON.stringify(data.warnings || []),
+      data.processing_time_ms || null,
+      data.model_used || null,
+    ]);
+    
+    return result.rows[0].id;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getUserOptimizationStats(userId: number): Promise<{
+  total_optimizations: number;
+  platforms_optimized: number;
+  total_threads_created: number;
+  avg_character_count: number;
+  avg_hashtag_count: number;
+  avg_emoji_count: number;
+  total_warnings: number;
+  most_optimized_platform: string;
+  avg_readability_score: number;
+  recent_optimizations: number;
+}> {
+  const client = await pool.connect();
+  
+  try {
+    const query = `SELECT * FROM get_user_optimization_stats($1)`;
+    const result = await client.query(query, [userId]);
+    
+    if (result.rows.length === 0) {
+      return {
+        total_optimizations: 0,
+        platforms_optimized: 0,
+        total_threads_created: 0,
+        avg_character_count: 0,
+        avg_hashtag_count: 0,
+        avg_emoji_count: 0,
+        total_warnings: 0,
+        most_optimized_platform: '',
+        avg_readability_score: 0,
+        recent_optimizations: 0,
+      };
+    }
+    
+    return {
+      total_optimizations: parseInt(result.rows[0].total_optimizations) || 0,
+      platforms_optimized: parseInt(result.rows[0].platforms_optimized) || 0,
+      total_threads_created: parseInt(result.rows[0].total_threads_created) || 0,
+      avg_character_count: parseFloat(result.rows[0].avg_character_count) || 0,
+      avg_hashtag_count: parseFloat(result.rows[0].avg_hashtag_count) || 0,
+      avg_emoji_count: parseFloat(result.rows[0].avg_emoji_count) || 0,
+      total_warnings: parseInt(result.rows[0].total_warnings) || 0,
+      most_optimized_platform: result.rows[0].most_optimized_platform || '',
+      avg_readability_score: parseFloat(result.rows[0].avg_readability_score) || 0,
+      recent_optimizations: parseInt(result.rows[0].recent_optimizations) || 0,
+    };
+  } finally {
+    client.release();
+  }
+}
+
+export async function getUserPlatformBreakdown(userId: number): Promise<Array<{
+  platform: string;
+  optimization_count: number;
+  avg_character_count: number;
+  avg_hashtag_count: number;
+  thread_count: number;
+  warning_count: number;
+  avg_readability_score: number;
+}>> {
+  const client = await pool.connect();
+  
+  try {
+    const query = `SELECT * FROM get_user_platform_breakdown($1)`;
+    const result = await client.query(query, [userId]);
+    
+    return result.rows.map(row => ({
+      platform: row.platform,
+      optimization_count: parseInt(row.optimization_count) || 0,
+      avg_character_count: parseFloat(row.avg_character_count) || 0,
+      avg_hashtag_count: parseFloat(row.avg_hashtag_count) || 0,
+      thread_count: parseInt(row.thread_count) || 0,
+      warning_count: parseInt(row.warning_count) || 0,
+      avg_readability_score: parseFloat(row.avg_readability_score) || 0,
+    }));
+  } finally {
+    client.release();
+  }
+}
+
+export async function getAdminOptimizationStats(): Promise<{
+  total_optimizations: number;
+  unique_users: number;
+  total_threads_created: number;
+  avg_character_count: number;
+  avg_hashtag_count: number;
+  total_warnings: number;
+  optimization_enabled_users: number;
+  recent_optimizations: number;
+  monthly_optimizations: number;
+}> {
+  const client = await pool.connect();
+  
+  try {
+    const query = `SELECT * FROM get_admin_optimization_stats()`;
+    const result = await client.query(query);
+    
+    if (result.rows.length === 0) {
+      return {
+        total_optimizations: 0,
+        unique_users: 0,
+        total_threads_created: 0,
+        avg_character_count: 0,
+        avg_hashtag_count: 0,
+        total_warnings: 0,
+        optimization_enabled_users: 0,
+        recent_optimizations: 0,
+        monthly_optimizations: 0,
+      };
+    }
+    
+    return {
+      total_optimizations: parseInt(result.rows[0].total_optimizations) || 0,
+      unique_users: parseInt(result.rows[0].unique_users) || 0,
+      total_threads_created: parseInt(result.rows[0].total_threads_created) || 0,
+      avg_character_count: parseFloat(result.rows[0].avg_character_count) || 0,
+      avg_hashtag_count: parseFloat(result.rows[0].avg_hashtag_count) || 0,
+      total_warnings: parseInt(result.rows[0].total_warnings) || 0,
+      optimization_enabled_users: parseInt(result.rows[0].optimization_enabled_users) || 0,
+      recent_optimizations: parseInt(result.rows[0].recent_optimizations) || 0,
+      monthly_optimizations: parseInt(result.rows[0].monthly_optimizations) || 0,
+    };
+  } finally {
+    client.release();
+  }
+}
+
+export async function getPlatformPopularity(): Promise<Array<{
+  platform: string;
+  optimization_count: number;
+  unique_users: number;
+  avg_character_count: number;
+  thread_count: number;
+  avg_readability_score: number;
+}>> {
+  const client = await pool.connect();
+  
+  try {
+    const query = `SELECT * FROM get_platform_popularity()`;
+    const result = await client.query(query);
+    
+    return result.rows.map(row => ({
+      platform: row.platform,
+      optimization_count: parseInt(row.optimization_count) || 0,
+      unique_users: parseInt(row.unique_users) || 0,
+      avg_character_count: parseFloat(row.avg_character_count) || 0,
+      thread_count: parseInt(row.thread_count) || 0,
+      avg_readability_score: parseFloat(row.avg_readability_score) || 0,
+    }));
+  } finally {
+    client.release();
+  }
+}
+
+export async function getOptimizationTrends(days: number = 30): Promise<Array<{
+  date: string;
+  optimization_count: number;
+  unique_users: number;
+  thread_count: number;
+  avg_character_count: number;
+}>> {
+  const client = await pool.connect();
+  
+  try {
+    const query = `SELECT * FROM get_optimization_trends($1)`;
+    const result = await client.query(query, [days]);
+    
+    return result.rows.map(row => ({
+      date: row.date,
+      optimization_count: parseInt(row.optimization_count) || 0,
+      unique_users: parseInt(row.unique_users) || 0,
+      thread_count: parseInt(row.thread_count) || 0,
+      avg_character_count: parseFloat(row.avg_character_count) || 0,
+    }));
+  } finally {
+    client.release();
+  }
+}
+
 // Close the pool (for cleanup)
 export async function closePool(): Promise<void> {
   await pool.end()
