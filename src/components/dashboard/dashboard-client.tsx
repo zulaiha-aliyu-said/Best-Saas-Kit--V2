@@ -19,13 +19,15 @@ import {
   MessageSquare,
   CreditCard,
   Calendar,
-  Sparkles
+  Sparkles,
+  Target
 } from "lucide-react"
 
 // Regular user navigation items (RepurposeAI)
 const regularUserItems = [
   { name: "Repurpose", href: "/dashboard/repurpose", icon: MessageSquare },
   { name: "Viral Hooks", href: "/dashboard/hooks", icon: Sparkles },
+  { name: "Competitors", href: "/dashboard/competitors", icon: Target },
   { name: "Trends", href: "/dashboard/trends", icon: BarChart3 },
   { name: "Schedule", href: "/dashboard/schedule", icon: Calendar },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
@@ -38,6 +40,7 @@ const regularUserItems = [
 const adminUserItems = [
   { name: "Repurpose", href: "/dashboard/repurpose", icon: MessageSquare },
   { name: "Viral Hooks", href: "/dashboard/hooks", icon: Sparkles },
+  { name: "Competitors", href: "/dashboard/competitors", icon: Target },
   { name: "Trends", href: "/dashboard/trends", icon: BarChart3 },
   { name: "Schedule", href: "/dashboard/schedule", icon: Calendar },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },

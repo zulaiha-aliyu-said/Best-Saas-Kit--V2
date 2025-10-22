@@ -4,15 +4,20 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeScript } from "@/components/theme-script";
 import { Toaster } from "sonner";
+import { LoadingProvider } from "@/components/providers/loading-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -71,8 +76,10 @@ export default function RootLayout({
           defaultTheme="system"
           storageKey="ui-theme"
         >
-          {children}
-          <Toaster richColors />
+          <LoadingProvider>
+            {children}
+            <Toaster richColors />
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

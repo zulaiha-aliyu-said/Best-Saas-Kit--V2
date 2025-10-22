@@ -65,24 +65,29 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Fetch user credits
-      const creditsResponse = await fetch('/api/credits');
-      if (creditsResponse.ok) {
-        const creditsData = await creditsResponse.json();
+      // Parallelize all API calls for better performance
+      const [creditsResponse, statsResponse, activityResponse, trendsResponse] = await Promise.allSettled([
+        fetch('/api/credits'),
+        fetch('/api/users/stats'),
+        fetch('/api/history'),
+        fetch('/api/trends?platform=all&category=all&timeRange=24')
+      ]);
+
+      // Handle credits response
+      if (creditsResponse.status === 'fulfilled' && creditsResponse.value.ok) {
+        const creditsData = await creditsResponse.value.json();
         setUserCredits(creditsData.credits || 0);
       }
 
-      // Fetch user stats
-      const statsResponse = await fetch('/api/users/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
+      // Handle stats response
+      if (statsResponse.status === 'fulfilled' && statsResponse.value.ok) {
+        const statsData = await statsResponse.value.json();
         setUserStats(statsData);
       }
 
-      // Fetch recent activity
-      const activityResponse = await fetch('/api/history');
-      if (activityResponse.ok) {
-        const activityData = await activityResponse.json();
+      // Handle activity response
+      if (activityResponse.status === 'fulfilled' && activityResponse.value.ok) {
+        const activityData = await activityResponse.value.json();
         setRecentActivity(activityData.posts || []);
         
         // Calculate content stats from recent activity
@@ -118,10 +123,9 @@ export default function DashboardPage() {
         setPlatformStats(platformCounts);
       }
 
-      // Fetch trending topics
-      const trendsResponse = await fetch('/api/trends?platform=all&category=all&timeRange=24');
-      if (trendsResponse.ok) {
-        const trendsData = await trendsResponse.json();
+      // Handle trends response
+      if (trendsResponse.status === 'fulfilled' && trendsResponse.value.ok) {
+        const trendsData = await trendsResponse.value.json();
         setTrendingTopics(trendsData.topics?.slice(0, 3) || []);
       }
     } catch (error) {

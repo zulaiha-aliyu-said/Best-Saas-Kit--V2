@@ -29,6 +29,7 @@ interface GeneratedOutput {
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
+import { CompetitorIntegrationWidget } from "@/components/competitor/CompetitorIntegrationWidget";
 
 export default function RepurposePage() {
   const [tab, setTab] = useState<"text"|"url"|"youtube"|"file">("text");
@@ -450,6 +451,9 @@ export default function RepurposePage() {
 
       {/* Style Indicator */}
       <StyleIndicator />
+
+      {/* Competitor Insights Widget */}
+      <CompetitorIntegrationWidget />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Input */}

@@ -1,65 +1,47 @@
 "use client"
 
-import Image from "next/image"
+import Image, { ImageProps } from "next/image"
 import { useState } from "react"
-import { LoadingSpinner } from "./loading"
+import { cn } from "@/lib/utils"
+import { Skeleton } from "./skeleton"
 
-interface OptimizedImageProps {
-  src: string
-  alt: string
-  width?: number
-  height?: number
-  className?: string
-  priority?: boolean
-  fill?: boolean
-  sizes?: string
+interface OptimizedImageProps extends Omit<ImageProps, "onLoad"> {
+  fallback?: string
+  containerClassName?: string
 }
 
 export function OptimizedImage({
   src,
   alt,
-  width,
-  height,
-  className = "",
-  priority = false,
-  fill = false,
-  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  className,
+  containerClassName,
+  fallback = "/placeholder.svg",
+  ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
-  const [hasError, setHasError] = useState(false)
+  const [error, setError] = useState(false)
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={cn("relative overflow-hidden", containerClassName)}>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-          <LoadingSpinner />
-        </div>
+        <Skeleton className={cn("absolute inset-0", className)} />
       )}
-      
-      {hasError ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/20 text-muted-foreground">
-          <span className="text-sm">Failed to load image</span>
-        </div>
-      ) : (
-        <Image
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          fill={fill}
-          sizes={sizes}
-          priority={priority}
-          className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            setIsLoading(false)
-            setHasError(true)
-          }}
-          quality={85}
-          placeholder="blur"
-          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-        />
-      )}
+      <Image
+        src={error ? fallback : src}
+        alt={alt}
+        className={cn(
+          "transition-opacity duration-300",
+          isLoading ? "opacity-0" : "opacity-100",
+          className
+        )}
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setError(true)
+          setIsLoading(false)
+        }}
+        loading="lazy"
+        {...props}
+      />
     </div>
   )
 }
