@@ -13,3 +13,12 @@ export default async function CompetitorAnalysisPage() {
 
   return <CompetitorAnalysisClient userId={session.user.id} />;
 }
+
+
+
+
+
+
+
+
+

@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
-import { getUserByGoogleId, deductCredits, getUserCredits } from '@/lib/database';
+import { deductCredits as deductLTDCredits, getUserPlan } from '@/lib/feature-gate';
+import { calculateCreditCost } from '@/lib/ltd-tiers';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user?.id) {
+    // Import the helper function
+    const { ensureUserExists } = await import('@/lib/ensure-user');
+    
+    // Ensure user exists (auto-creates if needed)
+    const userResult = await ensureUserExists();
+    if (!userResult.success) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: userResult.error },
+        { status: userResult.status || 500 }
       );
     }
+    
+    const { user, session } = userResult;
 
     const { originalContent, platform, tone, currentScore, improvementType = 'general' } = await request.json();
 
@@ -23,32 +28,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user from database
-    const user = await getUserByGoogleId(session.user.id);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 400 }
-      );
-    }
+    // Get user's LTD plan to calculate tier-specific cost
+    const plan = await getUserPlan(session.user.id);
+    const creditCost = calculateCreditCost('viral_hook', plan?.ltd_tier ?? undefined);
 
-    // Check credits (1 credit per generation)
-    const credits = await getUserCredits(session.user.id);
-    if (credits <= 0) {
-      return NextResponse.json(
-        { error: 'Insufficient credits' },
-        { status: 402 }
-      );
-    }
-
-    // Deduct credits before making the API call
-    const creditResult = await deductCredits(session.user.id, 1);
+    // Check and deduct credits using LTD system
+    const creditResult = await deductLTDCredits(
+      session.user.id, 
+      creditCost, 
+      'viral_hook', 
+      { platform, tone, currentScore, improvementType }
+    );
+    
     if (!creditResult.success) {
       return NextResponse.json(
         {
-          error: 'Failed to deduct credits. Please try again.',
-          code: 'CREDIT_DEDUCTION_FAILED',
-          credits: creditResult.newBalance
+          error: creditResult.error || 'Insufficient credits',
+          code: 'INSUFFICIENT_CREDITS',
+          remaining: creditResult.remaining
         },
         { status: 402 }
       );
@@ -209,7 +206,8 @@ Each suggestion should be a complete, ready-to-post version with a predicted per
       improvements: improvementResult,
       model,
       usage,
-      credits: creditResult.newBalance,
+      credits: creditResult.remaining,
+      creditsUsed: creditCost,
       timestamp: new Date().toISOString(),
     });
 

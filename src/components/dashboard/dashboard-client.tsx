@@ -20,7 +20,10 @@ import {
   CreditCard,
   Calendar,
   Sparkles,
-  Target
+  Target,
+  DollarSign,
+  Wallet,
+  Gift
 } from "lucide-react"
 
 // Regular user navigation items (RepurposeAI)
@@ -32,6 +35,9 @@ const regularUserItems = [
   { name: "Schedule", href: "/dashboard/schedule", icon: Calendar },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "History", href: "/dashboard/history", icon: Home },
+  { name: "LTD Pricing", href: "/dashboard/ltd-pricing", icon: DollarSign },
+  { name: "My LTD", href: "/dashboard/my-ltd", icon: Gift },
+  { name: "Credits", href: "/dashboard/credits", icon: Wallet },
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
@@ -46,6 +52,9 @@ const adminUserItems = [
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "History", href: "/dashboard/history", icon: Home },
   { name: "Users", href: "/dashboard/users", icon: Users },
+  { name: "LTD Pricing", href: "/dashboard/ltd-pricing", icon: DollarSign },
+  { name: "My LTD", href: "/dashboard/my-ltd", icon: Gift },
+  { name: "Credits", href: "/dashboard/credits", icon: Wallet },
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
@@ -121,9 +130,9 @@ export function DashboardClient({ children, session, isAdmin }: DashboardClientP
 
           {/* Upgrade Card */}
           <div className="mt-4 rounded-xl p-4 repurpose-gradient text-white">
-            <p className="text-sm font-medium mb-2">Upgrade to Pro</p>
-            <p className="text-xs/5 opacity-90 mb-3">Get unlimited repurposing and advanced features</p>
-            <Link href="/dashboard/billing" className="inline-flex items-center rounded-md bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-white">Upgrade Now</Link>
+            <p className="text-sm font-medium mb-2">🎁 Lifetime Deal</p>
+            <p className="text-xs/5 opacity-90 mb-3">Get lifetime access with 750 credits/month from just $59</p>
+            <Link href="/dashboard/ltd-pricing" className="inline-flex items-center rounded-md bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-white">View Pricing</Link>
           </div>
         </nav>
       </div>

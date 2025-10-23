@@ -8,14 +8,28 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
  * Get all competitors for a user
  */
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
+    console.log('[Competitors API] Request received for userId:', userId);
+
     if (!userId) {
+      console.error('[Competitors API] Missing userId parameter');
       return NextResponse.json(
         { error: 'Missing userId parameter' },
         { status: 400 }
+      );
+    }
+
+    // Check database connection
+    if (!process.env.DATABASE_URL) {
+      console.error('[Competitors API] DATABASE_URL not configured');
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 500 }
       );
     }
 
@@ -42,16 +56,31 @@ export async function GET(request: NextRequest) {
       ORDER BY c.created_at DESC;
     `;
 
+    console.log('[Competitors API] Executing query for userId:', userId);
+    
     const result = await pool.query(query, [userId]);
+    
+    const duration = Date.now() - startTime;
+    console.log(`[Competitors API] Query successful - Found ${result.rows.length} competitors in ${duration}ms`);
 
     return NextResponse.json({
       success: true,
       competitors: result.rows,
     });
   } catch (error) {
-    console.error('Error fetching competitors:', error);
+    const duration = Date.now() - startTime;
+    console.error('[Competitors API] Error after', duration, 'ms:', error);
+    console.error('[Competitors API] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

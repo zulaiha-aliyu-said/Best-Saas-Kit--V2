@@ -175,3 +175,12 @@ export function ContentGapCard({ gap, onGenerateContent }: ContentGapCardProps) 
 
 
 
+
+
+
+
+
+
+
+
+

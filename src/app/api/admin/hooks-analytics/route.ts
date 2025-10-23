@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { pool } from '@/lib/database';
-import { isAdmin } from '@/lib/admin-auth';
+import { requireAdminAccess } from '@/lib/admin-auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.email || !isAdmin(session.user.email)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdminAccess();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     const { searchParams } = new URL(request.url);

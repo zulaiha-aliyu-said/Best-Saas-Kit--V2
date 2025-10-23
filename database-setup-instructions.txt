@@ -1,0 +1,58 @@
+🎯 DATABASE SETUP INSTRUCTIONS
+
+Step 1: Check Your Neon Database Status
+-----------------------------------------
+1. Go to: https://console.neon.tech/
+2. Sign in to your account
+3. Check if your project still exists
+4. If not, create a new project
+
+Step 2: Get Your Connection String
+----------------------------------
+1. Select your project
+2. Click "Connection Details"
+3. Copy the "Pooled connection" string
+4. It should look like:
+   postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+Step 3: Update Your Environment
+--------------------------------
+Add this to your .env.local file:
+DATABASE_URL="postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require"
+
+Step 4: Execute the Schema
+--------------------------
+1. In Neon console, click "SQL Editor"
+2. Copy and paste the ENTIRE contents of:
+   sql-queries/16-create-competitor-analysis-schema.sql
+3. Click "Run"
+
+Step 5: Verify Setup
+--------------------
+After running, you should see these tables:
+- competitors
+- competitor_stats
+- competitor_posts
+- content_gaps
+
+Step 6: Restart Development Server
+----------------------------------
+npm run dev
+
+Step 7: Test the Feature
+------------------------
+Go to: http://localhost:3000/dashboard/competitors
+Try adding a competitor!
+
+---
+
+ALTERNATIVE: If Neon database is gone, create a new one:
+
+1. Go to https://neon.tech/
+2. Create new free account
+3. Create new project
+4. Follow steps 2-7 above
+
+---
+
+The competitor analysis should work perfectly after this setup! 🚀

@@ -85,3 +85,12 @@ export function PostingPatternChart({ data }: PostingPatternChartProps) {
 
 
 
+
+
+
+
+
+
+
+
+

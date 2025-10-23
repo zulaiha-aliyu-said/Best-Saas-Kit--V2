@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Credits API</title>
+</head>
+<body>
+    <h1>Testing Credits API</h1>
+    <button onclick="testCreditsAPI()">Test /api/ltd/credits</button>
+    <button onclick="testAnalyticsAPI()">Test /api/ltd/usage-analytics</button>
+    <pre id="output" style="background: #f5f5f5; padding: 20px; margin-top: 20px;"></pre>
+
+    <script>
+        async function testCreditsAPI() {
+            const output = document.getElementById('output');
+            output.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/api/ltd/credits');
+                const data = await response.json();
+                output.textContent = 'Credits API Response:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testAnalyticsAPI() {
+            const output = document.getElementById('output');
+            output.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/api/ltd/usage-analytics?days=30');
+                const data = await response.json();
+                output.textContent = 'Analytics API Response:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            testCreditsAPI();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

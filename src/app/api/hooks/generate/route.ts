@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { pool } from '@/lib/database';
+import { deductCredits as deductLTDCredits, getUserPlan } from '@/lib/feature-gate';
+import { calculateCreditCost } from '@/lib/ltd-tiers';
 
 // Placeholder replacement values
 const AMOUNTS = ['10K', '50K', '100K', '250K', '500K', '1M'];
@@ -77,6 +79,31 @@ export async function POST(request: NextRequest) {
 
     const { topic, platform, niche } = await request.json();
 
+    // Calculate and deduct credits for viral hook generation
+    const plan = await getUserPlan(userId);
+    const creditCost = calculateCreditCost('viral_hook', plan?.ltd_tier ?? undefined);
+    
+    console.log(`💳 Viral Hook Credit Calculation: ${creditCost} credits (Tier ${plan?.ltd_tier || 'free'})`);
+
+    // Check and deduct credits
+    const creditResult = await deductLTDCredits(
+      userId,
+      creditCost,
+      'viral_hook',
+      { topic, platform, niche }
+    );
+
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: creditResult.error || 'Insufficient credits',
+        code: 'INSUFFICIENT_CREDITS',
+        remaining: creditResult.remaining,
+        required: creditCost
+      }, { status: 402 });
+    }
+
+    console.log(`✅ Deducted ${creditCost} credits for viral hooks. Remaining: ${creditResult.remaining}`);
+
     if (!topic || !platform || !niche) {
       return NextResponse.json(
         { error: 'Topic, platform, and niche are required' },
@@ -140,7 +167,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ hooks });
+    return NextResponse.json({ 
+      hooks,
+      credits: creditResult.remaining,
+      creditsUsed: creditCost
+    });
   } catch (error) {
     console.error('Error generating hooks:', error);
     return NextResponse.json(

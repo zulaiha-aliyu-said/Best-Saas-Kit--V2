@@ -190,3 +190,12 @@ export function AddCompetitorModal({ isOpen, onClose, onAdd, isLoading = false }
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

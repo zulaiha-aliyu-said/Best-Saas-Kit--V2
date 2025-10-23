@@ -18,10 +18,12 @@ export default function CompetitorAnalysisClient({ userId }: CompetitorAnalysisC
   const router = useRouter();
   const { 
     competitors, 
-    loading, 
+    loading,
+    error: fetchError,
     analyzeCompetitor,
     deleteCompetitor, 
-    refreshCompetitor 
+    refreshCompetitor,
+    refetch 
   } = useCompetitors(userId);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -94,6 +96,29 @@ export default function CompetitorAnalysisClient({ userId }: CompetitorAnalysisC
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Error Banner */}
+        {fetchError && (
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-red-800 dark:text-red-200 font-semibold mb-1">
+                  Error Loading Competitors
+                </h3>
+                <p className="text-red-600 dark:text-red-300 text-sm">{fetchError}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-2">
+                  Check your browser console (F12) for more details
+                </p>
+              </div>
+              <button
+                onClick={() => refetch()}
+                className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -145,6 +170,7 @@ export default function CompetitorAnalysisClient({ userId }: CompetitorAnalysisC
             onClose={handleCloseDashboard}
             competitor={selectedCompetitor}
             onDelete={handleDeleteCompetitor}
+            userId={userId}
             onGenerateContent={(gap) => {
               // Navigate to repurpose page with gap data
               router.push(`/dashboard/repurpose?gapId=${gap.id}&competitorId=${selectedCompetitor.id}`);

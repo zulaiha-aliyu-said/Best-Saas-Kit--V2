@@ -12,7 +12,7 @@ const pool = new Pool({
 export { pool }
 
 export interface User {
-  id: number
+  id: string  // Changed to string to match VARCHAR(255) in database
   google_id: string
   email: string
   name?: string
@@ -25,6 +25,13 @@ export interface User {
   stripe_customer_id?: string
   subscription_id?: string
   subscription_end_date?: Date
+  // LTD fields
+  plan_type?: 'subscription' | 'ltd'
+  ltd_tier?: number | null
+  monthly_credit_limit?: number
+  credit_reset_date?: Date
+  rollover_credits?: number
+  stacked_codes?: number
 }
 
 export interface CreateUserData {
@@ -89,8 +96,8 @@ export async function upsertUser(userData: CreateUserData): Promise<User> {
   
   try {
     const query = `
-      INSERT INTO users (google_id, email, name, image_url, last_login)
-      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+      INSERT INTO users (id, google_id, email, name, image_url, last_login)
+      VALUES ($1, $1, $2, $3, $4, CURRENT_TIMESTAMP)
       ON CONFLICT (google_id)
       DO UPDATE SET
         email = EXCLUDED.email,
@@ -102,7 +109,7 @@ export async function upsertUser(userData: CreateUserData): Promise<User> {
     `
     
     const values = [
-      userData.google_id,
+      userData.google_id,  // Used for both id and google_id
       userData.email,
       userData.name || null,
       userData.image_url || null
@@ -120,6 +127,7 @@ export async function getUserByGoogleId(googleId: string): Promise<User | null> 
   const client = await pool.connect()
   
   try {
+    // Query by google_id to handle both old numeric IDs and new VARCHAR IDs
     const query = 'SELECT * FROM users WHERE google_id = $1'
     const result = await client.query(query, [googleId])
     

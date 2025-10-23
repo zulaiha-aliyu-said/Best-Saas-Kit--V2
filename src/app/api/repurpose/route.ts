@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { getUserByGoogleId, getUserCredits, deductCredits, createContent, insertGeneration, insertPost, getUserPreferences, insertOptimizationAnalytics } from "@/lib/database";
+import { createContent, insertGeneration, insertPost, getUserPreferences, insertOptimizationAnalytics } from "@/lib/database";
+import { deductCredits as deductLTDCredits, getUserPlan } from '@/lib/feature-gate';
+import { calculateCreditCost } from '@/lib/ltd-tiers';
 import * as cheerio from 'cheerio';
 import { optimizeForPlatform, Platform, countCharacters, countWords } from "@/lib/platform-optimizer";
 
@@ -122,10 +123,19 @@ async function fetchUrlContent(url: string): Promise<string> {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Import the helper function
+    const { ensureUserExists } = await import('@/lib/ensure-user');
+    
+    // Ensure user exists (auto-creates if needed)
+    const userResult = await ensureUserExists();
+    if (!userResult.success) {
+      return NextResponse.json(
+        { error: userResult.error },
+        { status: userResult.status || 500 }
+      );
     }
+    
+    const { user, session } = userResult;
 
     const body = await req.json();
     const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
@@ -139,10 +149,6 @@ export async function POST(req: NextRequest) {
     };
     
     const currentLength = lengthGuides[contentLength as keyof typeof lengthGuides] || lengthGuides.medium;
-
-    // Resolve DB user id
-    const user = await getUserByGoogleId(session.user.id);
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 400 });
 
     // Get user's writing style if enabled
     let userStyleProfile = null;
@@ -171,11 +177,13 @@ export async function POST(req: NextRequest) {
       // Continue without optimization if there's an error
     }
 
-    // Check credits (1 per generation request)
-    const credits = await getUserCredits(session.user.id);
-    if (credits <= 0) {
-      return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
-    }
+    // Calculate credit cost based on number of platforms (1 credit per platform)
+    const numPlatforms = platforms.length;
+    const plan = await getUserPlan(session.user.id);
+    const creditCostPerPlatform = calculateCreditCost('content_repurposing', plan?.ltd_tier ?? undefined);
+    const totalCreditCost = creditCostPerPlatform * numPlatforms;
+    
+    console.log(`💳 Credit calculation: ${numPlatforms} platforms × ${creditCostPerPlatform} credits = ${totalCreditCost} total credits`);
 
     // Fetch content from URL if sourceType is 'url'
     let sourceText = String(text || '');
@@ -553,8 +561,30 @@ Return ONLY the JSON.`
       console.log('⏭️  Platform optimization is disabled');
     }
 
-    // Deduct credit now that we have a result
-    await deductCredits(session.user.id, 1);
+    // Deduct credits now that we have a result (1 credit per platform)
+    const creditResult = await deductLTDCredits(
+      session.user.id,
+      totalCreditCost,
+      'content_repurposing',
+      {
+        platforms: platforms,
+        numPlatforms: numPlatforms,
+        sourceType: sourceType,
+        tone: tone,
+        contentLength: contentLength
+      }
+    );
+    
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: creditResult.error || 'Insufficient credits',
+        code: 'INSUFFICIENT_CREDITS',
+        remaining: creditResult.remaining,
+        required: totalCreditCost
+      }, { status: 402 });
+    }
+    
+    console.log(`✅ Deducted ${totalCreditCost} credits. Remaining: ${creditResult.remaining}`);
 
     // Persist
     const content = await createContent({
@@ -642,7 +672,14 @@ Return ONLY the JSON.`
       console.log('📤 First thread item preview:', parsed.x_thread[0]?.substring(0, 100));
     }
     
-    return NextResponse.json({ success: true, output: parsed, generation, posts: createdPosts });
+    return NextResponse.json({ 
+      success: true, 
+      output: parsed, 
+      generation, 
+      posts: createdPosts,
+      credits: creditResult.remaining,
+      creditsUsed: totalCreditCost
+    });
   } catch (e:any) {
     console.error('repurpose error', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });

@@ -30,30 +30,64 @@ export function useCompetitors(userId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load competitors from API
-  const fetchCompetitors = useCallback(async () => {
+  // Internal fetch function with retry logic
+  const fetchCompetitorsInternal = async (retryCount = 0): Promise<void> => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
+    const maxRetries = 2;
+    const retryDelay = 1000; // 1 second
+
     try {
       setLoading(true);
-      const response = await fetch(`/api/competitors?userId=${userId}`);
+      console.log(`[useCompetitors] Fetching competitors for userId: ${userId} (attempt ${retryCount + 1})`);
+      
+      const response = await fetch(`/api/competitors?userId=${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Add timeout to prevent hanging requests
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch competitors');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.details || errorData.error || `Server returned ${response.status}`;
+        console.error('[useCompetitors] API Error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      console.log(`[useCompetitors] Successfully fetched ${data.competitors?.length || 0} competitors`);
       setCompetitors(data.competitors || []);
       setError(null);
     } catch (err) {
-      setError('Failed to load competitors');
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[useCompetitors] Fetch error:', errorMessage, err);
+      
+      // Retry logic for network/timeout errors
+      if (retryCount < maxRetries && (
+        errorMessage.includes('timeout') || 
+        errorMessage.includes('network') ||
+        errorMessage.includes('fetch')
+      )) {
+        console.log(`[useCompetitors] Retrying in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => fetchCompetitorsInternal(retryCount + 1), retryDelay);
+        return;
+      }
+      
+      setError(`Failed to load competitors: ${errorMessage}`);
+      setCompetitors([]); // Clear competitors on error
     } finally {
       setLoading(false);
     }
+  };
+
+  // Memoized wrapper for external use
+  const fetchCompetitors = useCallback(() => {
+    return fetchCompetitorsInternal(0);
   }, [userId]);
 
   // Load competitors on mount

@@ -6,10 +6,12 @@ import {
   formatRelativeTime, 
   getPlatformEmoji, 
   formatNumber,
-  getPlatformColor 
+  getPlatformColor,
+  formatEngagementRate 
 } from '@/utils/competitorHelpers';
 import { X, Loader2, TrendingUp, Users, FileText, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdvancedAnalytics } from './AdvancedAnalytics';
 
 interface AnalysisDashboardProps {
   competitor: Competitor;
@@ -18,13 +20,15 @@ interface AnalysisDashboardProps {
   onGenerateContent?: (gap: any) => void;
   onCreateSimilar?: (post: any) => void;
   onDelete: (id: string) => void;
+  userId: string; // Add userId prop
 }
 
 export function AnalysisDashboard({
   competitor,
   isOpen,
   onClose,
-  onDelete
+  onDelete,
+  userId
 }: AnalysisDashboardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -48,9 +52,7 @@ export function AnalysisDashboard({
   };
 
   const gradientBg = getPlatformColor(competitor.platform);
-  const engagementRate = competitor.engagement_rate 
-    ? Number(competitor.engagement_rate).toFixed(2) 
-    : '0.00';
+  const engagementRate = formatEngagementRate(competitor.engagement_rate);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fadeIn overflow-hidden">
@@ -164,30 +166,13 @@ export function AnalysisDashboard({
               </div>
             )}
 
-            {/* Coming Soon */}
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl p-8 border border-purple-200 dark:border-purple-800 text-center">
-              <Loader2 className="w-12 h-12 text-purple-600 dark:text-purple-400 mx-auto mb-4 animate-spin" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                🚀 Advanced Analytics Coming Soon!
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                We're working on detailed charts, content gaps, and AI insights.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-left">
-                <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">📊 Performance Charts</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Posting patterns, engagement trends</p>
-                </div>
-                <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">🎯 Content Gaps</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered opportunities</p>
-                </div>
-                <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">🏆 Top Posts</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Best performing content</p>
-                </div>
-              </div>
-            </div>
+            {/* Advanced Analytics */}
+            <AdvancedAnalytics 
+              competitorId={competitor.id}
+              username={competitor.username}
+              platform={competitor.platform}
+              userId={userId}
+            />
           </div>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { isAdmin } from "@/lib/admin-auth";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import {
   getAdminOptimizationStats,
   getPlatformPopularity,
@@ -15,9 +14,9 @@ export const runtime = 'nodejs';
  */
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.email || !isAdmin(session.user.email)) {
-      return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 });
+    const authResult = await requireAdminAccess();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     // Get URL params for trends

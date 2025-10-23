@@ -1,65 +1,115 @@
-import { auth } from "./auth";
-import { isAdminEmail, hasAdminPermission, type AdminPermission } from "./admin-config";
-import { redirect } from "next/navigation";
+/**
+ * Admin Access Control
+ * Email whitelist-based admin authentication
+ */
 
-// Check if current user is admin
-export async function isCurrentUserAdmin(): Promise<boolean> {
-  const session = await auth();
-  return isAdminEmail(session?.user?.email);
+import { auth } from './auth';
+import { pool } from './database';
+
+// Admin email whitelist
+const ADMIN_EMAILS = [
+  'saasmamu@gmail.com',
+  'zulaihaaliyu440@gmail.com',
+  // Add more admin emails here
+];
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
 }
 
-// Check if an email is admin (synchronous version for direct email checks)
-export function isAdmin(email: string | null | undefined): boolean {
-  return isAdminEmail(email);
-}
+/**
+ * Check if the current user has admin access
+ * @returns Admin user object or null
+ */
+export async function checkAdminAccess(): Promise<AdminUser | null> {
+  try {
+    const session = await auth();
+    
+    if (!session?.user?.id || !session?.user?.email) {
+      return null;
+    }
 
-// Get current admin user or null
-export async function getCurrentAdminUser() {
-  const session = await auth();
-  if (!session?.user || !isAdminEmail(session.user.email)) {
+    // Check if email is in whitelist
+    if (!ADMIN_EMAILS.includes(session.user.email)) {
+      return null;
+    }
+
+    // Verify user exists and has admin role in database
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT id, email, name, role FROM users WHERE id = $1 AND role = $2',
+        [session.user.id, 'admin']
+      );
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      return result.rows[0] as AdminUser;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error checking admin access:', error);
     return null;
   }
-  return session.user;
 }
 
-// Require admin access - redirect if not admin
+/**
+ * Require admin access or return error response
+ * Use in API routes
+ */
 export async function requireAdminAccess() {
-  const session = await auth();
+  const admin = await checkAdminAccess();
   
-  if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/admin");
+  if (!admin) {
+    return {
+      success: false as const,
+      error: 'Unauthorized: Admin access required',
+      status: 403,
+    };
   }
-  
-  if (!isAdminEmail(session.user.email)) {
-    redirect("/dashboard?error=unauthorized");
-  }
-  
-  return session.user;
+
+  return {
+    success: true as const,
+    admin,
+    user: admin, // Alias for backwards compatibility
+  };
 }
 
-// Require specific admin permission
-export async function requireAdminPermission(permission: AdminPermission) {
-  const session = await auth();
-  
-  if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/admin");
-  }
-  
-  if (!hasAdminPermission(session.user.email, permission)) {
-    redirect("/dashboard?error=insufficient_permissions");
-  }
-  
-  return session.user;
+/**
+ * Check if an email has admin access
+ */
+export function isAdminEmail(email: string): boolean {
+  return ADMIN_EMAILS.includes(email);
 }
 
-// Check admin access without redirect (for API routes)
-export async function checkAdminAccess(): Promise<{ isAdmin: boolean; user: any | null }> {
-  const session = await auth();
-  
-  if (!session?.user) {
-    return { isAdmin: false, user: null };
+/**
+ * Log admin action to database
+ */
+export async function logAdminAction(
+  adminUserId: string,
+  actionType: string,
+  targetId?: string,
+  details?: any
+): Promise<void> {
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query(
+        `INSERT INTO admin_ltd_actions (admin_user_id, action_type, target_id, details)
+         VALUES ($1, $2, $3, $4)`,
+        [adminUserId, actionType, targetId || null, details ? JSON.stringify(details) : null]
+      );
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error logging admin action:', error);
+    // Don't throw - logging failure shouldn't break the operation
   }
-  
-  const isAdmin = isAdminEmail(session.user.email);
-  return { isAdmin, user: session.user };
 }

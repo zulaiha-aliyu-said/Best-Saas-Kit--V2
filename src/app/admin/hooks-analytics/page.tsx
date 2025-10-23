@@ -1,6 +1,5 @@
-import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { isAdmin } from '@/lib/admin-auth';
+import { checkAdminAccess } from '@/lib/admin-auth';
 import AdminHooksAnalytics from '@/components/admin/admin-hooks-analytics';
 
 export const metadata = {
@@ -9,9 +8,9 @@ export const metadata = {
 };
 
 export default async function AdminHookAnalyticsPage() {
-  const session = await auth();
+  const admin = await checkAdminAccess();
 
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
+  if (!admin) {
     redirect('/auth/signin');
   }
 

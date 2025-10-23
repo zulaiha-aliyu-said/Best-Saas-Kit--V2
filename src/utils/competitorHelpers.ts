@@ -170,6 +170,18 @@ export const extractUsername = (input: string): string => {
   return input;
 };
 
+// Safely convert engagement rate to formatted string
+// PostgreSQL DECIMAL returns as string, so we need to handle both types
+export const formatEngagementRate = (rate: number | string | null | undefined): string => {
+  if (rate === null || rate === undefined) return '0.00';
+  
+  const numRate = typeof rate === 'string' ? parseFloat(rate) : rate;
+  
+  if (isNaN(numRate)) return '0.00';
+  
+  return numRate.toFixed(2);
+};
+
 // Calculate engagement rate
 export const calculateEngagementRate = (
   engagement: number,
@@ -198,6 +210,7 @@ export const getComparisonColor = (status: 'ahead' | 'equal' | 'behind'): string
   };
   return colors[status];
 };
+
 
 
 

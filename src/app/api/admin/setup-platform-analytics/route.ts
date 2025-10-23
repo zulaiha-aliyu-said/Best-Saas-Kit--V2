@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { isAdmin } from "@/lib/admin-auth";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import { pool } from "@/lib/database";
 import fs from 'fs';
 import path from 'path';
@@ -14,11 +13,11 @@ export const runtime = 'nodejs';
  */
 export async function POST() {
   try {
-    const session = await auth();
-    if (!session?.user?.email || !isAdmin(session.user.email)) {
+    const authResult = await requireAdminAccess();
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 403 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
