@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Download, MessageSquare, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CreditsDisplay } from "@/components/credits/credits-display";
+import { UpgradePrompt } from "@/components/upgrade/UpgradePrompt";
 
 export interface Message {
   id: string;
@@ -30,6 +31,8 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [tierInfo, setTierInfo] = useState<{ currentTier: number; requiredTier: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -73,6 +76,29 @@ export function ChatInterface({
       if (!response.ok) {
         const errorData = await response.json();
 
+        // Handle tier restriction with upgrade prompt
+        if (response.status === 403 && errorData.code === 'TIER_RESTRICTED') {
+          setTierInfo({ currentTier: errorData.currentTier, requiredTier: errorData.requiredTier });
+          setShowUpgrade(true);
+          setIsLoading(false);
+          // Remove the user message since we're showing upgrade prompt
+          setMessages(prev => prev.slice(0, -1));
+          return;
+        }
+
+        // Also check for tier restriction in error message (fallback)
+        if (response.status === 403 || errorData.error?.includes('Tier 3+ Required')) {
+          setTierInfo({ 
+            currentTier: errorData.currentTier || 1, 
+            requiredTier: errorData.requiredTier || 3 
+          });
+          setShowUpgrade(true);
+          setIsLoading(false);
+          // Remove the user message since we're showing upgrade prompt
+          setMessages(prev => prev.slice(0, -1));
+          return;
+        }
+
         // Handle credit-specific errors
         if (errorData.code === 'INSUFFICIENT_CREDITS') {
           const errorMessage: Message = {
@@ -85,7 +111,16 @@ export function ChatInterface({
           return;
         }
 
-        throw new Error(errorData.error || 'Failed to get response');
+        // For any other error, show in chat instead of throwing
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `⚠️ ${errorData.error || 'Failed to get response'}`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        setIsLoading(false);
+        return;
       }
 
       const data = await response.json();
@@ -197,48 +232,69 @@ export function ChatInterface({
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full p-8">
-              <div className="text-center">
-                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Start a conversation
-                </h3>
-                <p className="text-muted-foreground">
-                  Ask me anything and I'll help you with information, analysis, or creative tasks.
-                </p>
+        {/* Upgrade Prompt or Messages Area */}
+        {showUpgrade && tierInfo ? (
+          <div className="flex-1 overflow-y-auto p-6">
+            <UpgradePrompt
+              featureName="AI Chat Assistant"
+              currentTier={tierInfo.currentTier}
+              requiredTier={tierInfo.requiredTier}
+              variant="inline"
+              benefits={[
+                "200 AI chat messages per month (Tier 3)",
+                "Unlimited messages (Tier 4)",
+                "Context-aware conversations",
+                "Content brainstorming & research",
+                "750 credits/month (Tier 3)",
+                "Premium AI models access"
+              ]}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full p-8">
+                <div className="text-center">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    Start a conversation
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Ask me anything and I'll help you with information, analysis, or creative tasks.
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-0">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-              {isLoading && (
-                <ChatMessage
-                  message={{
-                    id: 'loading',
-                    role: 'assistant',
-                    content: '',
-                    timestamp: new Date(),
-                  }}
-                  isLoading={true}
-                />
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="space-y-0">
+                {messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} />
+                ))}
+                {isLoading && (
+                  <ChatMessage
+                    message={{
+                      id: 'loading',
+                      role: 'assistant',
+                      content: '',
+                      timestamp: new Date(),
+                    }}
+                    isLoading={true}
+                  />
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Input Area */}
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          onStop={handleStop}
-          placeholder={placeholder}
-        />
+        {!showUpgrade && (
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            onStop={handleStop}
+            placeholder={placeholder}
+          />
+        )}
       </CardContent>
     </Card>
   );

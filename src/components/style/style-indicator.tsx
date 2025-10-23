@@ -30,10 +30,25 @@ export function StyleIndicator() {
   const [styleData, setStyleData] = useState<StyleData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
+  const [userTier, setUserTier] = useState<number | null>(null);
 
   useEffect(() => {
     loadStyleData();
+    fetchUserTier();
   }, []);
+
+  const fetchUserTier = async () => {
+    try {
+      const response = await fetch('/api/user/tier');
+      if (response.ok) {
+        const data = await response.json();
+        setUserTier(data.tier || 1);
+      }
+    } catch (error) {
+      console.error('Error fetching user tier:', error);
+      setUserTier(1);
+    }
+  };
 
   const loadStyleData = async () => {
     try {
@@ -86,6 +101,11 @@ export function StyleIndicator() {
       setIsToggling(false);
     }
   };
+
+  // Don't show for Tier 1-2 users
+  if (userTier !== null && userTier < 3) {
+    return null;
+  }
 
   if (isLoading) {
     return (

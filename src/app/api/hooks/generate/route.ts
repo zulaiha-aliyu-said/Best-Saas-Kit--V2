@@ -79,8 +79,24 @@ export async function POST(request: NextRequest) {
 
     const { topic, platform, niche } = await request.json();
 
-    // Calculate and deduct credits for viral hook generation
+    // Get user plan and check tier access
     const plan = await getUserPlan(userId);
+    
+    // 🔒 TIER 2+ FEATURE - Check access
+    if (plan?.plan_type === 'ltd') {
+      if (!plan.ltd_tier || plan.ltd_tier < 2) {
+        return NextResponse.json({
+          error: 'Tier 2+ Required',
+          message: 'Viral Hook Generator is a Tier 2+ feature. Upgrade your plan to access 50+ proven hook patterns.',
+          code: 'TIER_RESTRICTED',
+          currentTier: plan.ltd_tier || 1,
+          requiredTier: 2,
+          upgradeUrl: '/redeem'
+        }, { status: 403 });
+      }
+    }
+    
+    // Calculate and deduct credits for viral hook generation
     const creditCost = calculateCreditCost('viral_hook', plan?.ltd_tier ?? undefined);
     
     console.log(`💳 Viral Hook Credit Calculation: ${creditCost} credits (Tier ${plan?.ltd_tier || 'free'})`);

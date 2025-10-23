@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, Copy, Check, ChevronDown, ChevronUp, Loader2, TrendingUp, BarChart3 } from 'lucide-react';
+import { UpgradePrompt } from '@/components/upgrade/UpgradePrompt';
 
 interface GeneratedHook {
   id: string;
@@ -65,6 +66,8 @@ export default function ViralHookGenerator() {
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [upgradeData, setUpgradeData] = useState<{ currentTier: number; requiredTier: number } | null>(null);
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -80,11 +83,27 @@ export default function ViralHookGenerator() {
         body: JSON.stringify({ topic, platform, niche }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate hooks');
+      const data = await response.json();
+
+      // Handle tier restriction (403)
+      if (response.status === 403 && data.code === 'TIER_RESTRICTED') {
+        setUpgradeData({ currentTier: data.currentTier, requiredTier: data.requiredTier });
+        setShowUpgradePrompt(true);
+        setLoading(false);
+        return;
       }
 
-      const data = await response.json();
+      // Handle insufficient credits (402)
+      if (response.status === 402 && data.code === 'INSUFFICIENT_CREDITS') {
+        alert(`💳 Insufficient Credits\n\nYou need ${data.required} credits but only have ${data.remaining}.\n\nYour credits will reset soon!`);
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate hooks');
+      }
+
       setHooks(data.hooks);
     } catch (error) {
       console.error('Error generating hooks:', error);
@@ -127,6 +146,25 @@ export default function ViralHookGenerator() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 p-6">
       <div className="max-w-6xl mx-auto">
+        {/* Upgrade Prompt */}
+        {showUpgradePrompt && upgradeData && (
+          <div className="mb-8">
+            <UpgradePrompt
+              featureName="Viral Hook Generator"
+              currentTier={upgradeData.currentTier}
+              requiredTier={upgradeData.requiredTier}
+              variant="inline"
+              benefits={[
+                "Access 50+ proven hook patterns",
+                "Generate unlimited viral hooks",
+                "300 credits/month (Tier 2)",
+                "Advanced engagement scoring",
+                "Hook performance analytics"
+              ]}
+            />
+          </div>
+        )}
+        
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">

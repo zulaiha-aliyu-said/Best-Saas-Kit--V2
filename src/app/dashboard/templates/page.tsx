@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,7 +17,9 @@ import {
   Star,
   ArrowRight,
   Filter,
-  X
+  X,
+  Lock,
+  Crown
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -43,12 +45,46 @@ export default function TemplatesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [userTier, setUserTier] = useState<number>(1)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch user tier
+  useEffect(() => {
+    async function fetchUserTier() {
+      try {
+        const response = await fetch('/api/user/tier')
+        if (response.ok) {
+          const data = await response.json()
+          setUserTier(data.tier || 1)
+        }
+      } catch (error) {
+        console.error('Error fetching user tier:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchUserTier()
+  }, [])
+
+  // Calculate template limits based on tier
+  const templateLimits = {
+    1: 15,  // Tier 1: 15 premium templates
+    2: 40,  // Tier 2: 40 premium templates
+    3: 60,  // Tier 3: 60 premium templates
+    4: 60,  // Tier 4: Same as Tier 3
+  }
+
+  const maxTemplates = templateLimits[userTier as keyof typeof templateLimits] || 15
+  const customTemplateLimit = userTier >= 3 ? 'unlimited' : userTier === 2 ? 5 : 0
 
   const categories = Array.from(new Set(REPURPOSE_TEMPLATES.map(t => t.category)))
   const difficulties = Array.from(new Set(REPURPOSE_TEMPLATES.map(t => t.difficulty)))
 
   const filteredTemplates = useMemo(() => {
-    return REPURPOSE_TEMPLATES.filter(template => {
+    // Filter templates based on tier access
+    const accessibleTemplates = REPURPOSE_TEMPLATES.slice(0, maxTemplates)
+    
+    return accessibleTemplates.filter(template => {
       const matchesSearch = 
         template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -58,7 +94,7 @@ export default function TemplatesPage() {
 
       return matchesSearch && matchesCategory && matchesDifficulty
     })
-  }, [searchQuery, selectedCategory, selectedDifficulty])
+  }, [searchQuery, selectedCategory, selectedDifficulty, maxTemplates])
 
   const toggleFavorite = (templateId: string) => {
     setFavorites(prev => {
@@ -80,13 +116,26 @@ export default function TemplatesPage() {
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
           <Sparkles className="w-4 h-4 text-primary" />
-          <p className="text-sm text-primary font-semibold">15 Professional Templates</p>
+          <p className="text-sm text-primary font-semibold">
+            {filteredTemplates.length} / {maxTemplates} Professional Templates
+            {userTier >= 2 && ` • ${customTemplateLimit === 'unlimited' ? 'Unlimited' : customTemplateLimit} Custom`}
+          </p>
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Content Repurpose Templates</h1>
+        <div className="flex items-center justify-center gap-2">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Content Repurpose Templates</h1>
+          {userTier >= 3 && <Crown className="w-8 h-8 text-yellow-500" />}
+        </div>
+        
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
           Choose from our curated collection of templates designed to transform your content across platforms. 
-          Each template comes with pre-configured settings for optimal results.
+          {userTier < 2 && (
+            <span className="block mt-2 text-sm">
+              <Link href="/redeem" className="text-primary hover:underline font-semibold">
+                Upgrade to Tier 2+
+              </Link> to unlock 40+ templates + custom templates
+            </span>
+          )}
         </p>
       </div>
 

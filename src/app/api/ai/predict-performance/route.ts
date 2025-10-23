@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 import { getUserByGoogleId, deductCredits, createPerformancePrediction, getUserCredits } from '@/lib/database';
+import { getUserPlan } from '@/lib/feature-gate';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,25 @@ export async function POST(request: NextRequest) {
         { error: 'User not found' },
         { status: 400 }
       );
+    }
+
+    // 🔒 TIER 3+ FEATURE - Check tier access
+    const plan = await getUserPlan(session.user.id);
+    
+    if (plan?.plan_type === 'ltd') {
+      const userTier = plan.ltd_tier || 1;
+      
+      // Check tier access (Tier 3+)
+      if (userTier < 3) {
+        return NextResponse.json({
+          error: 'Tier 3+ Required',
+          message: 'AI Performance Predictions is a Tier 3+ feature. Upgrade to unlock predictive scoring with optimization tips.',
+          code: 'TIER_RESTRICTED',
+          currentTier: userTier,
+          requiredTier: 3,
+          upgradeUrl: '/redeem'
+        }, { status: 403 });
+      }
     }
 
     // Check credits (1 credit per prediction)

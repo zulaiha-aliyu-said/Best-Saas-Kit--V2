@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ContentImprovementModal } from "./content-improvement-modal";
+import { UpgradePrompt } from "@/components/upgrade/UpgradePrompt";
 
 interface PerformancePrediction {
   score: number;
@@ -74,6 +75,8 @@ export function PredictivePerformanceModal({
   const [hasGenerated, setHasGenerated] = useState(false);
   const [improvementModalOpen, setImprovementModalOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<string>("");
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [tierInfo, setTierInfo] = useState<{ currentTier: number; requiredTier: number } | null>(null);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -120,6 +123,15 @@ export function PredictivePerformanceModal({
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Handle tier restriction with upgrade prompt
+        if (response.status === 403 && errorData.code === 'TIER_RESTRICTED') {
+          setTierInfo({ currentTier: errorData.currentTier, requiredTier: errorData.requiredTier });
+          setShowUpgrade(true);
+          setIsLoading(false);
+          return;
+        }
+        
         throw new Error(errorData.error || 'Failed to generate prediction');
       }
 
@@ -331,7 +343,23 @@ export function PredictivePerformanceModal({
           )}
 
           {/* Error State */}
-          {error && (
+          {showUpgrade && tierInfo ? (
+            <div className="my-4">
+              <UpgradePrompt
+                featureName="AI Performance Predictions"
+                currentTier={tierInfo.currentTier}
+                requiredTier={tierInfo.requiredTier}
+                variant="inline"
+                benefits={[
+                  "AI-powered performance scoring (0-100)",
+                  "5-factor breakdown analysis",
+                  "Actionable optimization tips",
+                  "Platform-specific predictions",
+                  "750 credits/month (Tier 3)"
+                ]}
+              />
+            </div>
+          ) : error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2 text-red-800">
                 <XCircle className="w-4 h-4" />

@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 import { incrementMessageCount, checkUsageLimits } from '@/lib/usage-tracking';
 import { deductCredits, getUserCredits } from '@/lib/database';
+import { getUserPlan } from '@/lib/feature-gate';
+import { checkChatLimit, incrementChatUsage } from '@/lib/tier-usage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +18,39 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    // 🔒 TIER 3+ FEATURE - Check tier access
+    const plan = await getUserPlan(userId);
+    
+    if (plan?.plan_type === 'ltd') {
+      const userTier = plan.ltd_tier || 1;
+      
+      // Check tier access (Tier 3+)
+      if (userTier < 3) {
+        return NextResponse.json({
+          error: 'Tier 3+ Required',
+          message: 'AI Chat Assistant is a Tier 3+ feature. Upgrade to unlock 200 messages/month.',
+          code: 'TIER_RESTRICTED',
+          currentTier: userTier,
+          requiredTier: 3,
+          upgradeUrl: '/redeem'
+        }, { status: 403 });
+      }
+
+      // Check monthly chat message limit
+      const limitCheck = await checkChatLimit(userId, userTier);
+      
+      if (!limitCheck.allowed) {
+        return NextResponse.json({
+          error: 'Chat Limit Reached',
+          message: limitCheck.reason,
+          code: 'LIMIT_EXCEEDED',
+          current: limitCheck.current,
+          limit: limitCheck.limit,
+          tier: userTier
+        }, { status: 429 });
+      }
+    }
 
     // Check credits first
     const currentCredits = await getUserCredits(userId);
@@ -102,6 +137,11 @@ export async function POST(request: NextRequest) {
     // Track usage
     const tokensUsed = completion.usage?.total_tokens || 0;
     incrementMessageCount(userId, tokensUsed);
+
+    // Track AI chat message count for tier limits
+    if (plan?.plan_type === 'ltd') {
+      await incrementChatUsage(userId, 1);
+    }
 
     // Return the response with updated credits
     return NextResponse.json({

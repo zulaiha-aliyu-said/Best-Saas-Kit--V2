@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { StyleTrainingComponent } from "@/components/style/style-training";
 import { StyleProfileComponent } from "@/components/style/style-profile";
 import { StyleTestComponent } from "@/components/style/style-test";
+import { UpgradePrompt } from "@/components/upgrade/UpgradePrompt";
 import { 
   User, 
   Bot, 
@@ -110,11 +111,26 @@ export default function SettingsPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [userTier, setUserTier] = useState<number>(1);
 
   useEffect(() => {
     // Load user preferences from API
     loadPreferences();
+    fetchUserTier();
   }, []);
+
+  const fetchUserTier = async () => {
+    try {
+      const response = await fetch('/api/user/tier');
+      if (response.ok) {
+        const data = await response.json();
+        setUserTier(data.tier || 1);
+      }
+    } catch (error) {
+      console.error('Error fetching user tier:', error);
+      setUserTier(1);
+    }
+  };
 
   const loadPreferences = async () => {
     try {
@@ -253,7 +269,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className={`grid w-full ${userTier >= 3 ? 'grid-cols-7' : 'grid-cols-6'}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile
@@ -266,10 +282,13 @@ export default function SettingsPage() {
             <FileText className="h-4 w-4" />
             Content
           </TabsTrigger>
-          <TabsTrigger value="style" className="flex items-center gap-2">
-            <PenTool className="h-4 w-4" />
-            Writing Style
-          </TabsTrigger>
+          {userTier >= 3 && (
+            <TabsTrigger value="style" className="flex items-center gap-2">
+              <PenTool className="h-4 w-4" />
+              Writing Style
+              <Badge className="ml-1 bg-purple-600 text-[10px] px-1 py-0">Tier 3+</Badge>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Notifications
@@ -662,13 +681,35 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Writing Style */}
-        <TabsContent value="style" className="space-y-6">
-          <div className="space-y-6">
-            <StyleProfileComponent />
-            <StyleTrainingComponent />
-            <StyleTestComponent />
-          </div>
-        </TabsContent>
+        {userTier >= 3 ? (
+          <TabsContent value="style" className="space-y-6">
+            <div className="space-y-6">
+              <StyleProfileComponent />
+              <StyleTrainingComponent />
+              <StyleTestComponent />
+            </div>
+          </TabsContent>
+        ) : (
+          <TabsContent value="style" className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <UpgradePrompt
+                  featureName='"Talk Like Me" Style Training'
+                  currentTier={userTier}
+                  requiredTier={3}
+                  variant="inline"
+                  benefits={[
+                    "AI learns your unique writing voice",
+                    "Generate content that sounds like you",
+                    "1 style profile (Tier 3), 3 profiles (Tier 4)",
+                    "Maintain brand consistency across platforms",
+                    "750 credits/month (Tier 3)"
+                  ]}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         {/* Notifications */}
         <TabsContent value="notifications" className="space-y-6">
