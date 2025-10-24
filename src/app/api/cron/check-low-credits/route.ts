@@ -116,7 +116,8 @@ export async function GET(request: NextRequest) {
             emailResults.sent++;
             console.log(`✅ Warning sent to ${user.email}`);
           } else {
-            throw new Error(emailResult.error?.message || 'Email failed');
+            const errorMsg = (emailResult.error as any)?.message || 'Email failed';
+            throw new Error(errorMsg);
           }
 
         } catch (error: any) {
