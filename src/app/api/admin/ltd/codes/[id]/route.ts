@@ -84,7 +84,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin access
@@ -97,7 +97,7 @@ export async function DELETE(
     }
 
     const admin = authResult.admin!;
-    const codeId = parseInt(context.params.id);
+    const codeId = parseInt(params.id);
 
     if (isNaN(codeId)) {
       return NextResponse.json(
