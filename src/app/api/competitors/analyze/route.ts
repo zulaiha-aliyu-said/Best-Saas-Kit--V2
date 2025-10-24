@@ -41,11 +41,10 @@ export async function POST(request: NextRequest) {
     let profileData: any;
 
     // Check cache first (7-day TTL)
-    const cacheKey = `${platform}:${identifier}`;
-    const cachedData = competitorCache.get(cacheKey);
+    const cachedData = competitorCache.get(platform, identifier);
 
     if (cachedData) {
-      console.log(`Using cached data for ${cacheKey}`);
+      console.log(`Using cached data for ${platform}:${identifier}`);
       return NextResponse.json(cachedData);
     }
 
