@@ -10,7 +10,7 @@ import { getLTDUserById, updateUserLTDPlan } from '@/lib/ltd-admin';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdminAccess();
@@ -21,7 +21,8 @@ export async function GET(
       );
     }
 
-    const user = await getLTDUserById(params.id);
+    const { id } = await params;
+    const user = await getLTDUserById(id);
 
     if (!user) {
       return NextResponse.json(
@@ -45,7 +46,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdminAccess();
@@ -56,11 +57,12 @@ export async function PATCH(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { ltd_tier, credits, monthly_credit_limit } = body;
 
     const updatedUser = await updateUserLTDPlan(
-      params.id,
+      id,
       authResult.user!.id!,
       {
         ltd_tier,

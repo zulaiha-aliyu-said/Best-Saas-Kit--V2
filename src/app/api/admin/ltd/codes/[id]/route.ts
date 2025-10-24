@@ -10,7 +10,7 @@ import { getLTDCodeById, updateLTDCode, deleteLTDCode } from '@/lib/ltd-admin';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check admin access
@@ -23,7 +23,8 @@ export async function PATCH(
     }
 
     const admin = authResult.admin!;
-    const codeId = parseInt(params.id);
+    const { id } = await params;
+    const codeId = parseInt(id);
 
     if (isNaN(codeId)) {
       return NextResponse.json(
@@ -79,7 +80,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check admin access
@@ -92,7 +93,8 @@ export async function DELETE(
     }
 
     const admin = authResult.admin!;
-    const codeId = parseInt(params.id);
+    const { id } = await params;
+    const codeId = parseInt(id);
 
     if (isNaN(codeId)) {
       return NextResponse.json(

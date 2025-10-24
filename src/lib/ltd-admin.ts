@@ -5,6 +5,7 @@
 
 import { pool } from './database';
 import { LTDTier } from './ltd-tiers';
+import { logAdminAction } from './admin-auth';
 import crypto from 'crypto';
 
 export interface LTDCode {
