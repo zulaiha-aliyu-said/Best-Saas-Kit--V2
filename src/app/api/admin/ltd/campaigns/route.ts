@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
         await logAdminAction(
           authResult.admin.id,
           'bulk_email',
-          null,
+          undefined,
           {
             subject,
             targetCount: users.length,

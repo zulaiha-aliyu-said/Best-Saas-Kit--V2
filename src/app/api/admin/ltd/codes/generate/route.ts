@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       quantity,
       prefix,
       maxRedemptions,
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      expiresAt: expiresAt ? new Date(expiresAt) : undefined,
       notes,
       adminUserId: admin.id,
     });
