@@ -57,6 +57,21 @@ export async function POST(request: NextRequest) {
       console.log('📦 Twitter API returned:', twitterData ? 'DATA' : 'NULL');
       
       if (!twitterData) {
+        // Check if identifier looks like a username (non-numeric)
+        const isUsername = !/^\d+$/.test(identifier);
+        
+        if (isUsername) {
+          return NextResponse.json(
+            { 
+              error: 'Numeric User ID required', 
+              message: 'Please use the numeric Twitter User ID instead of the username.',
+              helpText: 'Quick solution: Visit ilo.so/twitter-id to convert any username to a User ID',
+              example: 'Example: @elonmusk = 44196397'
+            },
+            { status: 400 }
+          );
+        }
+        
         return NextResponse.json(
           { error: 'Failed to fetch data from Twitter API. Please check your RapidAPI key and subscription.' },
           { status: 500 }
@@ -75,23 +90,35 @@ export async function POST(request: NextRequest) {
       posts = twitterData.data;
 
       competitorData = {
-        name: profileData.name,
+        name: profileData.name || profileData.username || 'Unknown',
         username: profileData.username,
         avatar_url: profileData.avatar,
         bio: profileData.bio || '',
-        followers_count: profileData.followerCount,
-        following_count: profileData.followingCount,
-        posts_count: profileData.tweetCount,
+        followers_count: profileData.followerCount || 0,
+        following_count: profileData.followingCount || 0,
+        posts_count: profileData.tweetCount || 0,
         platform_user_id: profileData.id,
-        is_verified: profileData.verified || profileData.isBlueVerified,
+        is_verified: profileData.verified || profileData.isBlueVerified || false,
       };
     } else {
       // Instagram
+      console.log('📸 Analyzing Instagram competitor:', identifier);
       const instagramData = await fetchInstagramCompetitor(identifier);
+      
+      console.log('📦 Instagram API returned:', instagramData ? 'DATA' : 'NULL');
+      console.log('📊 Instagram profile data:', instagramData ? {
+        username: instagramData.username,
+        hasLastMedia: !!instagramData.lastMedia,
+        mediaCount: instagramData.lastMedia?.media?.length || 0
+      } : 'NO DATA');
       
       if (!instagramData) {
         return NextResponse.json(
-          { error: 'Instagram user not found or API error' },
+          { 
+            error: 'Instagram user not found',
+            message: 'Unable to fetch Instagram profile data. Please verify the username is correct.',
+            helpText: 'Make sure the account is public and the username is spelled correctly (without @).'
+          },
           { status: 404 }
         );
       }
@@ -99,30 +126,45 @@ export async function POST(request: NextRequest) {
       profileData = instagramData;
       posts = instagramData.lastMedia?.media || [];
 
+      // Warn if no posts found but profile exists
+      if (posts.length === 0) {
+        console.warn('⚠️ Instagram profile found but no posts available. This could mean:');
+        console.warn('  1. The account has no posts');
+        console.warn('  2. The account is private');
+        console.warn('  3. RapidAPI rate limit or subscription issue');
+        console.warn('  4. API returned incomplete data');
+      }
+
       competitorData = {
-        name: instagramData.full_name,
+        name: instagramData.full_name || instagramData.username || 'Unknown',
         username: instagramData.username,
         avatar_url: instagramData.profile_pic_url,
         bio: instagramData.bio || '',
-        followers_count: instagramData.followers,
-        following_count: instagramData.following,
-        posts_count: instagramData.media_count,
+        followers_count: instagramData.followers || 0,
+        following_count: instagramData.following || 0,
+        posts_count: instagramData.media_count || 0,
         platform_user_id: instagramData.id,
-        is_verified: instagramData.is_verified,
+        is_verified: instagramData.is_verified || false,
       };
     }
 
     // Calculate engagement rate
-    const avgLikes = posts.reduce((sum, post) => sum + (post.likeCount || post.like || 0), 0) / posts.length;
-    const avgComments = posts.reduce((sum, post) => sum + (post.commentCount || post.comment_count || 0), 0) / posts.length;
-    const avgShares = posts.reduce((sum, post) => sum + (post.retweetCount || 0), 0) / posts.length;
+    const postsCount = posts.length || 1; // Avoid division by zero
+    const avgLikes = posts.reduce((sum, post) => sum + (post.likeCount || post.like || 0), 0) / postsCount;
+    const avgComments = posts.reduce((sum, post) => sum + (post.commentCount || post.comment_count || 0), 0) / postsCount;
+    const avgShares = posts.reduce((sum, post) => sum + (post.retweetCount || 0), 0) / postsCount;
     
-    const engagementRate = calculateEngagementRate(
+    let engagementRate = calculateEngagementRate(
       avgLikes,
       avgComments,
       avgShares,
       competitorData.followers_count
     );
+    
+    // Ensure engagement rate is a valid number
+    if (isNaN(engagementRate) || !isFinite(engagementRate)) {
+      engagementRate = 0;
+    }
 
     // Store or update competitor in database
     const competitorQuery = `

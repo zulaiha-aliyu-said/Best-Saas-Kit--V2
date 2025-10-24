@@ -105,7 +105,9 @@ export function AddCompetitorModal({ isOpen, onClose, onAdd, isLoading = false }
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               Platform *
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            
+            {/* Available Platforms */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
               {[
                 { value: 'twitter', label: 'Twitter', emoji: '𝕏' },
                 { value: 'instagram', label: 'Instagram', emoji: '📸' }
@@ -126,6 +128,25 @@ export function AddCompetitorModal({ isOpen, onClose, onAdd, isLoading = false }
                 </button>
               ))}
             </div>
+
+            {/* Coming Soon Platforms */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Facebook', emoji: '📘' },
+                { label: 'LinkedIn', emoji: '💼' },
+                { label: 'TikTok', emoji: '🎵' }
+              ].map((platform) => (
+                <div
+                  key={platform.label}
+                  className="p-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800/50 opacity-60 cursor-not-allowed"
+                >
+                  <div className="text-lg mb-1">{platform.emoji}</div>
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{platform.label}</div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">Soon</div>
+                </div>
+              ))}
+            </div>
+
             {errors.platform && (
               <p className="mt-2 text-sm text-red-600">{errors.platform}</p>
             )}
@@ -134,23 +155,51 @@ export function AddCompetitorModal({ isOpen, onClose, onAdd, isLoading = false }
           {/* Username/ID */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {formData.platform === 'twitter' ? 'User ID *' : 'Username *'}
+              {formData.platform === 'twitter' ? 'Twitter User ID *' : 'Username *'}
             </label>
             <input
               type="text"
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              placeholder={formData.platform === 'twitter' ? 'e.g., 44196397' : 'e.g., natgeo or @natgeo'}
+              placeholder={formData.platform === 'twitter' ? 'e.g., 44196397 (numeric ID)' : 'e.g., natgeo or @natgeo'}
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                 errors.username ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               disabled={isLoading}
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {formData.platform === 'twitter' 
-                ? 'Enter the numeric Twitter user ID (found in profile URLs)'
-                : 'We\'ll analyze their public posts and profile'}
-            </p>
+            {formData.platform === 'twitter' ? (
+              <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-xs text-blue-800 dark:text-blue-200 font-medium mb-2">
+                  ✨ Quick & Easy: Find any Twitter User ID
+                </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs text-blue-700 dark:text-blue-300">
+                    1. Visit:
+                  </span>
+                  <a 
+                    href="https://ilo.so/twitter-id/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded"
+                  >
+                    ilo.so/twitter-id 🔗
+                  </a>
+                </div>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                  2. Enter the username (e.g., @elonmusk)
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                  3. Click "Get ID" to see the numeric ID
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                  Example: @elonmusk = <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">44196397</code>
+                </p>
+              </div>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                We'll analyze their public posts and profile
+              </p>
+            )}
             {errors.username && (
               <p className="mt-1 text-sm text-red-600">{errors.username}</p>
             )}
@@ -190,6 +239,10 @@ export function AddCompetitorModal({ isOpen, onClose, onAdd, isLoading = false }
     </div>
   );
 }
+
+
+
+
 
 
 

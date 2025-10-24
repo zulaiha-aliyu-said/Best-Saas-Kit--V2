@@ -4,7 +4,7 @@ import { getUserPlan } from '@/lib/feature-gate';
 import { checkSchedulingLimit, incrementSchedulingUsage } from '@/lib/tier-usage';
 import { deductCredits } from '@/lib/credits';
 
-const SCHEDULING_CREDIT_COST = 0.5;
+const SCHEDULING_CREDIT_COST = 1; // Changed from 0.5 to 1 (credits column is INTEGER)
 
 export async function POST(request: NextRequest) {
   try {

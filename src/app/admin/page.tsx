@@ -6,10 +6,18 @@ import {
   Activity, 
   Calendar,
   TrendingUp,
-  Clock
+  Clock,
+  MessageSquare,
+  Percent,
+  Sparkles,
+  BarChart3,
+  Settings,
+  Zap
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const runtime = 'nodejs';
 
@@ -183,37 +191,90 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5" />
-              <span>Quick Stats</span>
+              <Zap className="h-5 w-5" />
+              <span>Quick Actions</span>
             </CardTitle>
             <CardDescription>
-              Key metrics at a glance
+              Common admin tasks
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">Users Today</span>
-                <span className="text-lg font-bold text-green-600">+{stats.newToday}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">Users This Week</span>
-                <span className="text-lg font-bold text-blue-600">+{stats.newThisWeek}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">Users This Month</span>
-                <span className="text-lg font-bold text-purple-600">+{stats.newThisMonth}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                <span className="text-sm font-medium">Active Rate</span>
-                <span className="text-lg font-bold text-orange-600">
-                  {stats.totalUsers > 0 ? Math.round((stats.activeThisMonth / stats.totalUsers) * 100) : 0}%
-                </span>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/admin/users">
+                <Button variant="outline" className="w-full justify-start h-auto py-3">
+                  <Users className="mr-2 h-4 w-4" />
+                  <span>Users</span>
+                </Button>
+              </Link>
+              <Link href="/admin/feedback">
+                <Button variant="outline" className="w-full justify-start h-auto py-3">
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  <span>Feedback</span>
+                </Button>
+              </Link>
+              <Link href="/admin/analytics">
+                <Button variant="outline" className="w-full justify-start h-auto py-3">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  <span>Analytics</span>
+                </Button>
+              </Link>
+              <Link href="/admin/hooks-analytics">
+                <Button variant="outline" className="w-full justify-start h-auto py-3">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  <span>Hooks</span>
+                </Button>
+              </Link>
+              <Link href="/admin/discounts">
+                <Button variant="outline" className="w-full justify-start h-auto py-3">
+                  <Percent className="mr-2 h-4 w-4" />
+                  <span>Discounts</span>
+                </Button>
+              </Link>
+              <Link href="/admin/settings">
+                <Button variant="outline" className="w-full justify-start h-auto py-3">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5" />
+            <span>Growth Metrics</span>
+          </CardTitle>
+          <CardDescription>
+            Key metrics at a glance
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="flex flex-col p-3 bg-muted rounded-lg">
+              <span className="text-sm font-medium text-muted-foreground mb-1">Users Today</span>
+              <span className="text-2xl font-bold text-green-600">+{stats.newToday}</span>
+            </div>
+            <div className="flex flex-col p-3 bg-muted rounded-lg">
+              <span className="text-sm font-medium text-muted-foreground mb-1">Users This Week</span>
+              <span className="text-2xl font-bold text-blue-600">+{stats.newThisWeek}</span>
+            </div>
+            <div className="flex flex-col p-3 bg-muted rounded-lg">
+              <span className="text-sm font-medium text-muted-foreground mb-1">Users This Month</span>
+              <span className="text-2xl font-bold text-purple-600">+{stats.newThisMonth}</span>
+            </div>
+            <div className="flex flex-col p-3 bg-muted rounded-lg">
+              <span className="text-sm font-medium text-muted-foreground mb-1">Active Rate</span>
+              <span className="text-2xl font-bold text-orange-600">
+                {stats.totalUsers > 0 ? Math.round((stats.activeThisMonth / stats.totalUsers) * 100) : 0}%
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

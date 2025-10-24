@@ -39,7 +39,12 @@ export default function CompetitorAnalysisClient({ userId }: CompetitorAnalysisC
         toast.success(`✅ ${data.username} analyzed successfully!`);
         setIsAddModalOpen(false);
       } else {
-        toast.error(result.error || 'Failed to analyze competitor');
+        // Show detailed error message
+        const errorMessage = result.message || result.error || 'Failed to analyze competitor';
+        toast.error(errorMessage, {
+          description: result.helpText || result.example,
+          duration: 8000, // Show longer for detailed errors
+        });
       }
     } finally {
       setIsAnalyzing(false);

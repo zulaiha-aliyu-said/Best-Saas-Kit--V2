@@ -369,8 +369,14 @@ export function ScheduleModal({
         }),
       });
 
+      console.log('Schedule API response status:', response.status, response.statusText);
+      
       if (response.ok) {
-        toast.success('Content scheduled successfully!');
+        const data = await response.json();
+        toast.success(data.message || 'Content scheduled successfully!');
+        if (data.creditsRemaining !== undefined) {
+          toast.info(`${data.creditsUsed} credits used. ${data.creditsRemaining} credits remaining.`);
+        }
         onClose();
         
         // Reset form
@@ -380,7 +386,42 @@ export function ScheduleModal({
         setSelectedHashtags([]);
         setScheduledDateTime(undefined);
       } else {
-        throw new Error('Failed to schedule content');
+        // Get the error details from the response
+        let errorData: any = {};
+        try {
+          const text = await response.text();
+          console.log('Raw error response:', text);
+          if (text) {
+            errorData = JSON.parse(text);
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          errorData = { error: 'Failed to schedule content', status: response.status };
+        }
+        
+        console.error('Schedule API error:', errorData);
+        console.error('Response status:', response.status, response.statusText);
+        
+        // Show specific error message
+        if (errorData.code === 'TIER_RESTRICTED') {
+          toast.error(errorData.message || 'Tier 2+ Required', {
+            description: `You're on Tier ${errorData.currentTier}. Upgrade to Tier ${errorData.requiredTier}+ to use this feature.`,
+            duration: 5000,
+          });
+        } else if (errorData.code === 'INSUFFICIENT_CREDITS') {
+          toast.error('Insufficient Credits', {
+            description: `You need ${errorData.required} credits but only have ${errorData.available} credits remaining.`,
+            duration: 5000,
+          });
+        } else if (errorData.code === 'LIMIT_EXCEEDED') {
+          toast.error('Scheduling Limit Reached', {
+            description: errorData.message,
+            duration: 5000,
+          });
+        } else {
+          toast.error(errorData.error || errorData.message || `Failed to schedule content (Status: ${response.status})`);
+        }
+        return; // Don't throw, just return
       }
     } catch (error) {
       console.error('Error scheduling content:', error);

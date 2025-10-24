@@ -76,3 +76,8 @@ export function EmptyState({ onAddCompetitor }: EmptyStateProps) {
 
 
 
+
+
+
+
+

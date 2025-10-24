@@ -6,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+import { ProTipBanner } from "@/components/tips/ProTipBanner";
+import { CreditOptimizationWidget } from "@/components/credits/CreditOptimizationWidget";
+import { useSession } from "next-auth/react";
 
 import {
   Users,
@@ -32,12 +36,18 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  
   // State for real data
   const [isLoading, setIsLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userCredits, setUserCredits] = useState(0);
+  
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [userTier, setUserTier] = useState(1);
   const [userStats, setUserStats] = useState({
     totalUsers: 0,
     activeToday: 0,
@@ -60,7 +70,31 @@ export default function DashboardPage() {
   // Fetch real data on component mount
   useEffect(() => {
     fetchDashboardData();
+    checkOnboardingStatus();
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const [onboardingRes, tierRes] = await Promise.all([
+        fetch('/api/onboarding/status'),
+        fetch('/api/user/tier')
+      ]);
+
+      if (onboardingRes.ok) {
+        const onboardingData = await onboardingRes.json();
+        if (!onboardingData.onboardingCompleted) {
+          setShowOnboarding(true);
+        }
+      }
+
+      if (tierRes.ok) {
+        const tierData = await tierRes.json();
+        setUserTier(tierData.tier || 1);
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     setIsLoading(true);
@@ -256,11 +290,30 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">
+    <>
+      {/* Onboarding Modal */}
+      <WelcomeModal
+        isOpen={showOnboarding}
+        onComplete={() => setShowOnboarding(false)}
+        userTier={userTier}
+        userName={session?.user?.name || undefined}
+        isNewUser={true}
+      />
+
+      <div className="space-y-8">
+        {/* Pro Tip Banner */}
+        <ProTipBanner 
+          tipId="dashboard-welcome"
+          title="💡 Pro Tip: Maximize Your Content Impact"
+          description="Use viral hooks to increase engagement by up to 300%. Combine them with AI predictions for best results!"
+          icon="lightbulb"
+          variant="info"
+        />
+
+        {/* Welcome Section */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">
             {isAdmin ? "Admin Dashboard" : `Welcome back, User!`}
           </h1>
           <p className="text-muted-foreground text-lg mt-2">
@@ -1097,6 +1150,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Credit Optimization Widget */}
+      <CreditOptimizationWidget />
+
       {/* Activity & Account Status */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -1221,5 +1277,6 @@ export default function DashboardPage() {
         </Button>
       </div>
     </div>
+    </>
   );
 }

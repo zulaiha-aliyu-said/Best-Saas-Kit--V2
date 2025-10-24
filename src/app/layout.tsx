@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeScript } from "@/components/theme-script";
 import { Toaster } from "sonner";
 import { LoadingProvider } from "@/components/providers/loading-provider";
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,15 +73,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
-        <ThemeProvider
-          defaultTheme="system"
-          storageKey="ui-theme"
-        >
-          <LoadingProvider>
-            {children}
-            <Toaster richColors />
-          </LoadingProvider>
-        </ThemeProvider>
+        <AuthSessionProvider>
+          <ThemeProvider
+            defaultTheme="system"
+            storageKey="ui-theme"
+          >
+            <LoadingProvider>
+              {children}
+              <Toaster richColors />
+            </LoadingProvider>
+          </ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

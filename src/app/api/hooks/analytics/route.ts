@@ -98,9 +98,9 @@ export async function GET(request: NextRequest) {
     const totalResult = await pool.query(
       `SELECT 
         COUNT(*) as total_hooks,
-        SUM(CASE WHEN copied THEN 1 ELSE 0 END) as total_copied,
-        AVG(engagement_score) as avg_engagement_score,
-        MAX(engagement_score) as max_score
+        COALESCE(SUM(CASE WHEN copied THEN 1 ELSE 0 END), 0) as total_copied,
+        COALESCE(AVG(engagement_score), 0) as avg_engagement_score,
+        COALESCE(MAX(engagement_score), 0) as max_score
        FROM generated_hooks
        WHERE user_id = $1`,
       [userId]

@@ -116,8 +116,15 @@ export function useCompetitors(userId?: string) {
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to analyze competitor');
+          const errorData = await response.json();
+          // Pass through the full error data for better error messages
+          return { 
+            success: false, 
+            error: errorData.error || 'Failed to analyze competitor',
+            message: errorData.message,
+            helpText: errorData.helpText,
+            example: errorData.example
+          };
         }
 
         const data = await response.json();

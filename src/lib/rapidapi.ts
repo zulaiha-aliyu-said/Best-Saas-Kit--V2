@@ -48,12 +48,95 @@ export interface TwitterResponse {
 }
 
 /**
- * Fetch Twitter user tweets and profile data
+ * Convert Twitter username to User ID
  */
-export async function fetchTwitterCompetitor(userId: string): Promise<TwitterResponse | null> {
+export async function getTwitterUserId(username: string): Promise<string | null> {
   try {
-    console.log('🔍 Fetching Twitter data for user ID:', userId);
+    // Remove @ if present
+    const cleanUsername = username.replace('@', '');
+    console.log('🔍 Converting Twitter username to ID:', cleanUsername);
+    
+    // Try the v2 endpoint first
+    let url = `https://twitter-api47.p.rapidapi.com/v2/user/by-username?username=${cleanUsername}`;
+    
+    let response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': 'twitter-api47.p.rapidapi.com',
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    });
+
+    // If v2 endpoint fails, try alternative approach
+    if (!response.ok) {
+      console.log('⚠️ v2 endpoint not available, trying alternative...');
+      
+      // Try search endpoint as fallback
+      url = `https://twitter-api47.p.rapidapi.com/v2/search?query=${cleanUsername}&type=users`;
+      
+      response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': 'twitter-api47.p.rapidapi.com',
+          'x-rapidapi-key': RAPIDAPI_KEY,
+        },
+      });
+      
+      if (!response.ok) {
+        console.error('❌ Error getting Twitter user ID:', response.status);
+        console.error('💡 Username-to-ID conversion not available. Please use numeric Twitter User ID.');
+        return null;
+      }
+      
+      const searchData = await response.json();
+      const users = searchData?.data?.users || [];
+      const matchedUser = users.find((u: any) => u.username?.toLowerCase() === cleanUsername.toLowerCase());
+      
+      if (matchedUser?.id) {
+        console.log('✅ Converted @' + cleanUsername + ' → ID:', matchedUser.id);
+        return matchedUser.id;
+      }
+      
+      return null;
+    }
+
+    const data = await response.json();
+    const userId = data?.data?.user?.result?.rest_id;
+    
+    if (userId) {
+      console.log('✅ Converted @' + cleanUsername + ' → ID:', userId);
+      return userId;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('❌ Error converting username:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch Twitter user tweets and profile data
+ * Accepts either username or numeric user ID
+ */
+export async function fetchTwitterCompetitor(identifier: string): Promise<TwitterResponse | null> {
+  try {
+    console.log('🔍 Fetching Twitter data for identifier:', identifier);
     console.log('🔑 Using API key:', RAPIDAPI_KEY ? 'SET' : 'NOT SET');
+    
+    // Auto-detect: if identifier is not all digits, treat as username and convert to ID
+    let userId = identifier;
+    if (!/^\d+$/.test(identifier)) {
+      console.log('🔄 Identifier is username, converting to ID...');
+      const convertedId = await getTwitterUserId(identifier);
+      if (!convertedId) {
+        console.error('❌ Failed to convert username to ID');
+        return null;
+      }
+      userId = convertedId;
+    } else {
+      console.log('✅ Identifier is numeric ID, using directly');
+    }
     
     const url = `https://twitter-api47.p.rapidapi.com/v3/user/tweets?userId=${userId}`;
     console.log('📡 API URL:', url);
@@ -130,29 +213,256 @@ export interface InstagramResponse {
 }
 
 /**
- * Fetch Instagram user profile and recent posts
+ * Fetch Instagram user profile and recent posts (Primary API)
+ * Using instagram-profile1.p.rapidapi.com
  */
-export async function fetchInstagramCompetitor(username: string): Promise<InstagramResponse | null> {
+async function fetchInstagramPrimary(username: string): Promise<InstagramResponse | null> {
   try {
-    const response = await fetch(
-      `https://instagram-profile1.p.rapidapi.com/getprofile/${username}`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-host': 'instagram-profile1.p.rapidapi.com',
-          'x-rapidapi-key': RAPIDAPI_KEY,
-        },
-      }
-    );
+    console.log('🔍 [PRIMARY] Fetching Instagram data for username:', username);
+    
+    const url = `https://instagram-profile1.p.rapidapi.com/getprofile/${username}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': 'instagram-profile1.p.rapidapi.com',
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    });
 
     if (!response.ok) {
-      throw new Error(`Instagram API error: ${response.status}`);
+      console.warn('⚠️ [PRIMARY] API failed:', response.status);
+      return null;
     }
 
     const data = await response.json();
-    return data;
+    
+    // Check if posts are included
+    if (data.lastMedia && data.lastMedia.media && data.lastMedia.media.length > 0) {
+      console.log('✅ [PRIMARY] Success! Posts count:', data.lastMedia.media.length);
+      return data;
+    }
+    
+    console.warn('⚠️ [PRIMARY] Profile fetched but no posts. Trying fallback...');
+    return null;
   } catch (error) {
-    console.error('Error fetching Instagram competitor:', error);
+    console.error('❌ [PRIMARY] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch Instagram user profile and recent posts (Fallback API #2)
+ * Using instagram-statistics-api.p.rapidapi.com
+ */
+async function fetchInstagramStatistics(username: string): Promise<InstagramResponse | null> {
+  try {
+    console.log('🔄 [STATISTICS] Fetching Instagram data for username:', username);
+    
+    // This API requires full Instagram URL
+    const instagramUrl = `https://www.instagram.com/${username}/`;
+    const url = `https://instagram-statistics-api.p.rapidapi.com/community?url=${encodeURIComponent(instagramUrl)}`;
+    console.log('📡 [STATISTICS] API URL:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': 'instagram-statistics-api.p.rapidapi.com',
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('❌ [STATISTICS] API failed:', response.status);
+      return null;
+    }
+
+    const rawData = await response.json();
+    console.log('✅ [STATISTICS] Data fetched successfully!');
+    
+    // Extract data from the response
+    const data = rawData.data || rawData;
+    const posts = data.lastPosts || [];
+    console.log('📊 [STATISTICS] Posts found:', posts.length);
+    
+    // Map to our expected format
+    return {
+      id: '', // Not provided by this API
+      username: username, // Use the username we passed in
+      full_name: data.name || username,
+      bio: data.bio || '',
+      followers: data.followersCount || data.followers || 0,
+      following: data.followingCount || data.following || 0,
+      is_verified: data.isVerified || data.verified || false,
+      is_business: data.type === 'business',
+      profile_pic_url: data.profilePicUrl || data.avatar || '',
+      media_count: data.postsCount || posts.length || 0,
+      lastMedia: {
+        media: posts.map((post: any) => ({
+          id: post.url?.split('/p/')[1]?.replace('/', '') || '',
+          shortcode: post.url?.split('/p/')[1]?.replace('/', '') || '',
+          link_to_post: post.url,
+          display_url: post.image || '',
+          is_video: post.type === 'video' || post.type === 'REELS' ? [true] : [],
+          caption: post.text || '',
+          like: post.likes || 0,
+          comment_count: post.comments || 0,
+          timestamp: post.date ? new Date(post.date).getTime() : Date.now(),
+          video_url: post.video || null,
+        }))
+      }
+    };
+  } catch (error) {
+    console.error('❌ [STATISTICS] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch Instagram user profile and recent posts (Fallback API)
+ * Using instagram-social-api.p.rapidapi.com
+ */
+async function fetchInstagramFallback(username: string): Promise<InstagramResponse | null> {
+  try {
+    console.log('🔄 [FALLBACK] Fetching Instagram data for username:', username);
+    
+    // Step 1: Get profile info
+    const profileUrl = `https://instagram-social-api.p.rapidapi.com/v1/user/info?username_or_id_or_url=${username}`;
+    console.log('📡 [FALLBACK] Profile URL:', profileUrl);
+    
+    const profileResponse = await fetch(profileUrl, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': 'instagram-social-api.p.rapidapi.com',
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    });
+
+    if (!profileResponse.ok) {
+      console.error('❌ [FALLBACK] Profile fetch failed:', profileResponse.status);
+      return null;
+    }
+
+    const profileData = await profileResponse.json();
+    console.log('✅ [FALLBACK] Profile fetched');
+    
+    // Step 2: Get posts
+    const postsUrl = `https://instagram-social-api.p.rapidapi.com/v1/posts?username_or_id_or_url=${username}`;
+    console.log('📡 [FALLBACK] Posts URL:', postsUrl);
+    
+    const postsResponse = await fetch(postsUrl, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': 'instagram-social-api.p.rapidapi.com',
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    });
+
+    if (!postsResponse.ok) {
+      console.warn('⚠️ [FALLBACK] Posts fetch failed:', postsResponse.status);
+      // Return profile without posts
+      return {
+        ...profileData.data,
+        lastMedia: { media: [] }
+      };
+    }
+
+    const postsData = await postsResponse.json();
+    const posts = postsData.data?.items || [];
+    console.log('✅ [FALLBACK] Posts fetched. Count:', posts.length);
+    
+    // Combine profile + posts in expected format
+    return {
+      id: profileData.data.id || profileData.data.instagram_pk,
+      username: profileData.data.username,
+      full_name: profileData.data.full_name,
+      bio: profileData.data.biography,
+      followers: profileData.data.follower_count,
+      following: profileData.data.following_count,
+      is_verified: profileData.data.is_verified,
+      is_business: profileData.data.is_business || false,
+      profile_pic_url: profileData.data.profile_pic_url,
+      media_count: profileData.data.media_count,
+      lastMedia: {
+        media: posts.map((post: any) => ({
+          id: post.id || post.pk,
+          shortcode: post.code,
+          link_to_post: `https://www.instagram.com/p/${post.code}/`,
+          display_url: post.thumbnail_url || post.image_versions?.items?.[0]?.url,
+          is_video: post.is_video ? [true] : [],
+          caption: post.caption?.text || '',
+          like: post.metrics?.like_count || 0,
+          comment_count: post.metrics?.comment_count || 0,
+          timestamp: post.taken_at_ts * 1000 || Date.now(),
+          video_url: post.video_url || null,
+        }))
+      }
+    };
+  } catch (error) {
+    console.error('❌ [FALLBACK] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch Instagram user profile and recent posts (with fallback)
+ * Tries primary API first, then falls back to secondary API
+ */
+export async function fetchInstagramCompetitor(username: string): Promise<InstagramResponse | null> {
+  try {
+    // Clean username: remove @ symbol, spaces, and Instagram URLs
+    let cleanUsername = username.trim();
+    
+    // Remove @ symbol if present
+    if (cleanUsername.startsWith('@')) {
+      cleanUsername = cleanUsername.substring(1);
+    }
+    
+    // Extract username from Instagram URL if provided
+    if (cleanUsername.includes('instagram.com/')) {
+      const match = cleanUsername.match(/instagram\.com\/([^/?]+)/);
+      if (match) {
+        cleanUsername = match[1];
+      }
+    }
+    
+    console.log('🔍 Fetching Instagram data for username:', cleanUsername);
+    if (cleanUsername !== username) {
+      console.log('🧹 Cleaned username:', username, '→', cleanUsername);
+    }
+    console.log('🔑 Using API key:', RAPIDAPI_KEY ? 'SET' : 'NOT SET');
+    
+    // Try primary API first
+    let data = await fetchInstagramPrimary(cleanUsername);
+    
+    if (data && data.lastMedia?.media?.length > 0) {
+      console.log('✅ PRIMARY API SUCCESS! Using primary data.');
+      return data;
+    }
+    
+    // Fallback #1: instagram-social-api
+    console.log('🔄 PRIMARY API failed or no posts. Trying FALLBACK #1...');
+    data = await fetchInstagramFallback(cleanUsername);
+    
+    if (data && data.lastMedia?.media?.length > 0) {
+      console.log('✅ FALLBACK #1 API SUCCESS! Using fallback data.');
+      return data;
+    }
+    
+    // Fallback #2: instagram-statistics-api
+    console.log('🔄 FALLBACK #1 failed. Trying FALLBACK #2 (Statistics API)...');
+    data = await fetchInstagramStatistics(cleanUsername);
+    
+    if (data && data.lastMedia?.media?.length > 0) {
+      console.log('✅ FALLBACK #2 (STATISTICS) API SUCCESS! Using statistics data.');
+      return data;
+    }
+    
+    // All APIs failed or no posts
+    console.error('❌ All 3 APIs failed or returned no posts');
+    return null;
+  } catch (error) {
+    console.error('❌ Error fetching Instagram competitor:', error);
     return null;
   }
 }

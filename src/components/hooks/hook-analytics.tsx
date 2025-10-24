@@ -72,6 +72,17 @@ export default function HookAnalytics() {
   const { totals, platformDistribution, categoryPerformance, topHooks, recentHooks } =
     analytics;
 
+  // Safe number formatter
+  const formatNumber = (value: any): string => {
+    if (value === null || value === undefined || isNaN(value)) return '0';
+    return Number(value).toLocaleString();
+  };
+
+  const formatDecimal = (value: any, decimals: number = 1): string => {
+    if (value === null || value === undefined || isNaN(value)) return '0.0';
+    return Number(value).toFixed(decimals);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -98,7 +109,7 @@ export default function HookAnalytics() {
               <Target className="w-5 h-5 text-purple-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {totals.total_hooks.toLocaleString()}
+              {formatNumber(totals.total_hooks)}
             </p>
           </div>
 
@@ -108,11 +119,11 @@ export default function HookAnalytics() {
               <Copy className="w-5 h-5 text-pink-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {totals.total_copied.toLocaleString()}
+              {formatNumber(totals.total_copied)}
             </p>
             <p className="text-xs text-gray-500 mt-1">
               {totals.total_hooks > 0
-                ? ((totals.total_copied / totals.total_hooks) * 100).toFixed(1)
+                ? formatDecimal((totals.total_copied / totals.total_hooks) * 100)
                 : 0}
               % copy rate
             </p>
@@ -124,7 +135,7 @@ export default function HookAnalytics() {
               <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {parseFloat(totals.avg_engagement_score || '0').toFixed(1)}
+              {formatDecimal(totals.avg_engagement_score)}
             </p>
           </div>
 
@@ -133,7 +144,7 @@ export default function HookAnalytics() {
               <h3 className="text-sm font-semibold text-gray-600">Best Score</h3>
               <Award className="w-5 h-5 text-green-600" />
             </div>
-            <p className="text-3xl font-bold text-gray-800">{totals.max_score || 0}</p>
+            <p className="text-3xl font-bold text-gray-800">{formatNumber(totals.max_score)}</p>
           </div>
         </div>
 
@@ -153,7 +164,7 @@ export default function HookAnalytics() {
                       {platform.platform}
                     </span>
                     <span className="text-gray-600">
-                      {platform.count} hooks (avg: {parseFloat(platform.avg_score).toFixed(1)})
+                      {platform.count} hooks (avg: {formatDecimal(platform.avg_score)})
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -179,10 +190,9 @@ export default function HookAnalytics() {
             </div>
             <div className="space-y-4">
               {categoryPerformance.map((category) => {
-                const copyRate =
-                  category.count > 0
-                    ? ((category.copies / category.count) * 100).toFixed(1)
-                    : '0';
+                const copyRate = category.count > 0
+                  ? formatDecimal((category.copies / category.count) * 100)
+                  : '0.0';
                 return (
                   <div
                     key={category.category}
@@ -198,7 +208,7 @@ export default function HookAnalytics() {
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">
-                        Avg Score: {parseFloat(category.avg_score).toFixed(1)}
+                        Avg Score: {formatDecimal(category.avg_score)}
                       </span>
                       <span className="text-gray-600">Copy Rate: {copyRate}%</span>
                     </div>

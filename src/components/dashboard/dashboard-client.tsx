@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { UserButtonClient } from "@/components/auth/user-button-client"
 import { CreditsDisplay } from "@/components/credits/credits-display"
+import { NotificationBell } from "@/components/notifications/NotificationBell"
+import { FeedbackButton } from "@/components/feedback/FeedbackButton"
 import { cn } from "@/lib/utils"
 import {
   Home,
@@ -157,6 +159,7 @@ export function DashboardClient({ children, session, isAdmin }: DashboardClientP
             </div>
             <div className="flex items-center space-x-4">
               <CreditsDisplay showRefresh />
+              <NotificationBell />
               <ThemeToggle />
               <UserButtonClient user={session.user} />
             </div>
@@ -171,6 +174,9 @@ export function DashboardClient({ children, session, isAdmin }: DashboardClientP
           </div>
         </main>
       </div>
+
+      {/* Feedback Button */}
+      <FeedbackButton />
     </div>
   )
 }
