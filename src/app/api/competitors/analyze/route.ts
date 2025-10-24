@@ -373,12 +373,12 @@ async function analyzeContentGaps(
     return acc;
   }, {} as Record<string, number>);
 
-  const mostUsedFormat = Object.entries(formatCounts).sort((a, b) => b[1] - a[1])[0];
+  const mostUsedFormat = Object.entries(formatCounts).sort((a, b) => (b[1] as number) - (a[1] as number))[0];
   
   if (mostUsedFormat) {
     const avgEngagement = topPosts
       .filter(p => detectContentFormat(p) === mostUsedFormat[0])
-      .reduce((sum, p) => sum + (p.totalEngagement || 0), 0) / mostUsedFormat[1];
+      .reduce((sum, p) => sum + (p.totalEngagement || 0), 0) / (mostUsedFormat[1] as number);
 
     gaps.push({
       type: `${mostUsedFormat[0]}_content`,
