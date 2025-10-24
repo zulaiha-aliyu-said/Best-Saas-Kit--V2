@@ -98,12 +98,15 @@ export async function GET(
     }, {} as Record<string, { count: number; engagement: number }>);
 
     const totalPosts = posts.length;
-    const contentTypes = Object.entries(contentTypeCounts).map(([name, data]) => ({
-      name: capitalizeFirst(name),
-      value: Math.round((data.count / totalPosts) * 100),
-      count: data.count,
-      engagement: Math.round(data.engagement / data.count),
-    }));
+    const contentTypes = Object.entries(contentTypeCounts).map(([name, data]) => {
+      const typedData = data as { count: number; engagement: number };
+      return {
+        name: capitalizeFirst(name),
+        value: Math.round((typedData.count / totalPosts) * 100),
+        count: typedData.count,
+        engagement: Math.round(typedData.engagement / typedData.count),
+      };
+    });
 
     // 3. ENGAGEMENT TREND (Last 4 weeks)
     const weeks = [];
