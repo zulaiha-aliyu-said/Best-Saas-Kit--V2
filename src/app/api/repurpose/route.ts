@@ -136,6 +136,7 @@ export async function POST(req: NextRequest) {
     }
     
     const { user, session } = userResult;
+    const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id;
 
     const body = await req.json();
     const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
@@ -588,7 +589,7 @@ Return ONLY the JSON.`
 
     // Persist
     const content = await createContent({
-      userId: user.id,
+      userId: userId!,
       source_type: sourceType,
       source_url: url || null,
       raw_text: text || null,
@@ -599,7 +600,7 @@ Return ONLY the JSON.`
     const validPlatform = platforms?.find((p: string) => supportedPlatforms.includes(p)) || 'x';
 
     const generation = await insertGeneration({
-      userId: user.id,
+      userId: userId!,
       contentId: content.id,
       platform: validPlatform as any,
       tone,
@@ -627,7 +628,7 @@ Return ONLY the JSON.`
 
     const createdPosts = [] as any[];
     for (const p of postsToCreate) {
-      const pr = await insertPost({ userId: user.id, generationId: generation.id, platform: p.platform, body: p.body, hashtags: p.hashtags || null });
+      const pr = await insertPost({ userId: userId!, generationId: generation.id, platform: p.platform, body: p.body, hashtags: p.hashtags || null });
       createdPosts.push(pr);
     }
 
@@ -637,7 +638,7 @@ Return ONLY the JSON.`
         for (const [platform, optResult] of Object.entries(optimizationResults)) {
           if (optResult && typeof optResult === 'object') {
             await insertOptimizationAnalytics({
-              user_id: user.id,
+              user_id: userId!,
               generation_id: generation.id,
               platform: platform as any,
               optimization_applied: true,
