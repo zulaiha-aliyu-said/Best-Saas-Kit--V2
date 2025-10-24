@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert user ID to number for database functions
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+
     // Check if user already has pro subscription
     if (user.subscription_status === 'pro') {
       return NextResponse.json(
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
       customerId = customer.id;
 
       // Update user with Stripe customer ID
-      await updateUserSubscription(user.id, {
+      await updateUserSubscription(userId, {
         subscription_status: user.subscription_status,
         stripe_customer_id: customerId,
       });
