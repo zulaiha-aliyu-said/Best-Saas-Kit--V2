@@ -11,6 +11,7 @@ export async function GET(_req: NextRequest) {
   const user = await getUserByGoogleId(session.user.id);
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 });
 
-  const posts = await listRecentPosts(user.id, 20);
+  const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+  const posts = await listRecentPosts(userId, 20);
   return NextResponse.json({ posts });
 }
