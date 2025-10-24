@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
 
     // Calculate credit cost based on number of platforms (1 credit per platform)
     const numPlatforms = platforms.length;
-    const plan = await getUserPlan(session.user.id);
+    const plan = await getUserPlan(userId!);
     const creditCostPerPlatform = calculateCreditCost('content_repurposing', plan?.ltd_tier ?? undefined);
     const totalCreditCost = creditCostPerPlatform * numPlatforms;
     
