@@ -564,7 +564,7 @@ Return ONLY the JSON.`
 
     // Deduct credits now that we have a result (1 credit per platform)
     const creditResult = await deductLTDCredits(
-      session.user.id,
+      userId!,
       totalCreditCost,
       'content_repurposing',
       {
