@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
     let styleEnabled = false;
     try {
       const { getUserWritingStyle } = await import("@/lib/database");
-      const styleData = await getUserWritingStyle(user.id);
+      const styleData = await getUserWritingStyle(userId!);
       if (styleData.style_enabled && styleData.profile && styleData.confidence_score >= 60) {
         userStyleProfile = styleData.profile;
         styleEnabled = true;
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
     // Get user's platform optimization setting
     let platformOptimizationEnabled = false;
     try {
-      const userPrefs = await getUserPreferences(user.id);
+      const userPrefs = await getUserPreferences(userId!);
       platformOptimizationEnabled = userPrefs.platform_optimization_enabled || false;
       console.log('🎯 Platform Optimization Enabled:', platformOptimizationEnabled);
       console.log('📋 Full User Preferences:', JSON.stringify(userPrefs, null, 2));
