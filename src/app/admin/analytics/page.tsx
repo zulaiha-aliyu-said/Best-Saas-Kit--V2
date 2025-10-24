@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAnalyticsData, getGrowthMetrics, getPredictionAccuracyStats, getAdminPredictionAnalytics, getAdminRepurposedContentAnalytics, getAdminScheduleAnalytics } from "@/lib/database";

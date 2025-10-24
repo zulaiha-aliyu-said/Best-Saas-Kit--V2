@@ -19,6 +19,10 @@ interface TopPost {
   url?: string;
   thumbnail?: string;
   performanceScore: number;
+  whyItWorked?: {
+    category: string;
+    reasons: string[];
+  }[];
 }
 
 interface AdvancedTopPostsProps {

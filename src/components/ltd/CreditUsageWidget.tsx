@@ -128,7 +128,7 @@ export function CreditUsageWidget() {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Unused credits that will be added to your next month's allocation.
+                      Unused credits that will be added to your next month&apos;s allocation.
                       Rollover credits are valid for 12 months.
                     </p>
                   </TooltipContent>
@@ -170,7 +170,7 @@ export function CreditUsageWidget() {
                   Low Credits
                 </p>
                 <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
-                  You've used {creditData.percentage_used}% of your monthly credits. 
+                  You&apos;ve used {creditData.percentage_used}% of your monthly credits.
                   Consider stacking codes for more credits!
                 </p>
               </div>

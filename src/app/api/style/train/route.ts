@@ -232,10 +232,16 @@ Analyze these samples and provide a comprehensive style profile that captures th
 
     console.log(`Calculated confidence score: ${confidenceScore}% (${processedSamples.length} samples, ${platforms.size} platforms, ${contentTypes.size} content types)`);
 
+    // Convert user ID to number
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+
     // Save the style profile and samples
     console.log('Updating user writing style in database...');
     try {
-      await updateUserWritingStyle(user.id, styleProfile, processedSamples, confidenceScore);
+      await updateUserWritingStyle(userId, styleProfile, processedSamples, confidenceScore);
       console.log('Successfully updated user writing style');
     } catch (dbError) {
       console.error('Database update failed:', dbError);

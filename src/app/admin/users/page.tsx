@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllUsers, type User } from "@/lib/database";
 import { UserManagementClient } from "@/components/admin/user-management-client";

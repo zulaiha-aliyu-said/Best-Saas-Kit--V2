@@ -43,7 +43,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const preferences = await getUserPreferences(user.id);
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+    const preferences = await getUserPreferences(userId);
     
     console.log('🔍 GET /api/users/preferences');
     console.log('  User ID:', user.id);
@@ -159,7 +163,11 @@ export async function POST(req: NextRequest) {
 
     console.log('  ✅ Saving platform_optimization_enabled:', dbPreferences.platform_optimization_enabled);
     
-    await updateUserPreferences(user.id, dbPreferences);
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+    await updateUserPreferences(userId, dbPreferences);
     
     console.log('  ✅ Database updated successfully');
     

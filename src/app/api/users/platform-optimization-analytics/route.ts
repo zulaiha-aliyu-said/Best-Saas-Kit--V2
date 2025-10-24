@@ -21,10 +21,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Convert user ID to number
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+
     // Get optimization stats
     const [stats, platformBreakdown] = await Promise.all([
-      getUserOptimizationStats(user.id),
-      getUserPlatformBreakdown(user.id),
+      getUserOptimizationStats(userId),
+      getUserPlatformBreakdown(userId),
     ]);
 
     return NextResponse.json({

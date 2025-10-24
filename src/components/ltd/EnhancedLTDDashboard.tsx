@@ -171,7 +171,7 @@ export default function EnhancedLTDDashboard({ initialTier, initialCredits, init
           <CardContent>
             <div className="text-2xl font-bold">{parseInt(stats.stats.active_days || '0')}</div>
             <p className="text-xs text-muted-foreground">
-              Days you've used the platform
+              Days you&apos;ve used the platform
             </p>
           </CardContent>
         </Card>
@@ -241,7 +241,7 @@ export default function EnhancedLTDDashboard({ initialTier, initialCredits, init
             <CardHeader>
               <CardTitle>Usage Breakdown</CardTitle>
               <CardDescription>
-                How you're using your credits
+                How you&apos;re using your credits
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -326,7 +326,7 @@ export default function EnhancedLTDDashboard({ initialTier, initialCredits, init
             <Alert>
               <TrendingDown className="h-4 w-4" />
               <AlertDescription>
-                You're running low on credits. Consider stacking another code or wait for your monthly refresh.
+                You&apos;re running low on credits. Consider stacking another code or wait for your monthly refresh.
               </AlertDescription>
             </Alert>
           )}
@@ -344,7 +344,7 @@ export default function EnhancedLTDDashboard({ initialTier, initialCredits, init
             <Alert>
               <Sparkles className="h-4 w-4" />
               <AlertDescription>
-                🎉 You've been active for {parseInt(stats.stats.active_days)} days! Keep up the great work!
+                🎉 You&apos;ve been active for {parseInt(stats.stats.active_days)} days! Keep up the great work!
               </AlertDescription>
             </Alert>
           )}

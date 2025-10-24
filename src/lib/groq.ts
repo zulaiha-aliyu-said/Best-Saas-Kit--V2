@@ -44,13 +44,12 @@ class GroqClient {
   constructor() {
     this.apiKey = process.env.GROQ_API_KEY || '';
     this.baseURL = 'https://api.groq.com/openai/v1';
-
-    if (!this.apiKey) {
-      throw new Error('Groq API key is required');
-    }
   }
 
   async createChatCompletion(request: GroqCompletionRequest): Promise<GroqCompletionResponse> {
+    if (!this.apiKey) {
+      throw new Error('Groq API key is required');
+    }
     try {
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
@@ -79,6 +78,9 @@ class GroqClient {
   }
 
   async getModels(): Promise<any> {
+    if (!this.apiKey) {
+      throw new Error('Groq API key is required');
+    }
     try {
       const response = await fetch(`${this.baseURL}/models`, {
         headers: {
@@ -145,7 +147,10 @@ export async function createGroqCompletionWithSDK(
       model: completion.model,
       choices: completion.choices.map(choice => ({
         index: choice.index,
-        message: choice.message,
+        message: {
+          role: choice.message.role,
+          content: choice.message.content || '',
+        },
         finish_reason: choice.finish_reason || 'stop'
       })),
       usage: completion.usage || {

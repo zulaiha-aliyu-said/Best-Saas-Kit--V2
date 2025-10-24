@@ -14,7 +14,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const newApiKey = await generateUserApiKey(user.id);
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+    const newApiKey = await generateUserApiKey(userId);
     
     return NextResponse.json({ 
       message: "API key regenerated successfully",

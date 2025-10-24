@@ -126,7 +126,7 @@ const Testimonials = () => {
 
                   {/* Content */}
                   <blockquote className="text-muted-foreground mb-6 leading-relaxed">
-                    "{testimonial.content}"
+                    &quot;{testimonial.content}&quot;
                   </blockquote>
 
                   {/* Author */}
@@ -160,7 +160,7 @@ const Testimonials = () => {
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-2xl p-8 border border-primary/20">
             <h3 className="text-2xl font-bold mb-4">Join the Content Revolution</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Don't just take our word for it. Start transforming your content strategy today and 
+              Don&apos;t just take our word for it. Start transforming your content strategy today and
               see why creators love our AI-powered repurposing platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

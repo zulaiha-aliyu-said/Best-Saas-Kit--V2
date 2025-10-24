@@ -75,7 +75,7 @@ export function NotificationDropdown({
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Sparkles className="w-8 h-8 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium">You're all caught up!</p>
+            <p className="text-sm font-medium">You&apos;re all caught up!</p>
             <p className="text-xs text-muted-foreground mt-1">
               No new notifications right now
             </p>

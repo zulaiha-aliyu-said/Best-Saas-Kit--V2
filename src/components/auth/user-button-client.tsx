@@ -20,6 +20,9 @@ interface UserButtonClientProps {
 }
 
 export function UserButtonClient({ user }: UserButtonClientProps) {
+  if (!user) {
+    return null;
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

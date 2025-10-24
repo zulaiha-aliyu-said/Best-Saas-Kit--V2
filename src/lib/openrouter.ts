@@ -52,13 +52,12 @@ class OpenRouterClient {
     this.baseURL = 'https://openrouter.ai/api/v1';
     this.siteUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
     this.siteName = process.env.NEXT_PUBLIC_SITE_NAME || '';
-
-    if (!this.apiKey) {
-      throw new Error('OpenRouter API key is required');
-    }
   }
 
   async createChatCompletion(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
+    if (!this.apiKey) {
+      throw new Error('OpenRouter API key is required');
+    }
     try {
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
@@ -91,6 +90,9 @@ class OpenRouterClient {
   async createStreamingChatCompletion(
     request: ChatCompletionRequest
   ): Promise<ReadableStream<Uint8Array>> {
+    if (!this.apiKey) {
+      throw new Error('OpenRouter API key is required');
+    }
     try {
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
@@ -128,6 +130,9 @@ class OpenRouterClient {
 
   // Helper method to get available models
   async getModels(): Promise<any> {
+    if (!this.apiKey) {
+      throw new Error('OpenRouter API key is required');
+    }
     try {
       const response = await fetch(`${this.baseURL}/models`, {
         headers: {

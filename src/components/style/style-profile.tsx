@@ -168,7 +168,7 @@ export function StyleProfileComponent() {
             <span>No Style Profile Found</span>
           </CardTitle>
           <CardDescription>
-            You haven't trained your writing style yet. Upload some writing samples to get started.
+            You haven&apos;t trained your writing style yet. Upload some writing samples to get started.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -410,7 +410,7 @@ export function StyleProfileComponent() {
                   <div className="flex flex-wrap gap-1 mt-1">
                     {styleData.profile.brand_elements.signature_phrases.slice(0, 4).map((phrase, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
-                        "{phrase}"
+                        &quot;{phrase}&quot;
                       </Badge>
                     ))}
                   </div>

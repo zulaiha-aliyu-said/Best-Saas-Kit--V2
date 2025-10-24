@@ -58,7 +58,7 @@ const TIER_FEATURES = {
 const STEPS = [
   {
     title: "Welcome to RepurposeAI!",
-    description: "Let's get you started with your lifetime deal",
+    description: "Let&apos;s get you started with your lifetime deal",
   },
   {
     title: "Your Features",
@@ -164,7 +164,7 @@ export function WelcomeModal({ isOpen, onComplete, userTier, userName, isNewUser
                     {isNewUser ? `Welcome${userName ? `, ${userName}` : ''}! 🎉` : 'Welcome Back!'}
                   </h3>
                   <p className="text-muted-foreground mt-2">
-                    You're now part of the RepurposeAI family with{' '}
+                    You&apos;re now part of the RepurposeAI family with{' '}
                     <Badge className="mx-1" variant="secondary">Tier {userTier}</Badge>
                     lifetime access!
                   </p>
@@ -317,7 +317,7 @@ export function WelcomeModal({ isOpen, onComplete, userTier, userName, isNewUser
               </div>
 
               <div className="text-center text-sm text-muted-foreground">
-                <p>Click any card to get started, or click "Complete Setup" below</p>
+                <p>Click any card to get started, or click &quot;Complete Setup&quot; below</p>
               </div>
             </motion.div>
           )}

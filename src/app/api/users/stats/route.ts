@@ -1,12 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserStats } from '@/lib/database';
 import { withCache } from '@/lib/cache';
 
 export const runtime = 'nodejs';
-
-// Enable revalidation every 60 seconds
-export const revalidate = 60;
 
 export async function GET(request: NextRequest) {
   try {

@@ -14,8 +14,21 @@ export function NotificationBell() {
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications/list');
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
   useEffect(() => {
-    fetchNotifications();
+    setTimeout(fetchNotifications, 0);
     
     // Poll for new notifications every 60 seconds
     const interval = setInterval(fetchNotifications, 60000);
@@ -34,19 +47,6 @@ export function NotificationBell() {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await fetch('/api/notifications/list');
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
 
   const handleMarkAsRead = async (notificationId: number) => {
     try {

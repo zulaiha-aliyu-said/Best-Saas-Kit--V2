@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { getAllDiscountCodes, getDiscountStats } from "@/lib/database";
 import { DiscountManagement } from "@/components/admin/discount-management";

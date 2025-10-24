@@ -14,7 +14,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userData = await exportUserData(user.id);
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+    const userData = await exportUserData(userId);
     
     // Create a JSON file response
     const jsonData = JSON.stringify(userData, null, 2);

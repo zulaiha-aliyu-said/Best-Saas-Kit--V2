@@ -22,8 +22,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Convert user ID to number
+    const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+
     // Get user's writing style
-    const styleData = await getUserWritingStyle(user.id);
+    const styleData = await getUserWritingStyle(userId);
 
     return NextResponse.json({
       success: true,

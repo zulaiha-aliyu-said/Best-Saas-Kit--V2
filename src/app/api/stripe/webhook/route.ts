@@ -92,9 +92,14 @@ export async function POST(request: NextRequest) {
           }
 
           if (user) {
+            const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+            if (isNaN(userId)) {
+              console.error(`Invalid user ID: ${user.id}`);
+              return; // Or handle the error appropriately
+            }
             try {
               // Update user to Pro subscription
-              const updateResult = await updateUserSubscription(user.id, {
+              const updateResult = await updateUserSubscription(userId, {
                 subscription_status: 'pro',
                 stripe_customer_id: session.customer as string,
                 subscription_id: session.id,
@@ -102,7 +107,7 @@ export async function POST(request: NextRequest) {
               });
 
               // Add bonus credits for Pro users (1000 credits)
-              const creditsResult = await addCredits(user.id, 1000);
+              const creditsResult = await addCredits(userId, 1000);
 
               // Track discount usage if a discount was applied
               if (session.total_details?.breakdown?.discounts && session.total_details.breakdown.discounts.length > 0) {

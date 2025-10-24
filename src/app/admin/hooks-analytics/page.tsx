@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { redirect } from 'next/navigation';
 import { checkAdminAccess } from '@/lib/admin-auth';
 import AdminHooksAnalytics from '@/components/admin/admin-hooks-analytics';

@@ -87,7 +87,7 @@ export function UpgradePrompt({
                 </Badge>
               </div>
               <p className="text-sm text-gray-600">
-                You're currently on Tier {currentTier}. Upgrade to unlock this feature and more!
+                You&apos;re currently on Tier {currentTier}. Upgrade to unlock this feature and more!
               </p>
             </div>
           </div>
@@ -156,7 +156,7 @@ export function UpgradePrompt({
               <div>
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-purple-600" />
-                  What You'll Unlock
+                  What You&apos;ll Unlock
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {tierBenefits.map((benefit, index) => (

@@ -152,7 +152,7 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
           <h3 className="text-2xl font-bold text-center mb-12">Frequently Asked Questions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="space-y-4">
-              <h4 className="font-semibold">What's included in the source code?</h4>
+              <h4 className="font-semibold">What&apos;s included in the source code?</h4>
               <p className="text-muted-foreground text-sm">
                 Complete Next.js application with authentication, database setup, AI integrations, 
                 payment processing, and all UI components. Everything you need to launch.

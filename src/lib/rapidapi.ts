@@ -518,11 +518,11 @@ export function extractTopics(posts: any[]): string[] {
     
     // Extract hashtags
     const hashtags = text.match(/#\w+/g) || [];
-    hashtags.forEach(tag => topics.add(tag.toLowerCase()));
+    hashtags.forEach((tag: string) => topics.add(tag.toLowerCase()));
 
     // Extract @mentions
     const mentions = text.match(/@\w+/g) || [];
-    mentions.forEach(mention => topics.add(mention.toLowerCase()));
+    mentions.forEach((mention: string) => topics.add(mention.toLowerCase()));
   });
 
   return Array.from(topics).slice(0, 20); // Limit to top 20

@@ -64,11 +64,11 @@ export function useAsync<T>(
       onError?.(err)
       throw err
     }
-  }, [asyncFunction, ...dependencies])
+  }, [asyncFunction, state.data, onSuccess, onError])
 
   useEffect(() => {
     if (enabled) {
-      execute()
+      setTimeout(execute, 0)
     }
   }, [execute, enabled])
 
@@ -128,7 +128,7 @@ export function useMutation<T, P = void>(
       onError?.(err)
       throw err
     }
-  }, [mutationFn])
+  }, [mutationFn, onSuccess, onError])
 
   const reset = useCallback(() => {
     setState({

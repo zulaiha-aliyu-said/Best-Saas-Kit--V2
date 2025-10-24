@@ -55,17 +55,14 @@ export function ProTipBanner({
   icon = "lightbulb",
   variant = "default",
 }: ProTipBannerProps) {
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem(`tip-dismissed-${tipId}`);
+    }
+    return false;
+  });
   const Icon = ICONS[icon];
   const colors = VARIANTS[variant];
-
-  useEffect(() => {
-    // Check if tip was previously dismissed
-    const dismissed = localStorage.getItem(`tip-dismissed-${tipId}`);
-    if (dismissed) {
-      setIsDismissed(true);
-    }
-  }, [tipId]);
 
   const handleDismiss = async () => {
     setIsDismissed(true);

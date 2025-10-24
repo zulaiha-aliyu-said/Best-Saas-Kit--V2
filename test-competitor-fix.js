@@ -3,8 +3,8 @@
  * This script checks if the intermittent error fixes are working
  */
 
-const { Pool } = require('@neondatabase/serverless');
-require('dotenv').config({ path: '.env.local' });
+import { Pool } from '@neondatabase/serverless';
+import 'dotenv/config';
 
 async function testCompetitorFix() {
   console.log('🧪 Testing Competitor Analysis Fix...\n');

@@ -14,7 +14,7 @@ interface CharacterCounterProps {
 export function CharacterCounter({ content, platform, className }: CharacterCounterProps) {
   const limits = PLATFORM_LIMITS[platform];
   const charCount = useMemo(() => countCharacters(content), [content]);
-  const maxChars = limits.maxChars;
+  const maxChars = 'maxChars' in limits ? limits.maxChars : limits.optimalBodyChars.max;
   const percentage = (charCount / maxChars) * 100;
   
   const color = useMemo(() => {

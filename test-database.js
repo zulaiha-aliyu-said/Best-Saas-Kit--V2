@@ -4,9 +4,9 @@
  * Run with: node test-database.js
  */
 
-const { Pool } = require('@neondatabase/serverless');
-const fs = require('fs');
-const path = require('path');
+import { Pool } from '@neondatabase/serverless';
+import fs from 'fs';
+import path from 'path';
 
 // Get DATABASE_URL from environment or .env.local
 let DATABASE_URL = process.env.DATABASE_URL;

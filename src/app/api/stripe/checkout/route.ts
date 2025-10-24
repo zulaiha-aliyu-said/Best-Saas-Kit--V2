@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const checkoutSession = stripeCouponId
       ? await createCheckoutSessionWithDiscount(
           customerId,
-          user.id,
+          userId,
           user.email,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`,
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         )
       : await createCheckoutSession(
           customerId,
-          user.id,
+          userId,
           user.email,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`
