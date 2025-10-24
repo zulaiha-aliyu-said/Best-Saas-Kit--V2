@@ -19,6 +19,13 @@ export async function POST(request: NextRequest) {
     
     const { user, session } = userResult;
 
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Invalid session' },
+        { status: 401 }
+      );
+    }
+
     const { originalContent, platform, tone, currentScore, improvementType = 'general' } = await request.json();
 
     if (!originalContent || !platform) {
