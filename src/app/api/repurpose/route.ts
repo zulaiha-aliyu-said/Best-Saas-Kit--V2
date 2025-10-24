@@ -637,26 +637,27 @@ Return ONLY the JSON.`
       try {
         for (const [platform, optResult] of Object.entries(optimizationResults)) {
           if (optResult && typeof optResult === 'object') {
+            const typedOptResult = optResult as any;
             await insertOptimizationAnalytics({
               user_id: userId!,
               generation_id: generation.id,
               platform: platform as any,
               optimization_applied: true,
               original_content_length: sourceText.length,
-              optimized_content_length: countCharacters(optResult.content || ''),
-              character_count: optResult.metrics?.characterCount || 0,
-              word_count: optResult.metrics?.wordCount || 0,
-              thread_created: optResult.isThread || false,
-              thread_count: optResult.threadPosts?.length || 0,
-              hashtag_count: optResult.metrics?.hashtagCount || 0,
-              emoji_count: optResult.metrics?.emojiCount || 0,
-              line_breaks_added: optResult.metrics?.lineBreaksAdded || 0,
-              optimizations_applied: optResult.optimizations || [],
+              optimized_content_length: countCharacters(typedOptResult.content || ''),
+              character_count: typedOptResult.metrics?.characterCount || 0,
+              word_count: typedOptResult.metrics?.wordCount || 0,
+              thread_created: typedOptResult.isThread || false,
+              thread_count: typedOptResult.threadPosts?.length || 0,
+              hashtag_count: typedOptResult.metrics?.hashtagCount || 0,
+              emoji_count: typedOptResult.metrics?.emojiCount || 0,
+              line_breaks_added: typedOptResult.metrics?.lineBreaksAdded || 0,
+              optimizations_applied: typedOptResult.optimizations || [],
               rules_applied: {
                 platform: platform,
-                maxChars: optResult.preview?.platform ? 280 : 0,
+                maxChars: typedOptResult.preview?.platform ? 280 : 0,
               },
-              warnings: optResult.warnings || [],
+              warnings: typedOptResult.warnings || [],
               processing_time_ms: parsed._optimization_processing_time || 0,
               model_used: 'platform-optimizer-v1',
             });
