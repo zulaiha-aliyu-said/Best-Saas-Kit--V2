@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
+import { requireAdminAccess } from '@/lib/admin-auth';
+import { logAdminAction } from '@/lib/ltd-admin';
 import { pool } from '@/lib/database';
 import { sendEmail } from '@/lib/email';
 import { createEmailCampaign, updateCampaignStats, trackEmailSent } from '@/lib/email-tracking';

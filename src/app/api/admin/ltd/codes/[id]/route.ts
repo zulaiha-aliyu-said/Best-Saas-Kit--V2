@@ -5,8 +5,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
-import { getLTDCodeById, updateLTDCode, deleteLTDCode } from '@/lib/ltd-admin';
+import { requireAdminAccess } from '@/lib/admin-auth';
+import {
+  getLTDCodeById,
+  updateLTDCode,
+  deleteLTDCode,
+  logAdminAction,
+} from '@/lib/ltd-admin';
 
 export async function PATCH(
   request: NextRequest,
@@ -79,7 +84,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     // Check admin access
@@ -92,7 +97,7 @@ export async function DELETE(
     }
 
     const admin = authResult.admin!;
-    const codeId = parseInt(params.id);
+    const codeId = parseInt(context.params.id);
 
     if (isNaN(codeId)) {
       return NextResponse.json(

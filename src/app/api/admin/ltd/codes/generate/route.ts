@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
+import { requireAdminAccess } from '@/lib/admin-auth';
+import { logAdminAction } from '@/lib/ltd-admin';
 import { generateLTDCodes, exportCodesToCSV } from '@/lib/ltd-admin';
 import { LTDTier } from '@/lib/ltd-tiers';
 

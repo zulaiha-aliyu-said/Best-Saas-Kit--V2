@@ -123,6 +123,32 @@ export async function generateLTDCodes(params: GenerateCodesParams): Promise<LTD
 }
 
 /**
+ * Log admin action to database
+ */
+export async function logAdminAction(
+  adminUserId: string,
+  actionType: string,
+  targetId?: string,
+  details?: any
+): Promise<void> {
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query(
+        `INSERT INTO admin_ltd_actions (admin_user_id, action_type, target_id, details)
+         VALUES ($1, $2, $3, $4)`,
+        [adminUserId, actionType, targetId || null, details ? JSON.stringify(details) : null]
+      );
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error logging admin action:', error);
+    // Don't throw - logging failure shouldn't break the operation
+  }
+}
+
+/**
  * Get all LTD codes with filters
  */
 export async function getLTDCodes(filters: CodeFilters = {}): Promise<{
