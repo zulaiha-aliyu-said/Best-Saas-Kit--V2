@@ -4,8 +4,6 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface SendEmailParams {
   to: string;
   subject: string;
@@ -15,6 +13,7 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, subject, html, tags = [], emailType }: SendEmailParams) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     // Auto-tag by email type
     const emailTags = [...tags];
