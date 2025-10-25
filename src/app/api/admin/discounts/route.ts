@@ -14,7 +14,13 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
     // Check admin access
-    await requireAdminAccess();
+    const authResult = await requireAdminAccess();
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const includeStats = searchParams.get('stats') === 'true';
@@ -50,7 +56,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check admin access
-    const adminUser = await requireAdminAccess();
+    const authResult = await requireAdminAccess();
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
 
     const body = await request.json();
     const { 
@@ -126,7 +138,7 @@ export async function POST(request: NextRequest) {
       let databaseUserId = null;
       try {
         const { getUserByGoogleId } = await import('@/lib/database');
-        const dbUser = await getUserByGoogleId(adminUser.id);
+        const dbUser = await getUserByGoogleId(authResult.admin.id);
         if (dbUser) {
           databaseUserId = dbUser.id;
         }
@@ -142,7 +154,7 @@ export async function POST(request: NextRequest) {
         discount_value,
         max_uses: max_uses || null,
         expires_at: expiresAt,
-        created_by: databaseUserId // Use database user ID or null
+        created_by: databaseUserId ? parseInt(databaseUserId.toString()) : null // Use database user ID or null
       };
 
       // Create discount code in database

@@ -1,16 +1,16 @@
 "use client"
 
 import Link from "next/link"
-import { Zap, Github, Twitter, Linkedin, Mail } from "lucide-react"
+import { Zap, Twitter, Linkedin, Mail } from "lucide-react"
 
 const Footer = () => {
   const footerLinks = {
     product: [
-      { name: "Features", href: "#features" },
-      { name: "Pricing", href: "#pricing" },
-      { name: "Documentation", href: "/docs" },
+      { name: "Features", href: "/features" },
+      { name: "Pricing", href: "/pricing" },
       { name: "Changelog", href: "/changelog" },
-      { name: "Roadmap", href: "/roadmap" }
+      { name: "Roadmap", href: "/roadmap" },
+      { name: "Sign In", href: "/auth/signin" }
     ],
     company: [
       { name: "About", href: "/about" },
@@ -20,26 +20,25 @@ const Footer = () => {
       { name: "Press Kit", href: "/press" }
     ],
     resources: [
-      { name: "Community", href: "/community" },
       { name: "Help Center", href: "/help" },
-      { name: "API Reference", href: "/api" },
-      { name: "Examples", href: "/examples" },
-      { name: "Templates", href: "/templates" }
+      { name: "Documentation", href: "/docs" },
+      { name: "Tutorials", href: "/tutorials" },
+      { name: "FAQ", href: "/#faq" },
+      { name: "Support", href: "/support" }
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
+      { name: "Refund Policy", href: "/refunds" },
       { name: "Cookie Policy", href: "/cookies" },
-      { name: "GDPR", href: "/gdpr" },
       { name: "Security", href: "/security" }
     ]
   }
 
   const socialLinks = [
-    { name: "GitHub", href: "https://github.com", icon: Github },
-    { name: "Twitter", href: "https://twitter.com", icon: Twitter },
-    { name: "LinkedIn", href: "https://linkedin.com", icon: Linkedin },
-    { name: "Email", href: "mailto:hello@aisaaskit.com", icon: Mail }
+    { name: "Twitter", href: "https://twitter.com/repurposeai", icon: Twitter },
+    { name: "LinkedIn", href: "https://linkedin.com/company/repurposeai", icon: Linkedin },
+    { name: "Email", href: "mailto:hello@repurposeai.com", icon: Mail }
   ]
 
   return (
@@ -53,11 +52,11 @@ const Footer = () => {
               <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
                 <Zap className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground">AI SAAS Kit</span>
+              <span className="text-xl font-bold text-foreground">RepurposeAI</span>
             </div>
             <p className="text-muted-foreground mb-6 max-w-sm">
-              The ultimate toolkit for building AI-powered SAAS applications. 
-              Launch faster, scale better, and focus on what matters most.
+              Transform your content across platforms with AI. Discover trending topics,
+              create engaging posts, and grow your reach effortlessly.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => {
@@ -168,10 +167,9 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <div className="text-muted-foreground text-sm">
-            © 2024 AI SAAS Kit. All rights reserved.
+            © 2025 RepurposeAI. All rights reserved.
           </div>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
-            <span className="text-muted-foreground text-sm">Built with ❤️ using Next.js</span>
             <div className="flex items-center space-x-2 text-muted-foreground text-sm">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>All systems operational</span>

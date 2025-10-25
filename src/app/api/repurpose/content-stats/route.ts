@@ -22,8 +22,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+
     // Get user repurposed content statistics
-    const stats = await getUserRepurposedContentStats(user.id);
+    const stats = await getUserRepurposedContentStats(userId);
 
     return NextResponse.json({
       success: true,

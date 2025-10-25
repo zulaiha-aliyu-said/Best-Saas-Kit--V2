@@ -34,9 +34,9 @@ export function EmptyState({ onAddCompetitor }: EmptyStateProps) {
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
             <Target className="w-6 h-6 text-purple-600" />
           </div>
-          <h3 className="font-medium text-gray-900 mb-1">Track Up to 10</h3>
+          <h3 className="font-medium text-gray-900 mb-1">Track Multiple Competitors</h3>
           <p className="text-sm text-gray-600">
-            Analyze up to 10 competitors on the free tier
+            Analyze competitor strategies and performance
           </p>
         </div>
 

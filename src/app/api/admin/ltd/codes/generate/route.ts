@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess } from '@/lib/admin-auth';
-import { logAdminAction } from '@/lib/ltd-admin';
+import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { generateLTDCodes, exportCodesToCSV } from '@/lib/ltd-admin';
 import { LTDTier } from '@/lib/ltd-tiers';
 
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
       quantity,
       prefix,
       maxRedemptions,
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      expiresAt: expiresAt ? new Date(expiresAt) : undefined,
       notes,
       adminUserId: admin.id,
     });

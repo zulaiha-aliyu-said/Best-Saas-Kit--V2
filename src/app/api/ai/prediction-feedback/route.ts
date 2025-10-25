@@ -41,9 +41,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create performance feedback
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
     const feedback = await createPerformanceFeedback({
       prediction_id,
-      user_id: user.id,
+      user_id: userId,
       actual_likes: actual_likes || 0,
       actual_comments: actual_comments || 0,
       actual_shares: actual_shares || 0,

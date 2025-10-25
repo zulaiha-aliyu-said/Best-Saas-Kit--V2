@@ -2937,3 +2937,501 @@ export async function getOptimizationTrends(days: number = 30): Promise<Array<{
 export async function closePool(): Promise<void> {
   await pool.end()
 }
+
+// =============================================
+// Chat Conversations & Messages
+// =============================================
+
+export interface ChatConversation {
+  id: number;
+  user_id: string; // VARCHAR to match users.id
+  title: string;
+  created_at: Date;
+  updated_at: Date;
+  last_message_at: Date;
+  message_count: number;
+  total_tokens_used: number;
+  is_archived: boolean;
+}
+
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  tokens_used: number;
+  model?: string;
+  created_at: Date;
+}
+
+export interface CreateConversationData {
+  user_id: string; // VARCHAR to match users.id
+  title?: string;
+}
+
+export interface CreateMessageData {
+  conversation_id: number;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  tokens_used?: number;
+  model?: string;
+}
+
+// Create new conversation
+export async function createConversation(data: CreateConversationData): Promise<ChatConversation> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      INSERT INTO chat_conversations (user_id, title)
+      VALUES ($1, $2)
+      RETURNING *
+    `;
+
+    const result = await client.query(query, [
+      data.user_id,
+      data.title || 'New Conversation'
+    ]);
+
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+// Get user's conversations
+export async function getUserConversations(userId: string, includeArchived: boolean = false): Promise<ChatConversation[]> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT * FROM chat_conversations
+      WHERE user_id = $1
+        ${includeArchived ? '' : 'AND is_archived = false'}
+      ORDER BY last_message_at DESC
+    `;
+
+    const result = await client.query(query, [userId]);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+// Get conversation by ID
+export async function getConversationById(conversationId: number, userId: number): Promise<ChatConversation | null> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT * FROM chat_conversations
+      WHERE id = $1 AND user_id = $2
+    `;
+
+    const result = await client.query(query, [conversationId, userId]);
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
+// Update conversation
+export async function updateConversation(conversationId: number, userId: number, updates: { title?: string; is_archived?: boolean }): Promise<ChatConversation | null> {
+  const client = await pool.connect();
+
+  try {
+    const setClauses: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.title !== undefined) {
+      setClauses.push(`title = $${paramIndex++}`);
+      values.push(updates.title);
+    }
+
+    if (updates.is_archived !== undefined) {
+      setClauses.push(`is_archived = $${paramIndex++}`);
+      values.push(updates.is_archived);
+    }
+
+    if (setClauses.length === 0) {
+      return null;
+    }
+
+    setClauses.push(`updated_at = NOW()`);
+    values.push(conversationId, userId);
+
+    const query = `
+      UPDATE chat_conversations
+      SET ${setClauses.join(', ')}
+      WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
+      RETURNING *
+    `;
+
+    const result = await client.query(query, values);
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
+// Delete conversation
+export async function deleteConversation(conversationId: number, userId: number): Promise<boolean> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      DELETE FROM chat_conversations
+      WHERE id = $1 AND user_id = $2
+    `;
+
+    const result = await client.query(query, [conversationId, userId]);
+    return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
+
+// Add message to conversation
+export async function addMessage(data: CreateMessageData): Promise<ChatMessage> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      INSERT INTO chat_messages (conversation_id, role, content, tokens_used, model)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `;
+
+    const result = await client.query(query, [
+      data.conversation_id,
+      data.role,
+      data.content,
+      data.tokens_used || 0,
+      data.model
+    ]);
+
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+// Get conversation messages
+export async function getConversationMessages(conversationId: number, limit?: number): Promise<ChatMessage[]> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT * FROM chat_messages
+      WHERE conversation_id = $1
+      ORDER BY created_at ASC
+      ${limit ? `LIMIT ${limit}` : ''}
+    `;
+
+    const result = await client.query(query, [conversationId]);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+// Get user's chat context (recent activity)
+export async function getUserChatContext(userId: string): Promise<any> {
+  const client = await pool.connect();
+
+  try {
+    const query = `SELECT get_user_chat_context($1) as context`;
+    const result = await client.query(query, [userId]);
+    return result.rows[0]?.context || {};
+  } catch (error) {
+    console.error('Error getting user chat context:', error);
+    // Fallback: Return empty context if function doesn't exist yet
+    return {
+      recent_hooks: [],
+      recent_repurposed: [],
+      writing_style: null,
+      competitor_count: 0
+    };
+  } finally {
+    client.release();
+  }
+}
+
+// Get chat statistics
+export async function getChatStatistics(userId: string, days: number = 30): Promise<any> {
+  const client = await pool.connect();
+
+  try {
+    const query = `SELECT * FROM get_chat_statistics($1, $2)`;
+    const result = await client.query(query, [userId, days]);
+    return result.rows[0] || {
+      total_conversations: 0,
+      total_messages: 0,
+      total_tokens_used: 0,
+      avg_messages_per_conversation: 0,
+      active_days: 0
+    };
+  } catch (error) {
+    console.error('Error getting chat statistics:', error);
+    return {
+      total_conversations: 0,
+      total_messages: 0,
+      total_tokens_used: 0,
+      avg_messages_per_conversation: 0,
+      active_days: 0
+    };
+  } finally {
+    client.release();
+  }
+}
+
+// =============================================
+// Prompt Library
+// =============================================
+
+export interface PromptLibraryItem {
+  id: number;
+  user_id: string; // VARCHAR to match users.id
+  title: string;
+  prompt: string;
+  category: string;
+  is_favorite: boolean;
+  usage_count: number;
+  last_used_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface PromptTemplate {
+  id: number;
+  title: string;
+  prompt: string;
+  category: string;
+  description?: string;
+  tags?: string[];
+  usage_count: number;
+}
+
+export interface CreatePromptData {
+  user_id: string; // VARCHAR to match users.id
+  title: string;
+  prompt: string;
+  category?: string;
+  is_favorite?: boolean;
+}
+
+// Create new prompt
+export async function createPrompt(data: CreatePromptData): Promise<PromptLibraryItem> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      INSERT INTO prompt_library (user_id, title, prompt, category, is_favorite)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `;
+
+    const result = await client.query(query, [
+      data.user_id,
+      data.title,
+      data.prompt,
+      data.category || 'general',
+      data.is_favorite || false
+    ]);
+
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+// Get user's prompts
+export async function getUserPrompts(
+  userId: string, // VARCHAR to match users.id
+  category?: string,
+  favoritesOnly?: boolean,
+  search?: string
+): Promise<PromptLibraryItem[]> {
+  const client = await pool.connect();
+
+  try {
+    const query = `SELECT * FROM get_user_prompts($1, $2, $3, $4)`;
+    const result = await client.query(query, [
+      userId,
+      category || null,
+      favoritesOnly || false,
+      search || null
+    ]);
+
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+// Get prompt by ID
+export async function getPromptById(promptId: number, userId: string): Promise<PromptLibraryItem | null> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT * FROM prompt_library
+      WHERE id = $1 AND user_id = $2
+    `;
+
+    const result = await client.query(query, [promptId, userId]);
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
+// Update prompt
+export async function updatePrompt(
+  promptId: number,
+  userId: string, // VARCHAR to match users.id
+  updates: {
+    title?: string;
+    prompt?: string;
+    category?: string;
+    is_favorite?: boolean;
+  }
+): Promise<PromptLibraryItem | null> {
+  const client = await pool.connect();
+
+  try {
+    const setClauses: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.title !== undefined) {
+      setClauses.push(`title = $${paramIndex++}`);
+      values.push(updates.title);
+    }
+
+    if (updates.prompt !== undefined) {
+      setClauses.push(`prompt = $${paramIndex++}`);
+      values.push(updates.prompt);
+    }
+
+    if (updates.category !== undefined) {
+      setClauses.push(`category = $${paramIndex++}`);
+      values.push(updates.category);
+    }
+
+    if (updates.is_favorite !== undefined) {
+      setClauses.push(`is_favorite = $${paramIndex++}`);
+      values.push(updates.is_favorite);
+    }
+
+    if (setClauses.length === 0) {
+      return null;
+    }
+
+    setClauses.push(`updated_at = NOW()`);
+    values.push(promptId, userId);
+
+    const query = `
+      UPDATE prompt_library
+      SET ${setClauses.join(', ')}
+      WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
+      RETURNING *
+    `;
+
+    const result = await client.query(query, values);
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
+// Delete prompt
+export async function deletePrompt(promptId: number, userId: string): Promise<boolean> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      DELETE FROM prompt_library
+      WHERE id = $1 AND user_id = $2
+    `;
+
+    const result = await client.query(query, [promptId, userId]);
+    return (result.rowCount ?? 0) > 0;
+  } finally {
+    client.release();
+  }
+}
+
+// Increment prompt usage
+export async function incrementPromptUsage(promptId: number, userId: string): Promise<void> {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      UPDATE prompt_library
+      SET
+        usage_count = usage_count + 1,
+        last_used_at = NOW(),
+        updated_at = NOW()
+      WHERE id = $1 AND user_id = $2
+    `;
+
+    await client.query(query, [promptId, userId]);
+  } finally {
+    client.release();
+  }
+}
+
+// Get prompt templates
+export async function getPromptTemplates(category?: string, limit: number = 20): Promise<PromptTemplate[]> {
+  const client = await pool.connect();
+
+  try {
+    const query = `SELECT * FROM get_popular_templates($1, $2)`;
+    const result = await client.query(query, [category || null, limit]);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+// Increment template usage
+export async function incrementTemplateUsage(templateId: number): Promise<void> {
+  const client = await pool.connect();
+
+  try {
+    const query = `SELECT increment_template_usage($1)`;
+    await client.query(query, [templateId]);
+  } finally {
+    client.release();
+  }
+}
+
+// Get prompt statistics
+export async function getPromptStatistics(userId: string): Promise<any> {
+  const client = await pool.connect();
+
+  try {
+    const query = `SELECT get_prompt_statistics($1) as stats`;
+    const result = await client.query(query, [userId]);
+    return result.rows[0]?.stats || {
+      total_prompts: 0,
+      favorite_prompts: 0,
+      total_uses: 0,
+      most_used_category: null,
+      recent_activity: 0
+    };
+  } catch (error) {
+    console.error('Error getting prompt statistics:', error);
+    return {
+      total_prompts: 0,
+      favorite_prompts: 0,
+      total_uses: 0,
+      most_used_category: null,
+      recent_activity: 0
+    };
+  } finally {
+    client.release();
+  }
+}

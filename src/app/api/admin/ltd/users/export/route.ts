@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess } from '@/lib/admin-auth';
-import { logAdminAction } from '@/lib/ltd-admin';
+import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { pool } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
@@ -106,7 +105,7 @@ export async function GET(request: NextRequest) {
         await logAdminAction(
           authResult.admin.id,
           'export_users',
-          null,
+          undefined,
           { count: users.length }
         );
       }

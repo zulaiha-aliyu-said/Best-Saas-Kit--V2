@@ -27,8 +27,8 @@ export async function ensureUserExists() {
       user = await upsertUser({
         google_id: session.user.id,
         email: session.user.email || '',
-        name: session.user.name || null,
-        image_url: session.user.image || null,
+        name: session.user.name || undefined,
+        image_url: session.user.image || undefined,
       });
       console.log('✅ User created successfully:', session.user.email);
     }

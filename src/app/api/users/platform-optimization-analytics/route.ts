@@ -22,9 +22,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Get optimization stats
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
     const [stats, platformBreakdown] = await Promise.all([
-      getUserOptimizationStats(user.id),
-      getUserPlatformBreakdown(user.id),
+      getUserOptimizationStats(userId),
+      getUserPlatformBreakdown(userId),
     ]);
 
     return NextResponse.json({

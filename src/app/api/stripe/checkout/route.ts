@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert user ID to number for database functions
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+
     // Check if user already has pro subscription
     if (user.subscription_status === 'pro') {
       return NextResponse.json(
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
       customerId = customer.id;
 
       // Update user with Stripe customer ID
-      await updateUserSubscription(user.id, {
+      await updateUserSubscription(userId, {
         subscription_status: user.subscription_status,
         stripe_customer_id: customerId,
       });
@@ -80,7 +83,7 @@ export async function POST(request: NextRequest) {
     const checkoutSession = stripeCouponId
       ? await createCheckoutSessionWithDiscount(
           customerId,
-          user.id,
+          userId,
           user.email,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`,
@@ -88,7 +91,7 @@ export async function POST(request: NextRequest) {
         )
       : await createCheckoutSession(
           customerId,
-          user.id,
+          userId,
           user.email,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`

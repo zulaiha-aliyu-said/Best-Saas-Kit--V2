@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess } from '@/lib/admin-auth';
-import { logAdminAction } from '@/lib/ltd-admin';
+import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { pool } from '@/lib/database';
 import { sendEmail } from '@/lib/email';
 import { createEmailCampaign, updateCampaignStats, trackEmailSent } from '@/lib/email-tracking';
@@ -158,7 +157,7 @@ export async function POST(request: NextRequest) {
         await logAdminAction(
           authResult.admin.id,
           'bulk_email',
-          null,
+          undefined,
           {
             subject,
             targetCount: users.length,
