@@ -153,7 +153,7 @@ export default function AdminHooksAnalytics() {
               <TrendingUp className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {parseFloat(overallStats.avg_engagement_score || '0').toFixed(1)}
+              {parseFloat(String(overallStats.avg_engagement_score || '0')).toFixed(1)}
             </p>
           </div>
 
@@ -163,7 +163,7 @@ export default function AdminHooksAnalytics() {
               <BarChart3 className="w-5 h-5 text-orange-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800">
-              {parseFloat(overallStats.overall_copy_rate || '0').toFixed(1)}%
+              {parseFloat(String(overallStats.overall_copy_rate || '0')).toFixed(1)}%
             </p>
           </div>
         </div>
