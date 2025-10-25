@@ -6,6 +6,7 @@ import { ChatContextPanel } from '@/components/chat/chat-context-panel';
 import PromptLibraryPanel from '@/components/chat/prompt-library-panel';
 import SavePromptModal from '@/components/chat/save-prompt-modal';
 import { ChatMessage } from '@/components/chat/chat-message';
+import { UpgradePrompt } from '@/components/upgrade/UpgradePrompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,8 @@ export default function ChatPageNew() {
   const [conversationTitle, setConversationTitle] = useState('New Conversation');
   const [showSavePromptModal, setShowSavePromptModal] = useState(false);
   const [promptRefreshKey, setPromptRefreshKey] = useState(0);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [tierInfo, setTierInfo] = useState<{ currentTier: number; requiredTier: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
@@ -122,7 +125,28 @@ export default function ChatPageNew() {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        const errorData = await response.json();
+
+        // Handle tier restriction with upgrade prompt
+        if (response.status === 403 && errorData.code === 'TIER_RESTRICTED') {
+          setTierInfo({ currentTier: errorData.currentTier, requiredTier: errorData.requiredTier });
+          setShowUpgrade(true);
+          setLoading(false);
+          return;
+        }
+
+        // Also check for tier restriction in error message (fallback)
+        if (response.status === 403 || errorData.error?.includes('Tier 3+ Required')) {
+          setTierInfo({ 
+            currentTier: errorData.currentTier || 1, 
+            requiredTier: errorData.requiredTier || 3 
+          });
+          setShowUpgrade(true);
+          setLoading(false);
+          return;
+        }
+
+        throw new Error(errorData.error || 'Failed to send message');
       }
 
       const data = await response.json();
@@ -135,7 +159,7 @@ export default function ChatPageNew() {
       ]);
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      toast.error(error instanceof Error ? error.message : 'Failed to send message');
     } finally {
       setLoading(false);
     }
@@ -323,6 +347,17 @@ export default function ChatPageNew() {
       initialPrompt={inputMessage}
       onSuccess={handlePromptSaved}
     />
+
+    {/* Upgrade Prompt Modal */}
+    {showUpgrade && tierInfo && (
+      <UpgradePrompt
+        isOpen={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        currentTier={tierInfo.currentTier}
+        requiredTier={tierInfo.requiredTier}
+        feature="AI Chat Assistant"
+      />
+    )}
     </>
   );
 }
