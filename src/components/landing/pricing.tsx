@@ -13,55 +13,41 @@ interface PricingProps {
 const Pricing = ({ isAuthenticated = false }: PricingProps) => {
   const plans = [
     {
-      name: "Starter",
-      price: "Free",
-      description: "Perfect for getting started and small projects",
-      features: [
-        "Complete source code access",
-        "Basic authentication setup",
-        "Database schema & migrations",
-        "Core UI components",
-        "Documentation & guides",
-        "Community support"
-      ],
-      cta: "Get Started Free",
-      popular: false,
-      variant: "outline" as const
-    },
-    {
       name: "Pro",
-      price: "$99",
-      period: "one-time",
-      description: "Everything you need for production applications",
+      price: "$29",
+      period: "month",
+      description: "For creators & businesses who need more",
       features: [
-        "Everything in Starter",
-        "Advanced AI integrations",
-        "Payment processing setup",
-        "Admin dashboard",
-        "Email templates",
+        "Unlimited credits",
+        "All platform integrations",
+        "Viral hooks generator",
+        "Competitor analysis",
+        "Content scheduling",
         "Advanced analytics",
+        "AI style training",
         "Priority support",
-        "Lifetime updates"
+        "Unlimited generations"
       ],
-      cta: "Get Pro Access",
+      cta: "Upgrade to Pro",
       popular: true,
       variant: "default" as const
     },
     {
-      name: "Enterprise",
-      price: "Custom",
-      description: "For teams and large-scale applications",
+      name: "Lifetime Deal",
+      price: "$49",
+      period: "one-time",
+      description: "Pay once, use forever - 4 tiers available",
       features: [
-        "Everything in Pro",
-        "Custom integrations",
-        "White-label solution",
-        "Dedicated support",
-        "Custom training",
-        "SLA guarantee",
-        "Multi-tenant architecture",
-        "Custom deployment"
+        "Lifetime access (no recurring fees)",
+        "100-2,000 credits/month (tier based)",
+        "12-month credit rollover",
+        "Early bird pricing available",
+        "Code stacking to multiply credits",
+        "All features unlock at higher tiers",
+        "Priority support (tier 2+)",
+        "Future updates included"
       ],
-      cta: "Contact Sales",
+      cta: "View LTD Tiers",
       popular: false,
       variant: "outline" as const
     }
@@ -84,11 +70,11 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose the plan that fits your needs. Start free and upgrade as you grow.
+            Choose the plan that fits your needs. Pro monthly or pay once for lifetime access.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -141,47 +127,6 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
           ))}
         </div>
 
-        {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="mt-24"
-        >
-          <h3 className="text-2xl font-bold text-center mb-12">Frequently Asked Questions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="space-y-4">
-              <h4 className="font-semibold">What's included in the source code?</h4>
-              <p className="text-muted-foreground text-sm">
-                Complete Next.js application with authentication, database setup, AI integrations, 
-                payment processing, and all UI components. Everything you need to launch.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold">Do I get lifetime updates?</h4>
-              <p className="text-muted-foreground text-sm">
-                Yes! Pro and Enterprise plans include lifetime updates with new features, 
-                security patches, and compatibility updates.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold">Can I use this for client projects?</h4>
-              <p className="text-muted-foreground text-sm">
-                Absolutely! You can use the kit for unlimited personal and client projects. 
-                Perfect for agencies and freelancers.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold">What kind of support do you provide?</h4>
-              <p className="text-muted-foreground text-sm">
-                Community support for Starter, priority email support for Pro, 
-                and dedicated support with SLA for Enterprise.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Money Back Guarantee */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -190,10 +135,11 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
           viewport={{ once: true }}
           className="text-center mt-16"
         >
-          <div className="bg-muted/30 rounded-2xl p-8 border border-border">
-            <h3 className="text-xl font-bold mb-2">30-Day Money Back Guarantee</h3>
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-2xl p-8 border border-primary/20">
+            <Zap className="w-12 h-12 mx-auto mb-4 text-primary" />
+            <h3 className="text-xl font-bold mb-2">Start Creating Content Today</h3>
             <p className="text-muted-foreground">
-              Not satisfied? Get a full refund within 30 days, no questions asked.
+              Join thousands of content creators using RepurposeAI to save time and reach more people.
             </p>
           </div>
         </motion.div>

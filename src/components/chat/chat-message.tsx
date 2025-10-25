@@ -1,131 +1,160 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Copy, User, Bot, Calendar as CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import { ScheduleModal } from "@/components/schedule/schedule-modal";
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import { Bot, User, Copy, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface ChatMessageProps {
-  message: ChatMessage;
-  isLoading?: boolean;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
 }
 
-export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
+export function ChatMessage({ role, content }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
-  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
-  const isUser = message.role === 'user';
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(message.content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <div className={cn(
-      "flex w-full gap-3 p-4",
-      isUser ? "justify-end" : "justify-start"
-    )}>
-      {!isUser && (
-        <Avatar className="h-8 w-8 shrink-0">
-          <AvatarFallback className="bg-primary text-primary-foreground">
-            <Bot className="h-4 w-4" />
-          </AvatarFallback>
-        </Avatar>
-      )}
-      
-      <div className={cn(
-        "flex flex-col gap-2 max-w-[80%]",
-        isUser ? "items-end" : "items-start"
-      )}>
-        <div className={cn(
-          "rounded-lg px-4 py-2 text-sm",
-          isUser 
-            ? "bg-primary text-primary-foreground" 
-            : "bg-muted text-muted-foreground"
-        )}>
-          {isLoading ? (
-            <div className="flex items-center space-x-1">
-              <div className="animate-pulse">Thinking</div>
-              <div className="flex space-x-1">
-                <div className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-1 h-1 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              </div>
-            </div>
-          ) : (
-            <div className="whitespace-pre-wrap break-words">
-              {message.content}
-            </div>
-          )}
+  if (role === 'user') {
+    return (
+      <div className="flex gap-3 justify-end group">
+        <div className="rounded-2xl px-4 py-3 max-w-[80%] bg-primary text-primary-foreground">
+          <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
         </div>
-        
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>
-            {message.timestamp.toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-          </span>
-          {!isUser && !isLoading && (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={copyToClipboard}
-              >
-                <Copy className="h-3 w-3" />
-                <span className="sr-only">Copy message</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => setScheduleModalOpen(true)}
-                title="Schedule this content"
-              >
-                <CalendarIcon className="h-3 w-3" />
-                <span className="sr-only">Schedule message</span>
-              </Button>
-            </div>
-          )}
-          {copied && (
-            <span className="text-green-600">Copied!</span>
-          )}
+        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+          <User className="h-4 w-4 text-white" />
         </div>
       </div>
+    );
+  }
 
-      {isUser && (
-        <Avatar className="h-8 w-8 shrink-0">
-          <AvatarFallback className="bg-secondary text-secondary-foreground">
-            <User className="h-4 w-4" />
-          </AvatarFallback>
-        </Avatar>
-      )}
-
-      {/* Schedule Modal */}
-      <ScheduleModal
-        isOpen={scheduleModalOpen}
-        onClose={() => setScheduleModalOpen(false)}
-        content={message.content}
-        platform="all"
-        title="Schedule AI Response"
-        description="Schedule this AI-generated content for posting"
-      />
+  return (
+    <div className="flex gap-3 justify-start group">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
+        <Bot className="h-4 w-4 text-white" />
+      </div>
+      
+      <div className="rounded-2xl px-4 py-3 max-w-[80%] bg-muted relative">
+        <button
+          onClick={handleCopy}
+          className="absolute top-2 right-2 p-1.5 rounded-md bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Copy message"
+        >
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-green-600" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
+        </button>
+        
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={{
+              // Paragraphs
+              p: ({ node, ...props }) => (
+                <p className="mb-3 last:mb-0 leading-relaxed text-sm" {...props} />
+              ),
+              // Headers
+              h1: ({ node, ...props }) => (
+                <h1 className="text-lg font-bold mb-2 mt-4 first:mt-0" {...props} />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2 className="text-base font-bold mb-2 mt-3 first:mt-0" {...props} />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3 className="text-sm font-semibold mb-2 mt-3 first:mt-0" {...props} />
+              ),
+              // Lists
+              ul: ({ node, ...props }) => (
+                <ul className="list-disc list-inside mb-3 space-y-1 text-sm" {...props} />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol className="list-decimal list-inside mb-3 space-y-1 text-sm" {...props} />
+              ),
+              li: ({ node, ...props }) => (
+                <li className="leading-relaxed" {...props} />
+              ),
+              // Code blocks
+              code: ({ node, inline, className, children, ...props }: any) => {
+                if (inline) {
+                  return (
+                    <code
+                      className="px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 text-xs font-mono"
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  );
+                }
+                return (
+                  <code
+                    className={cn(
+                      'block p-3 rounded-lg bg-black/5 dark:bg-white/5 overflow-x-auto text-xs font-mono mb-3',
+                      className
+                    )}
+                    {...props}
+                  >
+                    {children}
+                  </code>
+                );
+              },
+              pre: ({ node, ...props }) => (
+                <pre className="mb-3 rounded-lg overflow-hidden" {...props} />
+              ),
+              // Blockquotes
+              blockquote: ({ node, ...props }) => (
+                <blockquote
+                  className="border-l-4 border-primary/30 pl-4 italic my-3 text-sm"
+                  {...props}
+                />
+              ),
+              // Links
+              a: ({ node, ...props }) => (
+                <a
+                  className="text-primary underline hover:text-primary/80 transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  {...props}
+                />
+              ),
+              // Tables
+              table: ({ node, ...props }) => (
+                <div className="overflow-x-auto mb-3">
+                  <table className="min-w-full divide-y divide-border text-sm" {...props} />
+                </div>
+              ),
+              th: ({ node, ...props }) => (
+                <th className="px-3 py-2 text-left font-semibold bg-muted/50" {...props} />
+              ),
+              td: ({ node, ...props }) => (
+                <td className="px-3 py-2 border-t border-border" {...props} />
+              ),
+              // Horizontal rule
+              hr: ({ node, ...props }) => (
+                <hr className="my-4 border-border" {...props} />
+              ),
+              // Strong/Bold
+              strong: ({ node, ...props }) => (
+                <strong className="font-semibold" {...props} />
+              ),
+              // Emphasis/Italic
+              em: ({ node, ...props }) => (
+                <em className="italic" {...props} />
+              ),
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
+      </div>
     </div>
   );
 }

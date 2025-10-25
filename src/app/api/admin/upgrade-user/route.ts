@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = typeof user.id === 'string' ? String(user.id) : user.id;
 
     // Update user to Pro subscription
     const updateResult = await updateUserSubscription(userId, {

@@ -42,11 +42,25 @@ const TechStack = () => {
       color: "from-blue-700 to-blue-500"
     },
     {
-      name: "OpenRouter AI",
-      category: "Generation",
-      description: "Multi-model content repurposing",
+      name: "OpenRouter API",
+      category: "AI Engine",
+      description: "Multi-model AI for content generation",
       icon: "🤖",
       color: "from-green-600 to-emerald-400"
+    },
+    {
+      name: "Stripe",
+      category: "Payments",
+      description: "Secure payment processing & billing",
+      icon: "💳",
+      color: "from-indigo-600 to-purple-500"
+    },
+    {
+      name: "NextAuth.js",
+      category: "Authentication",
+      description: "Secure Google OAuth integration",
+      icon: "🔐",
+      color: "from-cyan-600 to-blue-500"
     },
     {
       name: "YouTube Data API",

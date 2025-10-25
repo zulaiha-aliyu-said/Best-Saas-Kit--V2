@@ -43,7 +43,7 @@ const FAQ = () => {
     },
     {
       question: "Is there a limit on content generation?",
-      answer: "Our plans include generous monthly limits that scale with your needs. Free users get 10 content pieces per month, while paid plans offer unlimited generation. You can always upgrade or purchase additional credits as needed."
+      answer: "Our plans include generous monthly limits that scale with your needs. Pro plan offers unlimited credits, while Lifetime Deal tiers provide 50K to 1M credits per month depending on your tier. You can always upgrade your tier as needed."
     },
     {
       question: "Can I schedule content directly from the platform?",
@@ -55,7 +55,7 @@ const FAQ = () => {
     },
     {
       question: "How do I get started?",
-      answer: "Simply sign up for a free account, upload your first piece of content, and let our AI work its magic. You'll see results in minutes and can start building your content library immediately. No technical setup required!"
+      answer: "Simply sign up for an account, choose your plan, upload your first piece of content, and let our AI work its magic. You'll see results in minutes and can start building your content library immediately. No technical setup required!"
     }
   ]
 
@@ -150,7 +150,7 @@ const FAQ = () => {
                 whileTap={{ scale: 0.95 }}
                 className="border border-border px-8 py-3 rounded-lg font-medium hover:bg-muted/50 transition-colors"
               >
-                Start Free Trial
+                Get Started
               </motion.button>
             </div>
           </div>

@@ -457,7 +457,7 @@ export default function DocsPage() {
                           <h4 className="font-medium mb-2">1. Create Neon Account</h4>
                           <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                             <li>• Go to <Link href="https://neon.tech/" target="_blank" className="text-blue-600 hover:text-blue-800">neon.tech</Link></li>
-                            <li>• Sign up for a free account</li>
+                            <li>• Sign up for an account</li>
                             <li>• Create a new project</li>
                           </ul>
                         </div>

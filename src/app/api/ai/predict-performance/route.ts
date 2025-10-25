@@ -220,7 +220,7 @@ Please analyze this content and provide a comprehensive performance prediction s
 
     // Store prediction in database for analytics and user history
     try {
-      const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+      const userId = typeof user.id === 'string' ? String(user.id) : user.id;
       await createPerformancePrediction({
         user_id: userId,
         content,
