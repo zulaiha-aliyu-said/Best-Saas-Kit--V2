@@ -95,7 +95,7 @@ export async function checkFeatureAccess(
       return {
         hasAccess: false,
         reason: `Feature not available in Tier ${plan.ltd_tier}`,
-        upgradeRequired,
+        upgradeRequired: upgradeRequired || undefined,
       };
     }
     

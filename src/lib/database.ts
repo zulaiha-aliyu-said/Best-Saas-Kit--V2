@@ -3086,7 +3086,7 @@ export async function deleteConversation(conversationId: number, userId: number)
     `;
     
     const result = await client.query(query, [conversationId, userId]);
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   } finally {
     client.release();
   }
@@ -3357,7 +3357,7 @@ export async function deletePrompt(promptId: number, userId: string): Promise<bo
     `;
     
     const result = await client.query(query, [promptId, userId]);
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   } finally {
     client.release();
   }

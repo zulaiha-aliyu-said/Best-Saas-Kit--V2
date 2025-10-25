@@ -145,7 +145,10 @@ export async function createGroqCompletionWithSDK(
       model: completion.model,
       choices: completion.choices.map(choice => ({
         index: choice.index,
-        message: choice.message,
+        message: {
+          ...choice.message,
+          content: choice.message.content || ''
+        },
         finish_reason: choice.finish_reason || 'stop'
       })),
       usage: completion.usage || {

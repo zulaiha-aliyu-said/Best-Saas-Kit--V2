@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
     }
     
     const { user, session } = userResult;
-    const userId = String(user?.id); // Keep as string to match VARCHAR users.id
+    const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id; // Convert to number for database functions
 
     const body = await req.json();
     const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 });
 
     // Convert user ID to number for database functions
-    const userId = typeof user.id === 'string' ? String(user.id) : user.id;
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
 
     const body = await req.json();
     const { platform, content, scheduledAt, timezone = 'UTC' } = body || {};

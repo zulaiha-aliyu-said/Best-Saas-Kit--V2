@@ -5,7 +5,7 @@ import { getUserByGoogleId, getConversationById, updateConversation, deleteConve
 // GET /api/chat/conversations/[id] - Get conversation with messages
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -24,7 +24,8 @@ export async function GET(
       );
     }
 
-    const conversationId = parseInt(params.id);
+    const resolvedParams = await params;
+    const conversationId = parseInt(resolvedParams.id);
     if (isNaN(conversationId)) {
       return NextResponse.json(
         { error: 'Invalid conversation ID' },
@@ -61,7 +62,7 @@ export async function GET(
 // PUT /api/chat/conversations/[id] - Update conversation
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -80,7 +81,8 @@ export async function PUT(
       );
     }
 
-    const conversationId = parseInt(params.id);
+    const resolvedParams = await params;
+    const conversationId = parseInt(resolvedParams.id);
     if (isNaN(conversationId)) {
       return NextResponse.json(
         { error: 'Invalid conversation ID' },
@@ -120,7 +122,7 @@ export async function PUT(
 // DELETE /api/chat/conversations/[id] - Delete conversation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -139,7 +141,8 @@ export async function DELETE(
       );
     }
 
-    const conversationId = parseInt(params.id);
+    const resolvedParams = await params;
+    const conversationId = parseInt(resolvedParams.id);
     if (isNaN(conversationId)) {
       return NextResponse.json(
         { error: 'Invalid conversation ID' },

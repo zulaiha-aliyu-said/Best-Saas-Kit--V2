@@ -5,7 +5,7 @@ import { getUserByGoogleId, getPromptById, updatePrompt, deletePrompt } from '@/
 // GET /api/prompts/[id] - Get single prompt
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -25,7 +25,8 @@ export async function GET(
       );
     }
 
-    const promptId = parseInt(params.id);
+    const resolvedParams = await params;
+    const promptId = parseInt(resolvedParams.id);
     if (isNaN(promptId)) {
       return NextResponse.json(
         { error: 'Invalid prompt ID' },
@@ -58,7 +59,7 @@ export async function GET(
 // PUT /api/prompts/[id] - Update prompt
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -78,7 +79,8 @@ export async function PUT(
       );
     }
 
-    const promptId = parseInt(params.id);
+    const resolvedParams = await params;
+    const promptId = parseInt(resolvedParams.id);
     if (isNaN(promptId)) {
       return NextResponse.json(
         { error: 'Invalid prompt ID' },
@@ -160,7 +162,7 @@ export async function PUT(
 // DELETE /api/prompts/[id] - Delete prompt
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -180,7 +182,8 @@ export async function DELETE(
       );
     }
 
-    const promptId = parseInt(params.id);
+    const resolvedParams = await params;
+    const promptId = parseInt(resolvedParams.id);
     if (isNaN(promptId)) {
       return NextResponse.json(
         { error: 'Invalid prompt ID' },

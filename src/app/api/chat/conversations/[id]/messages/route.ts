@@ -7,7 +7,7 @@ import { createGroqCompletionWithSDK } from '@/lib/groq';
 // POST /api/chat/conversations/[id]/messages - Add message and get AI response
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -26,7 +26,8 @@ export async function POST(
       );
     }
 
-    const conversationId = parseInt(params.id);
+    const resolvedParams = await params;
+    const conversationId = parseInt(resolvedParams.id);
     if (isNaN(conversationId)) {
       return NextResponse.json(
         { error: 'Invalid conversation ID' },
@@ -138,7 +139,7 @@ export async function POST(
 
         const groqResponse = await createGroqCompletionWithSDK(
           groqMessages,
-          'llama-3.1-8b-instant'  // Fast Groq model for chat
+          { model: 'llama-3.1-8b-instant' }  // Fast Groq model for chat
         );
 
         aiResponse = groqResponse.choices[0]?.message?.content || '';

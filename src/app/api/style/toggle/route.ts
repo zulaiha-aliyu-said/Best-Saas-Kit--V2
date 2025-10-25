@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Toggle style enabled status
-    await toggleUserStyleEnabled(user.id, enabled);
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    await toggleUserStyleEnabled(userId, enabled);
 
     return NextResponse.json({
       success: true,

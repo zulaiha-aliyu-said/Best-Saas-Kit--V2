@@ -293,7 +293,7 @@ export function optimizeForX(content: string): OptimizationResult {
   let isThread = false;
   let threadPosts: string[] = [];
   
-  if (charCount > limits.maxChars) {
+  if ('maxChars' in limits && charCount > limits.maxChars) {
     optimizations.push('Created thread (content exceeded 280 characters)');
     const threadResult = createThread({ content: optimizedContent });
     threadPosts = threadResult.posts;
@@ -388,7 +388,7 @@ export function optimizeForLinkedIn(content: string): OptimizationResult {
   }
   
   // Length check
-  if (charCount > limits.maxChars) {
+  if ('maxChars' in limits && charCount > limits.maxChars) {
     warnings.push(`⚠️ Content exceeds LinkedIn limit (${charCount}/${limits.maxChars})`);
     optimizedContent = optimizedContent.slice(0, limits.maxChars - 3) + '...';
     optimizations.push('Truncated to fit LinkedIn limit');
@@ -464,7 +464,7 @@ export function optimizeForInstagram(content: string): OptimizationResult {
   }
   
   // Length check
-  if (charCount > limits.maxChars) {
+  if ('maxChars' in limits && charCount > limits.maxChars) {
     warnings.push(`⚠️ Caption exceeds Instagram limit (${charCount}/${limits.maxChars})`);
     optimizedContent = optimizedContent.slice(0, limits.maxChars - 3) + '...';
     optimizations.push('Truncated to fit Instagram limit');
@@ -596,7 +596,7 @@ export function optimizeForPlatform(
  */
 export function getCharacterCountColor(count: number, platform: Platform): 'green' | 'yellow' | 'red' {
   const limits = PLATFORM_LIMITS[platform];
-  const maxChars = limits.maxChars;
+  const maxChars = 'maxChars' in limits ? limits.maxChars : 1000; // Default fallback
   const percentage = (count / maxChars) * 100;
   
   if (percentage >= 100) return 'red';
@@ -609,7 +609,8 @@ export function getCharacterCountColor(count: number, platform: Platform): 'gree
  */
 export function formatCharacterCount(count: number, platform: Platform): string {
   const limits = PLATFORM_LIMITS[platform];
-  return `${count}/${limits.maxChars}`;
+  const maxChars = 'maxChars' in limits ? limits.maxChars : 1000; // Default fallback
+  return `${count}/${maxChars}`;
 }
 
 

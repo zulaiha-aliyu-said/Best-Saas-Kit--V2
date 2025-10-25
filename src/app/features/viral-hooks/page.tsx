@@ -1,5 +1,5 @@
 import { FeatureDetailTemplate } from "@/components/features/FeatureDetailTemplate";
-import { Zap, TrendingUp, Target, Sparkles, Brain, Card } from "lucide-react";
+import { Zap, TrendingUp, Target, Sparkles, Brain } from "lucide-react";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
