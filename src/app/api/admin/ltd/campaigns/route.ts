@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { pool } from '@/lib/database';
-import { sendEmail } from '@/lib/email';
+import { sendEmail } from '@/lib/resend';
 import { createEmailCampaign, updateCampaignStats, trackEmailSent } from '@/lib/email-tracking';
 
 export async function POST(request: NextRequest) {

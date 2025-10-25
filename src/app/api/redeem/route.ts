@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { pool, upsertUser } from '@/lib/database';
 import { LTD_TIERS, getSubscriptionStatusFromTier, type LTDTier } from '@/lib/ltd-tiers';
-import { sendEmail, welcomeEmailTemplate, codeStackedEmailTemplate } from '@/lib/email';
+import { sendEmail, welcomeEmailTemplate, codeStackedEmailTemplate } from '@/lib/resend';
 import { trackEmailSent } from '@/lib/email-tracking';
 
 export async function POST(request: NextRequest) {

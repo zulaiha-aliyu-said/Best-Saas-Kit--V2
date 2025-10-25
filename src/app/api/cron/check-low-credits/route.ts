@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
-import { sendEmail, creditLowWarningEmail } from '@/lib/email';
+import { sendEmail, creditLowWarningEmail } from '@/lib/resend';
 import { trackEmailSent } from '@/lib/email-tracking';
 
 export async function GET(request: NextRequest) {
