@@ -21,24 +21,35 @@ export interface EmailData {
   subject: string;
   html: string;
   from?: string;
+  emailType?: 'welcome' | 'stacked' | 'campaign' | 'warning' | 'notification';
+  tags?: { name: string; value: string }[];
 }
 
 // Send email function with error handling
 export async function sendEmail(data: EmailData) {
   try {
     const apiKey = getResendApiKey();
+    
+    // Build email payload
+    const emailPayload: any = {
+      from: data.from || EMAIL_CONFIG.FROM_EMAIL,
+      to: data.to,
+      subject: data.subject,
+      html: data.html,
+    };
+    
+    // Add tags if provided
+    if (data.tags && data.tags.length > 0) {
+      emailPayload.tags = data.tags;
+    }
+    
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: data.from || EMAIL_CONFIG.FROM_EMAIL,
-        to: data.to,
-        subject: data.subject,
-        html: data.html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
     if (!res.ok) {
       const text = await res.text();
@@ -47,7 +58,7 @@ export async function sendEmail(data: EmailData) {
     const result = await res.json();
 
     console.log('Email sent successfully:', result);
-    return { success: true, data: result };
+    return { success: true, data: result, emailId: result.id };
   } catch (error) {
     console.error('Failed to send email:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
