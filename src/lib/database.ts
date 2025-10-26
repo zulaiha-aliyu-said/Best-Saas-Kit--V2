@@ -93,8 +93,16 @@ export async function upsertUser(userData: CreateUserData): Promise<User> {
   
   try {
     const query = `
-      INSERT INTO users (id, google_id, email, name, image_url, last_login)
-      VALUES ($1, $1, $2, $3, $4, CURRENT_TIMESTAMP)
+      INSERT INTO users (
+        id, google_id, email, name, image_url, last_login,
+        credits, plan_type, subscription_status, 
+        monthly_credit_limit, rollover_credits, stacked_codes,
+        credit_reset_date
+      )
+      VALUES ($1, $1, $2, $3, $4, CURRENT_TIMESTAMP, 
+              10, 'subscription', 'free', 
+              10, 0, 0,
+              NULL)
       ON CONFLICT (google_id)
       DO UPDATE SET
         email = EXCLUDED.email,

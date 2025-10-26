@@ -73,7 +73,7 @@ export default function AdminFeedbackPage() {
       const response = await fetch("/api/feedback/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus }),
+        body: JSON.stringify({ feedbackId: id, status: newStatus }),
       });
 
       if (!response.ok) throw new Error("Failed to update status");

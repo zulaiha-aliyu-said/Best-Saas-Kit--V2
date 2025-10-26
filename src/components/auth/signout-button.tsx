@@ -1,6 +1,6 @@
 "use client"
 
-import { signOutAction } from "@/lib/auth-actions"
+import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 
 interface SignOutButtonProps {
@@ -9,15 +9,21 @@ interface SignOutButtonProps {
 }
 
 export function SignOutButton({ children, className }: SignOutButtonProps) {
+  const handleSignOut = async () => {
+    try {
+      await signOut({ callbackUrl: "/" })
+    } catch (error) {
+      console.error("Sign out error:", error)
+    }
+  }
+
   return (
-    <form action={signOutAction}>
-      <Button
-        type="submit"
-        variant="outline"
-        className={className}
-      >
-        {children || "Sign Out"}
-      </Button>
-    </form>
+    <Button
+      onClick={handleSignOut}
+      variant="outline"
+      className={className}
+    >
+      {children || "Sign Out"}
+    </Button>
   )
 }

@@ -34,6 +34,9 @@ const nextConfig: NextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    serverActions: {
+      allowedOrigins: ['localhost:3000', '*.vercel.app'],
+    },
   },
 
   // Webpack configuration for better build optimization
