@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAyrshareClient } from "@/lib/ayrshare";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Test Ayrshare API connection
 export async function GET(req: NextRequest) {

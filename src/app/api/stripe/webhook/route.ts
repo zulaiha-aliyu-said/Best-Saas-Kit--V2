@@ -4,7 +4,7 @@ import { getUserByStripeCustomerId, updateUserSubscription, addCredits, getUserB
 import { sendEmail, createSubscriptionConfirmationEmail } from '@/lib/resend';
 import Stripe from 'stripe';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     let event: Stripe.Event;
     try {
-      event = verifyWebhookSignature(body, signature);
+      event = (await verifyWebhookSignature(body, signature!)) as any;
       console.log('Webhook signature verified successfully, event type:', event.type);
     } catch (error) {
       console.error('Webhook signature verification failed:', error);

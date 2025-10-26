@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { getAllUsers, type User } from "@/lib/database";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function UsersPage() {
   // This will redirect non-admin users
