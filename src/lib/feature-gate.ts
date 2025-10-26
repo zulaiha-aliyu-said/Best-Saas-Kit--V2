@@ -95,7 +95,7 @@ export async function checkFeatureAccess(
       return {
         hasAccess: false,
         reason: `Feature not available in Tier ${plan.ltd_tier}`,
-        upgradeRequired,
+        upgradeRequired: upgradeRequired || undefined,
       };
     }
     
@@ -164,9 +164,9 @@ export async function deductCredits(
   try {
     await client.query('BEGIN');
     
-    // Get current credits with row lock
+    // Get current credits and plan info with row lock
     const userQuery = `
-      SELECT credits FROM users WHERE id = $1 FOR UPDATE
+      SELECT credits, plan_type, subscription_status FROM users WHERE id = $1 FOR UPDATE
     `;
     const userResult = await client.query(userQuery, [userId]);
     
@@ -176,9 +176,21 @@ export async function deductCredits(
     }
     
     const currentCredits = userResult.rows[0].credits;
+    const planType = userResult.rows[0].plan_type;
+    const subscriptionStatus = userResult.rows[0].subscription_status;
     
     if (currentCredits < amount) {
       await client.query('ROLLBACK');
+      
+      // Custom error message for free trial users
+      if (planType === 'subscription' && subscriptionStatus === 'free') {
+        return { 
+          success: false, 
+          remaining: currentCredits, 
+          error: `Free trial credits exhausted. Please redeem an LTD code to continue using the app with full access.` 
+        };
+      }
+      
       return { 
         success: false, 
         remaining: currentCredits, 
@@ -370,8 +382,7 @@ function checkSubscriptionFeatureAccess(
 ): FeatureAccessResult {
   const accessMap: Record<string, string[]> = {
     free: [
-      'content_repurposing',
-      'trending_topics',
+      'content_repurposing',  // Free trial users can ONLY use repurpose feature
     ],
     starter: [
       'content_repurposing',
@@ -416,8 +427,8 @@ function checkSubscriptionFeatureAccess(
   
   return {
     hasAccess,
-    reason: hasAccess ? undefined : `Feature requires ${basePlan === 'free' ? 'Pro' : 'Enterprise'} plan`,
-    upgradeRequired: hasAccess ? undefined : (basePlan === 'free' ? 'pro' : 'enterprise'),
+    reason: hasAccess ? undefined : `Feature requires an LTD plan. Please redeem a code to continue.`,
+    upgradeRequired: hasAccess ? undefined : (1 as LTDTier),  // Suggest Tier 1 LTD
   };
 }
 
@@ -444,15 +455,27 @@ export async function getUserFeatures(userId: string | number): Promise<Record<s
  * Get features for subscription plans
  */
 function getSubscriptionFeatures(status: SubscriptionStatus): Record<string, any> {
-  // Basic features for free/starter plans
-  const basicFeatures = {
+  // Free trial - ONLY repurpose feature with 10 credits total
+  const freeTrialFeatures = {
+    content_repurposing: { enabled: true, platforms: 4, trial: true },
+    trending_topics: { enabled: false },
+    analytics: { enabled: false },
+    viral_hooks: { enabled: false },
+    scheduling: { enabled: false },
+    ai_chat: { enabled: false },
+    predictive_performance: { enabled: false },
+    style_training: { enabled: false },
+  };
+  
+  // Basic features for starter plans (if we ever have subscription plans)
+  const starterFeatures = {
     content_repurposing: { enabled: true, platforms: 2 },
     trending_topics: { enabled: true, hashtags: 5 },
     analytics: { enabled: true, history_days: 7 },
   };
   
   const proFeatures = {
-    ...basicFeatures,
+    ...starterFeatures,
     content_repurposing: { enabled: true, platforms: 4 },
     trending_topics: { enabled: true, hashtags: 'unlimited' },
     analytics: { enabled: true, history_days: 30 },
@@ -478,9 +501,10 @@ function getSubscriptionFeatures(status: SubscriptionStatus): Record<string, any
     case 'pro':
       return proFeatures;
     case 'starter':
+      return starterFeatures;
     case 'free':
     default:
-      return basicFeatures;
+      return freeTrialFeatures;
   }
 }
 

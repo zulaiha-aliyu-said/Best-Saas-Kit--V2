@@ -9,7 +9,7 @@ import { pool } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdminAccess();
@@ -20,6 +20,7 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
 
@@ -31,7 +32,7 @@ export async function GET(
          WHERE user_id = $1
          ORDER BY created_at DESC
          LIMIT $2`,
-        [params.id, limit]
+        [id, limit]
       );
 
       // Get redemption history
@@ -41,7 +42,7 @@ export async function GET(
          JOIN ltd_codes lc ON lr.code_id = lc.id
          WHERE lr.user_id = $1
          ORDER BY lr.redeemed_at DESC`,
-        [params.id]
+        [id]
       );
 
       // Get admin actions affecting this user
@@ -52,7 +53,7 @@ export async function GET(
          WHERE a.target_id = $1
          ORDER BY a.created_at DESC
          LIMIT 20`,
-        [params.id]
+        [id]
       );
 
       return NextResponse.json({

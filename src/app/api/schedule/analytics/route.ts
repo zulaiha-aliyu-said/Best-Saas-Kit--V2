@@ -22,8 +22,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Convert user ID to number for database function
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+
     // Get user schedule analytics
-    const analytics = await getUserScheduleAnalytics(user.id);
+    const analytics = await getUserScheduleAnalytics(userId);
 
     return NextResponse.json({
       success: true,

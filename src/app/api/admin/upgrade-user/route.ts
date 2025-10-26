@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess } from '@/lib/admin-auth';
 import { getUserByEmail, updateUserSubscription, addCredits } from '@/lib/database';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,8 +35,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+
     // Update user to Pro subscription
-    const updateResult = await updateUserSubscription(user.id, {
+    const updateResult = await updateUserSubscription(userId, {
       subscription_status: 'pro',
       stripe_customer_id: user.stripe_customer_id,
       subscription_id: `manual_upgrade_${Date.now()}`,
@@ -51,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add bonus credits for Pro users (1000 credits)
-    const creditsResult = await addCredits(user.id, 1000);
+    const creditsResult = await addCredits(userId, 1000);
 
     console.log(`Admin manually upgraded user ${user.email} to Pro:`, {
       userId: user.id,

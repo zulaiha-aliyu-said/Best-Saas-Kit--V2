@@ -10,7 +10,7 @@ import {
   Zap
 } from "lucide-react";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function SimpleAnalyticsPage() {
   // This will redirect non-admin users

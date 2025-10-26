@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getAllUsers, type User } from "@/lib/database";
 import { UserManagementClient } from "@/components/admin/user-management-client";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function AdminUsersPage() {
   // Get all users from database

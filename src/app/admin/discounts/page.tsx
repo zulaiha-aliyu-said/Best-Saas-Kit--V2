@@ -2,7 +2,7 @@ import { requireAdminAccess } from "@/lib/admin-auth";
 import { getAllDiscountCodes, getDiscountStats } from "@/lib/database";
 import { DiscountManagement } from "@/components/admin/discount-management";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function AdminDiscountsPage() {
   // This will redirect non-admin users

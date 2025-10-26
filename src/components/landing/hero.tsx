@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Zap, Code, Rocket, Github, Shield } from "lucide-react"
+import { ArrowRight, Sparkles, Zap, Rocket } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
@@ -94,7 +94,7 @@ const Hero = () => {
               asChild
             >
               <Link href="/get-started" className="flex items-center space-x-2">
-                <span>Get Started Free</span>
+                <span>Get Started</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
@@ -107,70 +107,8 @@ const Hero = () => {
               <Link href="/demo">View Live Demo</Link>
             </Button>
           </motion.div>
-
-          {/* GitHub Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="flex items-center justify-center pt-4"
-          >
-            <Button
-              size="lg"
-              variant="ghost"
-              className="text-base font-medium px-6 py-3 h-12 rounded-lg hover:bg-muted/30 transition-all duration-300 hover:scale-105 border border-border/50"
-              asChild
-            >
-              <Link
-                href="https://github.com/zainulabedeen123/Best-Saas-Kit--V2"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-2"
-              >
-                <Github className="w-5 h-5" />
-                <span>View on GitHub</span>
-              </Link>
-            </Button>
-          </motion.div>
-
-          {/* Social Proof */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="pt-8 text-sm text-muted-foreground"
-          >
-            <p>Helping content creators grow their reach</p>
-            <div className="flex justify-center items-center space-x-8 mt-4 opacity-60">
-              <div className="text-xs font-medium">🎥 15+ Trending Videos</div>
-              <div className="text-xs">•</div>
-              <div className="text-xs font-medium">🔥 Real-Time Alerts</div>
-              <div className="text-xs">•</div>
-              <div className="text-xs font-medium">✨ AI-Powered</div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center"
-        >
-          <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-1 h-3 bg-muted-foreground/50 rounded-full mt-2"
-          />
-        </motion.div>
-      </motion.div>
     </section>
   )
 }

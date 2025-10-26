@@ -17,7 +17,8 @@ import {
   ArrowLeft,
   Percent,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  Ticket
 } from "lucide-react"
 import { UserButtonClient } from "@/components/auth/user-button-client"
 
@@ -29,6 +30,7 @@ interface AdminClientProps {
 const sidebarItems = [
   { name: "Admin Dashboard", href: "/admin", icon: Shield },
   { name: "User Management", href: "/admin/users", icon: Users },
+  { name: "LTD Admin", href: "/admin/ltd", icon: Ticket },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Hooks Analytics", href: "/admin/hooks-analytics", icon: Sparkles },
   { name: "User Feedback", href: "/admin/feedback", icon: MessageSquare },
@@ -65,7 +67,7 @@ export function AdminClient({ children, adminUser }: AdminClientProps) {
           <nav className="p-4 space-y-2">
             {sidebarItems.map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
               return (
                 <Link
                   key={item.name}
@@ -105,7 +107,7 @@ export function AdminClient({ children, adminUser }: AdminClientProps) {
         <nav className="p-4 space-y-2">
           {sidebarItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
                 key={item.name}

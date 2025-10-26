@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
-import { sendEmail, creditLowWarningEmail } from '@/lib/email';
+import { sendEmail, creditLowWarningEmail } from '@/lib/resend';
 import { trackEmailSent } from '@/lib/email-tracking';
 
 export async function GET(request: NextRequest) {
@@ -116,7 +116,8 @@ export async function GET(request: NextRequest) {
             emailResults.sent++;
             console.log(`✅ Warning sent to ${user.email}`);
           } else {
-            throw new Error(emailResult.error?.message || 'Email failed');
+            const errorMsg = (emailResult.error as any)?.message || 'Email failed';
+            throw new Error(errorMsg);
           }
 
         } catch (error: any) {

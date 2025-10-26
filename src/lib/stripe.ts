@@ -1,29 +1,11 @@
-import Stripe from 'stripe';
+// Edge-compatible Stripe helpers implemented using fetch/Web Crypto
+const STRIPE_API_BASE = 'https://api.stripe.com/v1';
 
-// Lazy initialization to avoid build-time errors when env vars are not available
-let stripeInstance: Stripe | null = null;
-
-function getStripe(): Stripe {
-  if (!stripeInstance) {
-    const apiKey = process.env.STRIPE_SECRET_KEY;
-    if (!apiKey) {
-      throw new Error('STRIPE_SECRET_KEY is not configured');
-    }
-    stripeInstance = new Stripe(apiKey, {
-      apiVersion: '2025-08-27.basil',
-      typescript: true,
-    });
-  }
-  return stripeInstance;
+function getStripeSecretKey(): string {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  if (!apiKey) throw new Error('STRIPE_SECRET_KEY is not configured');
+  return apiKey;
 }
-
-// Export for backwards compatibility
-export const stripe = new Proxy({} as Stripe, {
-  get: (target, prop) => {
-    const stripeClient = getStripe();
-    return (stripeClient as any)[prop];
-  }
-});
 
 export const STRIPE_CONFIG = {
   PRO_PLAN: {
@@ -36,10 +18,23 @@ export const STRIPE_CONFIG = {
 
 // Create Stripe customer
 export async function createStripeCustomer(email: string, name?: string) {
-  return await stripe.customers.create({
-    email,
-    name: name || undefined,
+  const apiKey = getStripeSecretKey();
+  const body = new URLSearchParams();
+  body.set('email', email);
+  if (name) body.set('name', name);
+  const res = await fetch(`${STRIPE_API_BASE}/customers`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
   });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Stripe create customer failed: ${res.status} ${text}`);
+  }
+  return await res.json();
 }
 
 // Create checkout session for Pro plan
@@ -50,31 +45,36 @@ export async function createCheckoutSession(
   successUrl: string,
   cancelUrl: string
 ) {
-  return await stripe.checkout.sessions.create({
-    customer: customerId,
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: STRIPE_CONFIG.PRO_PLAN.currency,
-          product_data: {
-            name: STRIPE_CONFIG.PRO_PLAN.name,
-            description: STRIPE_CONFIG.PRO_PLAN.description,
-          },
-          unit_amount: STRIPE_CONFIG.PRO_PLAN.price,
-        },
-        quantity: 1,
-      },
-    ],
-    mode: 'payment', // One-time payment
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    metadata: {
-      plan: 'pro',
-      userId: userId.toString(),
-      userEmail: userEmail,
+  const apiKey = getStripeSecretKey();
+  const body = new URLSearchParams();
+  body.set('customer', customerId);
+  body.set('mode', 'payment');
+  body.set('success_url', successUrl);
+  body.set('cancel_url', cancelUrl);
+  // line_items[0]
+  body.set('line_items[0][quantity]', '1');
+  body.set('line_items[0][price_data][currency]', STRIPE_CONFIG.PRO_PLAN.currency);
+  body.set('line_items[0][price_data][product_data][name]', STRIPE_CONFIG.PRO_PLAN.name);
+  body.set('line_items[0][price_data][product_data][description]', STRIPE_CONFIG.PRO_PLAN.description);
+  body.set('line_items[0][price_data][unit_amount]', String(STRIPE_CONFIG.PRO_PLAN.price));
+  // metadata
+  body.set('metadata[plan]', 'pro');
+  body.set('metadata[userId]', userId.toString());
+  body.set('metadata[userEmail]', userEmail);
+
+  const res = await fetch(`${STRIPE_API_BASE}/checkout/sessions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
+    body,
   });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Stripe checkout session failed: ${res.status} ${text}`);
+  }
+  return await res.json();
 }
 
 // Create Stripe coupon for discount code
@@ -84,25 +84,31 @@ export async function createStripeCoupon(
   discountValue: number
 ) {
   try {
-    const couponData: any = {
-      id: `discount_${discountCode.toLowerCase()}`,
-      name: `Discount Code: ${discountCode}`,
-      duration: 'once', // One-time use discount
-    };
-
+    const apiKey = getStripeSecretKey();
+    const body = new URLSearchParams();
+    body.set('id', `discount_${discountCode.toLowerCase()}`);
+    body.set('name', `Discount Code: ${discountCode}`);
+    body.set('duration', 'once');
     if (discountType === 'percentage') {
-      // Ensure percentage is a whole number between 1-100
-      couponData.percent_off = Math.round(discountValue);
+      body.set('percent_off', String(Math.round(discountValue)));
     } else {
-      // For fixed amount, convert dollars to cents if needed
-      // If value is less than 100, assume it's in dollars and convert to cents
       const amountInCents = discountValue < 100 ? discountValue * 100 : discountValue;
-      couponData.amount_off = Math.round(amountInCents);
-      couponData.currency = STRIPE_CONFIG.PRO_PLAN.currency;
+      body.set('amount_off', String(Math.round(amountInCents)));
+      body.set('currency', STRIPE_CONFIG.PRO_PLAN.currency);
     }
-
-    console.log('Creating Stripe coupon with data:', couponData);
-    return await stripe.coupons.create(couponData);
+    const res = await fetch(`${STRIPE_API_BASE}/coupons`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Stripe create coupon failed: ${res.status} ${text}`);
+    }
+    return await res.json();
   } catch (error) {
     console.error('Stripe coupon creation error:', error);
     throw error;
@@ -112,7 +118,18 @@ export async function createStripeCoupon(
 // Delete Stripe coupon
 export async function deleteStripeCoupon(couponId: string) {
   try {
-    return await stripe.coupons.del(couponId);
+    const apiKey = getStripeSecretKey();
+    const res = await fetch(`${STRIPE_API_BASE}/coupons/${encodeURIComponent(couponId)}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Stripe delete coupon failed: ${res.status} ${text}`);
+    }
+    return await res.json();
   } catch (error) {
     console.error('Error deleting Stripe coupon:', error);
     throw error;
@@ -128,49 +145,90 @@ export async function createCheckoutSessionWithDiscount(
   cancelUrl: string,
   discountCouponId?: string
 ) {
-  const sessionData: any = {
-    customer: customerId,
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: STRIPE_CONFIG.PRO_PLAN.currency,
-          product_data: {
-            name: STRIPE_CONFIG.PRO_PLAN.name,
-            description: STRIPE_CONFIG.PRO_PLAN.description,
-          },
-          unit_amount: STRIPE_CONFIG.PRO_PLAN.price,
-        },
-        quantity: 1,
-      },
-    ],
-    mode: 'payment', // One-time payment
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    metadata: {
-      plan: 'pro',
-      userId: userId.toString(),
-      userEmail: userEmail,
-    },
-  };
-
-  // Apply discount if provided
+  const apiKey = getStripeSecretKey();
+  const body = new URLSearchParams();
+  body.set('customer', customerId);
+  body.set('mode', 'payment');
+  body.set('success_url', successUrl);
+  body.set('cancel_url', cancelUrl);
+  // line_items[0]
+  body.set('line_items[0][quantity]', '1');
+  body.set('line_items[0][price_data][currency]', STRIPE_CONFIG.PRO_PLAN.currency);
+  body.set('line_items[0][price_data][product_data][name]', STRIPE_CONFIG.PRO_PLAN.name);
+  body.set('line_items[0][price_data][product_data][description]', STRIPE_CONFIG.PRO_PLAN.description);
+  body.set('line_items[0][price_data][unit_amount]', String(STRIPE_CONFIG.PRO_PLAN.price));
+  // metadata
+  body.set('metadata[plan]', 'pro');
+  body.set('metadata[userId]', userId.toString());
+  body.set('metadata[userEmail]', userEmail);
+  // discount
   if (discountCouponId) {
-    sessionData.discounts = [
-      {
-        coupon: discountCouponId,
-      },
-    ];
+    body.set('discounts[0][coupon]', discountCouponId);
   }
 
-  return await stripe.checkout.sessions.create(sessionData);
+  const res = await fetch(`${STRIPE_API_BASE}/checkout/sessions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Stripe checkout session (discount) failed: ${res.status} ${text}`);
+  }
+  return await res.json();
 }
 
 // Verify webhook signature
-export function verifyWebhookSignature(body: string, signature: string) {
-  return stripe.webhooks.constructEvent(
-    body,
-    signature,
-    process.env.STRIPE_WEBHOOK_SECRET!
+export async function verifyWebhookSignature(body: string, signatureHeader: string) {
+  // Implements basic signature verification compatible with Edge/Web Crypto
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
+
+  if (!signatureHeader) throw new Error('Missing Stripe-Signature header');
+
+  // Parse header: t=timestamp, v1=signature
+  const parts = Object.fromEntries(
+    signatureHeader.split(',').map((p) => {
+      const [k, v] = p.split('=');
+      return [k.trim(), v];
+    })
+  ) as Record<string, string>;
+
+  const t = parts['t'];
+  const v1 = parts['v1'];
+  if (!t || !v1) throw new Error('Invalid Stripe-Signature header');
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
   );
+  const data = encoder.encode(`${t}.${body}`);
+  const signatureArrayBuffer = await crypto.subtle.sign('HMAC', key, data);
+  const signatureBytes = new Uint8Array(signatureArrayBuffer);
+  const computed = Array.from(signatureBytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  // Constant-time comparison
+  if (!timingSafeEqual(computed, v1)) {
+    throw new Error('Invalid signature');
+  }
+
+  return JSON.parse(body);
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }

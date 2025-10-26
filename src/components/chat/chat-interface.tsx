@@ -267,17 +267,12 @@ export function ChatInterface({
             ) : (
               <div className="space-y-0">
                 {messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
+                  <ChatMessage key={message.id} role={message.role} content={message.content} />
                 ))}
                 {isLoading && (
                   <ChatMessage
-                    message={{
-                      id: 'loading',
-                      role: 'assistant',
-                      content: '',
-                      timestamp: new Date(),
-                    }}
-                    isLoading={true}
+                    role="assistant"
+                    content=""
                   />
                 )}
                 <div ref={messagesEndRef} />

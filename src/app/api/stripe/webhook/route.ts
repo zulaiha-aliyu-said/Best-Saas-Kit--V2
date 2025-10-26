@@ -4,7 +4,7 @@ import { getUserByStripeCustomerId, updateUserSubscription, addCredits, getUserB
 import { sendEmail, createSubscriptionConfirmationEmail } from '@/lib/resend';
 import Stripe from 'stripe';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     let event: Stripe.Event;
     try {
-      event = verifyWebhookSignature(body, signature);
+      event = (await verifyWebhookSignature(body, signature!)) as any;
       console.log('Webhook signature verified successfully, event type:', event.type);
     } catch (error) {
       console.error('Webhook signature verification failed:', error);
@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
           if (user) {
             try {
               // Update user to Pro subscription
-              const updateResult = await updateUserSubscription(user.id, {
+              const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+              const updateResult = await updateUserSubscription(userId, {
                 subscription_status: 'pro',
                 stripe_customer_id: session.customer as string,
                 subscription_id: session.id,
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
               });
 
               // Add bonus credits for Pro users (1000 credits)
-              const creditsResult = await addCredits(user.id, 1000);
+              const creditsResult = await addCredits(userId, 1000);
 
               // Track discount usage if a discount was applied
               if (session.total_details?.breakdown?.discounts && session.total_details.breakdown.discounts.length > 0) {
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
               }
 
               console.log(`✅ User ${user.email} successfully upgraded to Pro plan:`, {
-                userId: user.id,
+                userId: userId,
                 subscriptionUpdated: updateResult,
                 creditsAdded: creditsResult ? creditsResult.success : false,
                 newCreditBalance: creditsResult ? creditsResult.newBalance : 'unknown'

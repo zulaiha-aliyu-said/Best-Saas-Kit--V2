@@ -4,9 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminAccess } from '@/lib/admin-auth';
+import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { pool } from '@/lib/database';
-import { logAdminAction } from '@/lib/ltd-admin';
 
 export async function POST(request: NextRequest) {
   try {

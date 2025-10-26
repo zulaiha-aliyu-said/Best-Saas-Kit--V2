@@ -5,7 +5,7 @@ import { calculateCreditCost } from '@/lib/ltd-tiers';
 import * as cheerio from 'cheerio';
 import { optimizeForPlatform, Platform, countCharacters, countWords } from "@/lib/platform-optimizer";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Helper function to fetch and extract text from URL
 async function fetchUrlContent(url: string): Promise<string> {
@@ -136,6 +136,7 @@ export async function POST(req: NextRequest) {
     }
     
     const { user, session } = userResult;
+    const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id; // Convert to number for database functions
 
     const body = await req.json();
     const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
@@ -155,7 +156,7 @@ export async function POST(req: NextRequest) {
     let styleEnabled = false;
     try {
       const { getUserWritingStyle } = await import("@/lib/database");
-      const styleData = await getUserWritingStyle(user.id);
+      const styleData = await getUserWritingStyle(userId!);
       if (styleData.style_enabled && styleData.profile && styleData.confidence_score >= 60) {
         userStyleProfile = styleData.profile;
         styleEnabled = true;
@@ -168,7 +169,7 @@ export async function POST(req: NextRequest) {
     // Get user's platform optimization setting
     let platformOptimizationEnabled = false;
     try {
-      const userPrefs = await getUserPreferences(user.id);
+      const userPrefs = await getUserPreferences(userId!);
       platformOptimizationEnabled = userPrefs.platform_optimization_enabled || false;
       console.log('🎯 Platform Optimization Enabled:', platformOptimizationEnabled);
       console.log('📋 Full User Preferences:', JSON.stringify(userPrefs, null, 2));
@@ -179,7 +180,7 @@ export async function POST(req: NextRequest) {
 
     // Calculate credit cost based on number of platforms (1 credit per platform)
     const numPlatforms = platforms.length;
-    const plan = await getUserPlan(session.user.id);
+    const plan = await getUserPlan(userId!);
     const creditCostPerPlatform = calculateCreditCost('content_repurposing', plan?.ltd_tier ?? undefined);
     const totalCreditCost = creditCostPerPlatform * numPlatforms;
     
@@ -563,7 +564,7 @@ Return ONLY the JSON.`
 
     // Deduct credits now that we have a result (1 credit per platform)
     const creditResult = await deductLTDCredits(
-      session.user.id,
+      userId!,
       totalCreditCost,
       'content_repurposing',
       {
@@ -588,7 +589,7 @@ Return ONLY the JSON.`
 
     // Persist
     const content = await createContent({
-      userId: user.id,
+      userId: userId!,
       source_type: sourceType,
       source_url: url || null,
       raw_text: text || null,
@@ -599,7 +600,7 @@ Return ONLY the JSON.`
     const validPlatform = platforms?.find((p: string) => supportedPlatforms.includes(p)) || 'x';
 
     const generation = await insertGeneration({
-      userId: user.id,
+      userId: userId!,
       contentId: content.id,
       platform: validPlatform as any,
       tone,
@@ -627,7 +628,7 @@ Return ONLY the JSON.`
 
     const createdPosts = [] as any[];
     for (const p of postsToCreate) {
-      const pr = await insertPost({ userId: user.id, generationId: generation.id, platform: p.platform, body: p.body, hashtags: p.hashtags || null });
+      const pr = await insertPost({ userId: userId!, generationId: generation.id, platform: p.platform, body: p.body, hashtags: p.hashtags || null });
       createdPosts.push(pr);
     }
 
@@ -636,26 +637,27 @@ Return ONLY the JSON.`
       try {
         for (const [platform, optResult] of Object.entries(optimizationResults)) {
           if (optResult && typeof optResult === 'object') {
+            const typedOptResult = optResult as any;
             await insertOptimizationAnalytics({
-              user_id: user.id,
+              user_id: userId!,
               generation_id: generation.id,
               platform: platform as any,
               optimization_applied: true,
               original_content_length: sourceText.length,
-              optimized_content_length: countCharacters(optResult.content || ''),
-              character_count: optResult.metrics?.characterCount || 0,
-              word_count: optResult.metrics?.wordCount || 0,
-              thread_created: optResult.isThread || false,
-              thread_count: optResult.threadPosts?.length || 0,
-              hashtag_count: optResult.metrics?.hashtagCount || 0,
-              emoji_count: optResult.metrics?.emojiCount || 0,
-              line_breaks_added: optResult.metrics?.lineBreaksAdded || 0,
-              optimizations_applied: optResult.optimizations || [],
+              optimized_content_length: countCharacters(typedOptResult.content || ''),
+              character_count: typedOptResult.metrics?.characterCount || 0,
+              word_count: typedOptResult.metrics?.wordCount || 0,
+              thread_created: typedOptResult.isThread || false,
+              thread_count: typedOptResult.threadPosts?.length || 0,
+              hashtag_count: typedOptResult.metrics?.hashtagCount || 0,
+              emoji_count: typedOptResult.metrics?.emojiCount || 0,
+              line_breaks_added: typedOptResult.metrics?.lineBreaksAdded || 0,
+              optimizations_applied: typedOptResult.optimizations || [],
               rules_applied: {
                 platform: platform,
-                maxChars: optResult.preview?.platform ? 280 : 0,
+                maxChars: typedOptResult.preview?.platform ? 280 : 0,
               },
-              warnings: optResult.warnings || [],
+              warnings: typedOptResult.warnings || [],
               processing_time_ms: parsed._optimization_processing_time || 0,
               model_used: 'platform-optimizer-v1',
             });

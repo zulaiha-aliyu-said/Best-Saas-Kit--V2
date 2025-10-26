@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
 
     const { feedbackId, status, adminResponse } = await req.json();
 
+    console.log('Feedback update request:', { feedbackId, status, adminResponse });
+
     if (!feedbackId) {
       return NextResponse.json(
         { error: 'Feedback ID required' },
@@ -31,8 +33,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate status if provided
+    const validStatuses = ['new', 'reviewed', 'in_progress', 'resolved', 'dismissed'];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: 'Invalid status value' },
+        { status: 400 }
+      );
+    }
+
     // Update feedback
-    await pool.query(
+    const result = await pool.query(
       `UPDATE user_feedback 
        SET status = COALESCE($1, status),
            admin_response = COALESCE($2, admin_response),
@@ -41,6 +52,13 @@ export async function POST(req: NextRequest) {
        WHERE id = $4`,
       [status, adminResponse, session.user.email, feedbackId]
     );
+
+    if (result.rowCount === 0) {
+      return NextResponse.json(
+        { error: 'Feedback not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

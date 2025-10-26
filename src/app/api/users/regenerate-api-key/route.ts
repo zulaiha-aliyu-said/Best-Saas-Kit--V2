@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const newApiKey = await generateUserApiKey(user.id);
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const newApiKey = await generateUserApiKey(userId);
     
     return NextResponse.json({ 
       message: "API key regenerated successfully",

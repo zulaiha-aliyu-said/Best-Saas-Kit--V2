@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { getUserCredits } from '@/lib/database';
 import { withCache } from '@/lib/cache';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Enable revalidation every 30 seconds
 export const revalidate = 30;

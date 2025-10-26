@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAdminAccess } from '@/lib/admin-auth';
+import { requireAdminAccess } from '@/lib/admin-auth';
 import { getDetailedUserStats } from '@/lib/database';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   try {
     // Check admin access
-    const { isAdmin, user } = await checkAdminAccess();
-    if (!isAdmin) {
+    const authResult = await requireAdminAccess();
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 403 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ...stats,
-      admin: user.email,
+      admin: authResult.admin.email,
       timestamp: new Date().toISOString()
     });
 

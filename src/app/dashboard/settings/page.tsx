@@ -882,7 +882,7 @@ export default function SettingsPage() {
                 <div className="space-y-0.5">
                   <Label>Current Plan</Label>
                   <p className="text-sm text-muted-foreground">
-                    Free Plan - 10 credits included
+                    Current Plan - Credits included based on tier
                   </p>
                 </div>
                 <Button variant="outline" size="sm">

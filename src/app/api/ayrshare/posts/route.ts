@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { getUserByGoogleId } from "@/lib/database";
 import { getAyrshareClient, AYRSHARE_PLATFORMS } from "@/lib/ayrshare";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Schedule a post using Ayrshare
 export async function POST(req: NextRequest) {

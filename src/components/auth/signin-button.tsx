@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { signInAction } from "@/lib/auth-actions"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 
 interface SignInButtonProps {
@@ -10,23 +10,31 @@ interface SignInButtonProps {
 }
 
 export function SignInButton({ children, className }: SignInButtonProps) {
+  const handleSignIn = async () => {
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" })
+    } catch (error) {
+      console.error("Sign in error:", error)
+    }
+  }
+
   return (
-    <form action={signInAction}>
+    <>
       {children ? (
         React.isValidElement(children)
-          // If a React element (e.g., <Button />) is provided, make it the submit control
+          // If a React element (e.g., <Button />) is provided, make it clickable
           ? React.cloneElement(children as React.ReactElement<any>, { 
-              type: "submit", 
+              onClick: handleSignIn,
               className: (children as any).props?.className ?? className 
             })
           // If non-element content is provided, render a native button
-          : <button type="submit" className={className}>{children}</button>
+          : <button onClick={handleSignIn} className={className}>{children}</button>
       ) : (
         // Default rendering when no children are passed
-        <Button type="submit" className={className}>
+        <Button onClick={handleSignIn} className={className}>
           {"Sign In with Google"}
         </Button>
       )}
-    </form>
+    </>
   )
 }

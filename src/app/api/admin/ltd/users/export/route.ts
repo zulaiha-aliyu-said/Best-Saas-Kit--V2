@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
         await logAdminAction(
           authResult.admin.id,
           'export_users',
-          null,
+          undefined,
           { count: users.length }
         );
       }

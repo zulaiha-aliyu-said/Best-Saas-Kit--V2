@@ -138,56 +138,9 @@ export async function fetchNewsTrends() {
 // Google Trends integration (using google-trends-api package)
 export async function fetchGoogleTrends() {
   try {
-    console.log('🔍 [Google Trends] Starting fetch...');
-
-    // Dynamic import to avoid issues
-    const googleTrends = await import('google-trends-api');
-
-    console.log('🔍 [Google Trends] Calling dailyTrends API...');
-    const results = await googleTrends.default.dailyTrends({
-      geo: 'US',
-    });
-
-    console.log('🔍 [Google Trends] Parsing response...');
-    const data = JSON.parse(results);
-    const trendingSearches = data?.default?.trendingSearchesDays?.[0]?.trendingSearches || [];
-    const trends: any[] = [];
-
-    for (const search of trendingSearches) {
-      const title = search?.title?.query;
-      if (!title) continue;
-
-      const traffic = search?.formattedTraffic || '100K+';
-      const article = search?.articles?.[0];
-      const description = article?.snippet || article?.title || 'Trending search on Google';
-      const articleUrl = article?.url;
-
-      trends.push({
-        id: `google-${title}`,
-        title,
-        description,
-        views: traffic,
-        growth: `+${Math.floor(Math.random() * 300 + 100)}%`,
-        badge: '#Trending',
-        badgeColor: 'bg-red-500',
-        tags: [`#${String(title).replace(/\s+/g, '').slice(0, 20)}`],
-        platforms: ['x', 'linkedin', 'instagram'],
-        category: 'tech',
-        engagement: Math.floor(Math.random() * 40 + 70),
-        source: 'google',
-        articleUrl,
-      });
-
-      if (trends.length >= 10) {
-        break;
-      }
-    }
-
-    console.log(`✅ [Google Trends] Successfully fetched ${trends.length} trends`);
-    return trends;
+    console.log('🔍 [Google Trends] Skipped: google-trends-api is not Edge-friendly');
+    return [];
   } catch (error: any) {
-    console.error('❌ [Google Trends] Error:', error.message);
-    console.error('❌ [Google Trends] Stack:', error.stack);
     return [];
   }
 }

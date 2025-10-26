@@ -215,7 +215,7 @@ export function CreditUsageAnalytics() {
                         <td className="text-right p-3">{action.usage_count}</td>
                         <td className="text-right p-3">{action.total_credits_used}</td>
                         <td className="text-right p-3">
-                          {parseFloat(action.avg_credits_per_action).toFixed(1)}
+                          {parseFloat(String(action.avg_credits_per_action)).toFixed(1)}
                         </td>
                       </tr>
                     ))}
@@ -234,7 +234,7 @@ export function CreditUsageAnalytics() {
                     cx="50%"
                     cy="50%"
                     outerRadius={100}
-                    label={(entry) => formatActionName(entry.action_type)}
+                    label={(entry: any) => formatActionName(entry.action_type)}
                   >
                     {analytics.usage_by_action.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
