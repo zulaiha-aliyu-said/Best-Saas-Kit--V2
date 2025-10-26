@@ -43,10 +43,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const preferences = await getUserPreferences(user.id);
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const preferences = await getUserPreferences(userId);
     
     console.log('🔍 GET /api/users/preferences');
-    console.log('  User ID:', user.id);
+    console.log('  User ID:', userId);
     console.log('  DB platform_optimization_enabled:', preferences.platform_optimization_enabled);
     console.log('  DB preferences keys:', Object.keys(preferences));
     
@@ -109,10 +110,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
     const preferences = await req.json();
     
     console.log('💾 POST /api/users/preferences');
-    console.log('  User ID:', user.id);
+    console.log('  User ID:', userId);
     console.log('  Received platformOptimizationEnabled:', preferences.platformOptimizationEnabled);
     
     // Convert camelCase from frontend to snake_case for database
@@ -159,7 +161,7 @@ export async function POST(req: NextRequest) {
 
     console.log('  ✅ Saving platform_optimization_enabled:', dbPreferences.platform_optimization_enabled);
     
-    await updateUserPreferences(user.id, dbPreferences);
+    await updateUserPreferences(userId, dbPreferences);
     
     console.log('  ✅ Database updated successfully');
     

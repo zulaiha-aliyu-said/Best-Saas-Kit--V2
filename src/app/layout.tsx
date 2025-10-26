@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeScript } from "@/components/theme-script";
 import { Toaster } from "sonner";
 import { LoadingProvider } from "@/components/providers/loading-provider";
+
+export const runtime = 'edge';
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 
 const geistSans = Geist({

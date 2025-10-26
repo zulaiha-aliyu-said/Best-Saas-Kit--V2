@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserByGoogleId, listRecentPosts } from "@/lib/database";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function GET(_req: NextRequest) {
   const session = await auth();
@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest) {
   const user = await getUserByGoogleId(session.user.id);
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 });
 
-  const userId = typeof user.id === 'string' ? String(user.id) : user.id;
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
   const posts = await listRecentPosts(userId, 20);
   return NextResponse.json({ posts });
 }

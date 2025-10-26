@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { createStripeCustomer, createCheckoutSession, createCheckoutSessionWithDiscount } from '@/lib/stripe';
 import { getUserByGoogleId, updateUserSubscription, validateDiscountCode, getDiscountCodeByCode } from '@/lib/database';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Convert user ID to number for database functions
-    const userId = typeof user.id === 'string' ? String(user.id) : user.id;
+    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
 
     // Check if user already has pro subscription
     if (user.subscription_status === 'pro') {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let customerId = user.stripe_customer_id;
+    let customerId: string | undefined = user.stripe_customer_id || undefined;
 
     // Create Stripe customer if doesn't exist
     if (!customerId) {
@@ -82,17 +82,17 @@ export async function POST(request: NextRequest) {
     // Create checkout session with or without discount
     const checkoutSession = stripeCouponId
       ? await createCheckoutSessionWithDiscount(
-          customerId,
-          user.id,
-          user.email,
+          customerId!,
+          userId,
+          user.email!,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`,
           stripeCouponId
         )
       : await createCheckoutSession(
-          customerId,
-          user.id,
-          user.email,
+          customerId!,
+          userId,
+          user.email!,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?success=true`,
           `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing?canceled=true`
         );

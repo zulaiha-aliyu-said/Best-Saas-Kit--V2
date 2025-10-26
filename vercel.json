@@ -5,10 +5,6 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/check-low-credits",
-      "schedule": "0 12 * * *"
-    },
-    {
       "path": "/api/cron/expire-codes",
       "schedule": "0 1 * * *"
     }

@@ -1,26 +1,11 @@
-import { Resend } from 'resend';
+// Use Resend HTTP API directly for Edge compatibility
 
 // Lazy initialization to avoid build-time errors when env vars are not available
-let resendInstance: Resend | null = null;
-
-function getResend(): Resend {
-  if (!resendInstance) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error('RESEND_API_KEY is not configured');
-    }
-    resendInstance = new Resend(apiKey);
-  }
-  return resendInstance;
+function getResendApiKey(): string {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error('RESEND_API_KEY is not configured');
+  return apiKey;
 }
-
-// Export for backwards compatibility
-export const resend = new Proxy({} as Resend, {
-  get: (target, prop) => {
-    const resendClient = getResend();
-    return (resendClient as any)[prop];
-  }
-});
 
 // Email configuration
 export const EMAIL_CONFIG = {
@@ -41,12 +26,25 @@ export interface EmailData {
 // Send email function with error handling
 export async function sendEmail(data: EmailData) {
   try {
-    const result = await resend.emails.send({
-      from: data.from || EMAIL_CONFIG.FROM_EMAIL,
-      to: data.to,
-      subject: data.subject,
-      html: data.html,
+    const apiKey = getResendApiKey();
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: data.from || EMAIL_CONFIG.FROM_EMAIL,
+        to: data.to,
+        subject: data.subject,
+        html: data.html,
+      }),
     });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Resend send failed: ${res.status} ${text}`);
+    }
+    const result = await res.json();
 
     console.log('Email sent successfully:', result);
     return { success: true, data: result };

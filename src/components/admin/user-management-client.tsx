@@ -134,7 +134,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
 
       if (response.ok) {
         const data = await response.json();
-        setUsers(users.filter(user => user.id !== userId));
+        setUsers(users.filter(user => user.id !== String(userId)));
         toast({
           title: "User deleted",
           description: `User ${data.deletedUser.email} has been deleted successfully`,
@@ -186,7 +186,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
 
         // Update the user in the local state
         setUsers(users.map(user =>
-          user.id === userId
+          user.id === String(userId)
             ? { ...user, credits: data.newBalance }
             : user
         ));
@@ -282,7 +282,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setEditingCreditsUserId(user.id);
+                        setEditingCreditsUserId(parseInt(user.id));
                         setCreditsAmount("");
                         setCreditsAction("add");
                       }}
@@ -326,7 +326,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     </div>
                     <DialogFooter>
                       <Button
-                        onClick={() => handleCreditsUpdate(user.id)}
+                        onClick={() => handleCreditsUpdate(parseInt(user.id))}
                         disabled={!creditsAmount || isNaN(parseInt(creditsAmount))}
                       >
                         {creditsAction === "add" ? "Add Credits" : "Set Credits"}
@@ -341,7 +341,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     <Button
                       variant="destructive"
                       size="sm"
-                      disabled={deletingUserId === user.id}
+                      disabled={deletingUserId === parseInt(user.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -357,7 +357,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleDeleteUser(parseInt(user.id))}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Delete User

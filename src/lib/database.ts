@@ -1,11 +1,8 @@
-import { Pool } from 'pg'
+import { Pool } from '@neondatabase/serverless'
 
-// Create a connection pool
+// Create a connection pool (Edge-compatible, uses fetch/WebSockets)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
 })
 
 // Export pool for use in other modules
@@ -3086,7 +3083,7 @@ export async function deleteConversation(conversationId: number, userId: number)
     `;
     
     const result = await client.query(query, [conversationId, userId]);
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   } finally {
     client.release();
   }
@@ -3357,7 +3354,7 @@ export async function deletePrompt(promptId: number, userId: string): Promise<bo
     `;
     
     const result = await client.query(query, [promptId, userId]);
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   } finally {
     client.release();
   }

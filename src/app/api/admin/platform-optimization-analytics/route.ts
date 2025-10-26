@@ -6,7 +6,7 @@ import {
   getOptimizationTrends,
 } from "@/lib/database";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 /**
  * GET /api/admin/platform-optimization-analytics

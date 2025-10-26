@@ -351,11 +351,11 @@ export default function ChatPageNew() {
     {/* Upgrade Prompt Modal */}
     {showUpgrade && tierInfo && (
       <UpgradePrompt
-        isOpen={showUpgrade}
-        onClose={() => setShowUpgrade(false)}
+        featureName="AI Chat Assistant"
         currentTier={tierInfo.currentTier}
         requiredTier={tierInfo.requiredTier}
-        feature="AI Chat Assistant"
+        variant="modal"
+        onClose={() => setShowUpgrade(false)}
       />
     )}
     </>
