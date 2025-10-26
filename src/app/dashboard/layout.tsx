@@ -4,7 +4,7 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { saveUserToDatabase } from "@/lib/user-actions";
 import { isAdminEmail } from "@/lib/admin-config";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function DashboardLayout({
   children,

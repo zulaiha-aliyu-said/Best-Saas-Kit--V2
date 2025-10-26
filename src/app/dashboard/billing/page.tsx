@@ -5,7 +5,7 @@ import { BillingClient } from "@/components/billing/billing-client";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Crown, Zap } from "lucide-react";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function BillingPage() {
   const session = await auth();

@@ -1,7 +1,7 @@
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { AdminClient } from "@/components/admin/admin-client";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function AdminLayout({
   children,

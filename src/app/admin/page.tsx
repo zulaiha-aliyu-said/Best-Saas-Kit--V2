@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function AdminDashboard() {
   // Get detailed statistics

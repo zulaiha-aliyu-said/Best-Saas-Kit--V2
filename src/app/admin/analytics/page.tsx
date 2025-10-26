@@ -26,7 +26,7 @@ import {
   Pause
 } from "lucide-react";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function AnalyticsPage() {
   // This will redirect non-admin users

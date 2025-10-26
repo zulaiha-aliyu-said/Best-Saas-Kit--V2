@@ -2,9 +2,7 @@
  * Email Service using Resend
  */
 
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail as sendViaResend } from '@/lib/resend';
 
 interface SendEmailParams {
   to: string;
@@ -22,26 +20,18 @@ export async function sendEmail({ to, subject, html, tags = [], emailType }: Sen
       emailTags.push({ name: 'type', value: emailType });
     }
 
-    const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'RepurposeAI <noreply@repurposeai.spendify.com.ng>',
+    const result = await sendViaResend({
       to,
       subject,
       html,
-      tags: emailTags,
-      // Enable tracking
-      headers: {
-        'X-Entity-Ref-ID': `${emailType || 'email'}-${Date.now()}`,
-      },
     });
-
-    if (error) {
-      console.error('Error sending email:', error);
-      return { success: false, error };
+    if (!result.success) {
+      console.error('Error sending email:', result.error);
+      return { success: false, error: result.error } as any;
     }
-
-    console.log('✅ Email sent successfully:', data);
-    console.log('📊 Email ID for tracking:', data?.id);
-    return { success: true, data, emailId: data?.id };
+    console.log('✅ Email sent successfully:', result.data);
+    console.log('📊 Email ID for tracking:', (result as any).data?.id);
+    return { success: true, data: (result as any).data, emailId: (result as any).data?.id } as any;
   } catch (error) {
     console.error('❌ Failed to send email:', error);
     return { success: false, error };

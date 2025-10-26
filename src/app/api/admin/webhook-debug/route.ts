@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess } from '@/lib/admin-auth';
-import { stripe } from '@/lib/stripe';
+import { getStripeEvents, listCheckoutSessions, getCheckoutSession } from '@/lib/stripe-admin';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,31 +10,18 @@ export async function GET(request: NextRequest) {
     await requireAdminAccess();
 
     // Get recent webhook events from Stripe
-    const events = await stripe.events.list({
-      limit: 10,
-      types: ['checkout.session.completed', 'payment_intent.succeeded', 'payment_intent.payment_failed']
-    });
+    const events = await getStripeEvents(10, [
+      'checkout.session.completed',
+      'payment_intent.succeeded',
+      'payment_intent.payment_failed',
+    ]);
 
     // Get recent checkout sessions
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 10
-    });
+    const sessions = await listCheckoutSessions(10);
 
     return NextResponse.json({
-      webhook_events: events.data.map(event => ({
-        id: event.id,
-        type: event.type,
-        created: new Date(event.created * 1000).toISOString(),
-        data: event.data.object
-      })),
-      checkout_sessions: sessions.data.map(session => ({
-        id: session.id,
-        payment_status: session.payment_status,
-        customer: session.customer,
-        amount_total: session.amount_total,
-        metadata: session.metadata,
-        created: new Date(session.created * 1000).toISOString()
-      }))
+      webhook_events: events,
+      checkout_sessions: sessions,
     });
 
   } catch (error) {
@@ -62,19 +49,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get specific checkout session details
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await getCheckoutSession(sessionId);
 
     return NextResponse.json({
-      session: {
-        id: session.id,
-        payment_status: session.payment_status,
-        customer: session.customer,
-        amount_total: session.amount_total,
-        metadata: session.metadata,
-        created: new Date(session.created * 1000).toISOString(),
-        success_url: session.success_url,
-        cancel_url: session.cancel_url
-      }
+      session
     });
 
   } catch (error) {

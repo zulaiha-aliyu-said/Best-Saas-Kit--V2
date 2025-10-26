@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import CompetitorAnalysisClient from './CompetitorAnalysisClient';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export default async function CompetitorAnalysisPage() {
   const session = await auth();

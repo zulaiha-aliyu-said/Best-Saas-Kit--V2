@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { validateDiscountCode } from '@/lib/database';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // POST /api/discounts/validate - Validate discount code for users
 export async function POST(request: NextRequest) {

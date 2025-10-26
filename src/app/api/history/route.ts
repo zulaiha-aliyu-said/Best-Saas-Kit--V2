@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserByGoogleId, listRecentPosts } from "@/lib/database";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 export async function GET(_req: NextRequest) {
   const session = await auth();

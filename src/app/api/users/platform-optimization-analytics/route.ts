@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserByGoogleId, getUserOptimizationStats, getUserPlatformBreakdown } from "@/lib/database";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 /**
  * GET /api/users/platform-optimization-analytics

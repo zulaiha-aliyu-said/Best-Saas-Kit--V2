@@ -1,11 +1,8 @@
-import { Pool } from 'pg'
+import { Pool } from '@neondatabase/serverless'
 
-// Create a connection pool
+// Create a connection pool (Edge-compatible, uses fetch/WebSockets)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
 })
 
 // Export pool for use in other modules

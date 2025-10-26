@@ -8,7 +8,7 @@ import {
 } from '@/lib/database';
 import { createStripeCoupon } from '@/lib/stripe';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // GET /api/admin/discounts - Get all discount codes
 export async function GET(request: NextRequest) {
