@@ -5,7 +5,7 @@ import { calculateCreditCost } from '@/lib/ltd-tiers';
 import * as cheerio from 'cheerio';
 import { optimizeForPlatform, Platform, countCharacters, countWords } from "@/lib/platform-optimizer";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Helper function to fetch and extract text from URL
 async function fetchUrlContent(url: string): Promise<string> {

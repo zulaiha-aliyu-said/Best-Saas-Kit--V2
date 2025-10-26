@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { fetchAllTrends } from "@/lib/trends-fetcher";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Cache trends data for 30 minutes (more frequent updates for real data)
 let trendsCache: any = null;

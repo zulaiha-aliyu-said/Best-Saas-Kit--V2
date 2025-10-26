@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { pool } from "@/lib/database";
-import fs from 'fs';
-import path from 'path';
+import { PLATFORM_OPTIMIZATION_SQL } from '@/sql/platform-optimization-schema';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 /**
  * POST /api/admin/setup-platform-analytics
@@ -23,9 +22,8 @@ export async function POST() {
 
     console.log('🚀 Setting up Platform Optimization Analytics schema...');
 
-    // Read the SQL file
-    const sqlPath = path.join(process.cwd(), 'sql-queries', '13-create-platform-optimization-schema.sql');
-    const sql = fs.readFileSync(sqlPath, 'utf8');
+    // Load SQL from embedded string (Edge-compatible)
+    const sql = PLATFORM_OPTIMIZATION_SQL;
 
     console.log('📖 Executing SQL schema...');
 

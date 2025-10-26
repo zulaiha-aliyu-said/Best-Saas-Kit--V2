@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchAllTrends } from "@/lib/trends-fetcher";
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Debug endpoint to test API fetching with detailed logs
 export async function GET() {
