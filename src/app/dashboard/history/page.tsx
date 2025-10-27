@@ -313,7 +313,7 @@ export default function HistoryPage(){
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredPosts.map((post) => {
-            const platformInfo = platformIcons[post.platform] || { icon: "📄", color: "text-gray-600", bg: "bg-gray-50" };
+            const platformInfo = platformIcons[post.platform] || { icon: "📄", color: "text-muted-foreground", bg: "bg-muted/30" };
             
             return (
               <Card key={post.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">

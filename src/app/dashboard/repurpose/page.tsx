@@ -564,7 +564,7 @@ export default function RepurposePage() {
                   </div>
                   
                   {urlContent && (
-                    <div className="rounded-lg border-2 border-green-200 bg-green-50 p-4">
+                    <div className="rounded-lg border-2 border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -595,40 +595,40 @@ export default function RepurposePage() {
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Open the YouTube video</p>
-                                  <p className="text-xs text-gray-600">Go to the video page in your browser</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Open the YouTube video</p>
+                                  <p className="text-xs text-muted-foreground">Go to the video page in your browser</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Click the "..." (More) button</p>
-                                  <p className="text-xs text-gray-600">Located below the video, next to Share and Save</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Click the "..." (More) button</p>
+                                  <p className="text-xs text-muted-foreground">Located below the video, next to Share and Save</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Select "Show transcript"</p>
-                                  <p className="text-xs text-gray-600">A panel will open with the full video transcript</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Select "Show transcript"</p>
+                                  <p className="text-xs text-muted-foreground">A panel will open with the full video transcript</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">4</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Copy the transcript text</p>
-                                  <p className="text-xs text-gray-600">Select all text and copy it</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Copy the transcript text</p>
+                                  <p className="text-xs text-muted-foreground">Select all text and copy it</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">5</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Paste in the "Text/Article" tab</p>
-                                  <p className="text-xs text-gray-600">Switch to the Text tab above and paste the transcript</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Paste in the "Text/Article" tab</p>
+                                  <p className="text-xs text-muted-foreground">Switch to the Text tab above and paste the transcript</p>
                                 </div>
                               </div>
                             </div>
@@ -757,40 +757,40 @@ export default function RepurposePage() {
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Open the YouTube video</p>
-                                  <p className="text-xs text-gray-600">Go to the video page in your browser</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Open the YouTube video</p>
+                                  <p className="text-xs text-muted-foreground">Go to the video page in your browser</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Click the "..." (More) button</p>
-                                  <p className="text-xs text-gray-600">Located below the video, next to Share and Save</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Click the "..." (More) button</p>
+                                  <p className="text-xs text-muted-foreground">Located below the video, next to Share and Save</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Select "Show transcript"</p>
-                                  <p className="text-xs text-gray-600">A panel will open with the full video transcript</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Select "Show transcript"</p>
+                                  <p className="text-xs text-muted-foreground">A panel will open with the full video transcript</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">4</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Copy the transcript text</p>
-                                  <p className="text-xs text-gray-600">Select all text and copy it</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Copy the transcript text</p>
+                                  <p className="text-xs text-muted-foreground">Select all text and copy it</p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200">
                                 <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">5</div>
                                 <div className="flex-1">
-                                  <p className="font-semibold text-sm text-gray-900 mb-1">Paste in the "Text/Article" tab</p>
-                                  <p className="text-xs text-gray-600">Switch to the Text tab above and paste the transcript</p>
+                                  <p className="font-semibold text-sm text-foreground mb-1">Paste in the "Text/Article" tab</p>
+                                  <p className="text-xs text-muted-foreground">Switch to the Text tab above and paste the transcript</p>
                                 </div>
                               </div>
                             </div>
@@ -1437,7 +1437,7 @@ export default function RepurposePage() {
                     </div>
                   </div>
                 </div>
-                <CardContent className="p-6 bg-gradient-to-b from-blue-50/50 to-transparent">
+                <CardContent className="p-6 bg-gradient-to-b from-blue-50/50 dark:from-blue-950/30 to-transparent">
                   <div className="space-y-4">
                     {tweets.map((t, idx) => (
                       <div key={idx} className="group relative">
@@ -1446,7 +1446,7 @@ export default function RepurposePage() {
                           <div className="absolute left-[19px] top-[60px] bottom-[-16px] w-0.5 bg-gradient-to-b from-blue-300 to-blue-100" />
                         )}
                         
-                        <div className="relative bg-white rounded-2xl border-2 border-border hover:border-blue-300 hover:shadow-lg transition-all p-5">
+                        <div className="relative bg-card rounded-2xl border-2 border-border hover:border-blue-300 hover:shadow-lg transition-all p-5">
                           {/* Tweet header */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
@@ -1512,8 +1512,8 @@ export default function RepurposePage() {
                     </div>
                   </div>
                 </div>
-                <CardContent className="p-6 bg-gradient-to-b from-blue-50/30 to-transparent">
-                  <div className="bg-white rounded-2xl border-2 border-border p-6 shadow-sm">
+                <CardContent className="p-6 bg-gradient-to-b from-blue-50/30 dark:from-blue-950/20 to-transparent">
+                  <div className="bg-card rounded-2xl border-2 border-border p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-4 pb-4 border-b">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-700 to-blue-800 flex items-center justify-center text-white font-bold text-lg">
                         U
@@ -1563,8 +1563,8 @@ export default function RepurposePage() {
                     </div>
                   </div>
                 </div>
-                <CardContent className="p-6 bg-gradient-to-b from-pink-50/30 to-transparent">
-                  <div className="bg-white rounded-2xl border-2 border-border overflow-hidden shadow-sm">
+                <CardContent className="p-6 bg-gradient-to-b from-pink-50/30 dark:from-pink-950/20 to-transparent">
+                  <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-sm">
                     {/* Mock Instagram Post Header */}
                     <div className="flex items-center gap-3 p-4 border-b">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold">
@@ -1627,10 +1627,10 @@ export default function RepurposePage() {
                     </div>
                   </div>
                 </div>
-                <CardContent className="p-6 bg-gradient-to-b from-green-50/30 to-transparent">
-                  <div className="bg-white rounded-2xl border-2 border-border overflow-hidden shadow-sm">
+                <CardContent className="p-6 bg-gradient-to-b from-green-50/30 dark:from-green-950/20 to-transparent">
+                  <div className="bg-card rounded-2xl border-2 border-border overflow-hidden shadow-sm">
                     {/* Email Header */}
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b-2">
+                    <div className="bg-gradient-to-r from-muted/50 to-muted/30 p-6 border-b-2">
                       <div className="space-y-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -1668,7 +1668,7 @@ export default function RepurposePage() {
                     </div>
                     
                     {/* Email Footer */}
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-t-2">
+                    <div className="bg-gradient-to-r from-muted/50 to-muted/30 p-6 border-t-2">
                       <div className="space-y-3 text-center">
                         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                           <button className="hover:text-foreground transition-colors">View in browser</button>

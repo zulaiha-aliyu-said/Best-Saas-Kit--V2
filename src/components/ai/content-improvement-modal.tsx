@@ -118,9 +118,9 @@ export function ContentImprovementModal({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (score >= 80) return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
+    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
+    return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
   };
 
   const getScoreLabel = (score: number) => {
@@ -174,10 +174,10 @@ export function ContentImprovementModal({
 
         <div className="space-y-6 py-4">
           {/* Feedback Banner */}
-          <div className="bg-blue-900 text-white p-4 rounded-lg">
+          <div className="bg-blue-900 dark:bg-blue-950 text-white p-4 rounded-lg">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-blue-900 text-sm font-bold">i</span>
+              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-900 dark:text-blue-950 text-sm font-bold">i</span>
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">Your post can be improved</h3>
@@ -190,16 +190,16 @@ export function ContentImprovementModal({
           </div>
 
           {/* Original Content Preview */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Original Content</h3>
-            <div className="text-sm text-gray-700 whitespace-pre-wrap">
+          <div className="p-4 bg-muted/50 dark:bg-muted rounded-lg">
+            <h3 className="text-sm font-semibold text-foreground mb-2">Original Content</h3>
+            <div className="text-sm text-foreground whitespace-pre-wrap">
               {originalContent}
             </div>
             <div className="flex items-center gap-2 mt-2">
-              <Badge variant="outline" className="text-red-600 border-red-200">
+              <Badge variant="outline" className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800">
                 Score: {currentScore}%
               </Badge>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 Platform: {formatPlatformName(platform)}
               </span>
             </div>
@@ -208,19 +208,19 @@ export function ContentImprovementModal({
           {/* Loading State */}
           {isLoading && (
             <div className="text-center py-8">
-              <RefreshCw className="w-8 h-8 text-blue-600 mx-auto mb-4 animate-spin" />
-              <p className="text-gray-600">Generating AI-powered improvements...</p>
+              <RefreshCw className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-4 animate-spin" />
+              <p className="text-muted-foreground">Generating AI-powered improvements...</p>
             </div>
           )}
 
           {/* Error State */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2 text-red-800">
+            <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-center gap-2 text-red-800 dark:text-red-400">
                 <AlertTriangle className="w-4 h-4" />
                 <span className="font-medium">Error</span>
               </div>
-              <p className="text-red-700 text-sm mt-1">{error}</p>
+              <p className="text-red-700 dark:text-red-300 text-sm mt-1">{error}</p>
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -236,19 +236,19 @@ export function ContentImprovementModal({
           {/* Analysis Section */}
           {analysis && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Analysis
               </h3>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Main Issues */}
-                <div className="p-4 bg-red-50 rounded-lg">
-                  <h4 className="font-semibold text-red-800 mb-2">Main Issues</h4>
+                <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
+                  <h4 className="font-semibold text-red-800 dark:text-red-400 mb-2">Main Issues</h4>
                   <ul className="space-y-1">
                     {analysis.mainIssues.map((issue, index) => (
-                      <li key={index} className="text-sm text-red-700 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                      <li key={index} className="text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 dark:bg-red-400 rounded-full mt-2 flex-shrink-0" />
                         {issue}
                       </li>
                     ))}
@@ -256,12 +256,12 @@ export function ContentImprovementModal({
                 </div>
 
                 {/* Key Improvements */}
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-green-800 mb-2">Key Improvements</h4>
+                <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                  <h4 className="font-semibold text-green-800 dark:text-green-400 mb-2">Key Improvements</h4>
                   <ul className="space-y-1">
                     {analysis.keyImprovements.map((improvement, index) => (
-                      <li key={index} className="text-sm text-green-700 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                      <li key={index} className="text-sm text-green-700 dark:text-green-300 flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full mt-2 flex-shrink-0" />
                         {improvement}
                       </li>
                     ))}
@@ -270,9 +270,9 @@ export function ContentImprovementModal({
               </div>
 
               {/* Platform Optimization */}
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">Platform Optimization</h4>
-                <p className="text-sm text-blue-700">{analysis.platformOptimization}</p>
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">Platform Optimization</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">{analysis.platformOptimization}</p>
               </div>
             </div>
           )}
@@ -280,7 +280,7 @@ export function ContentImprovementModal({
           {/* Suggestions Section */}
           {suggestions.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Suggestions</h3>
+              <h3 className="text-lg font-semibold text-foreground">Suggestions</h3>
               
               <div className="space-y-4">
                 {suggestions.map((suggestion, index) => (
@@ -288,17 +288,17 @@ export function ContentImprovementModal({
                     key={index}
                     className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
                       selectedSuggestion === index
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                        : 'border-border hover:border-muted-foreground/30'
                     }`}
                     onClick={() => handleSuggestionSelect(index)}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 mb-2">
+                        <h4 className="font-semibold text-foreground mb-2">
                           {suggestion.title}
                         </h4>
-                        <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                        <div className="text-sm text-foreground whitespace-pre-wrap">
                           {suggestion.content}
                         </div>
                       </div>
@@ -306,15 +306,15 @@ export function ContentImprovementModal({
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${getScoreColor(suggestion.predictedScore)}`}>
                           {suggestion.predictedScore}
                         </div>
-                        <span className="text-xs text-gray-500 text-center">
+                        <span className="text-xs text-muted-foreground text-center">
                           {getScoreLabel(suggestion.predictedScore)}
                         </span>
                       </div>
                     </div>
                     
                     {/* Improvements */}
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">Key Improvements:</h5>
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <h5 className="text-sm font-medium text-foreground mb-2">Key Improvements:</h5>
                       <div className="flex flex-wrap gap-2">
                         {suggestion.improvements.map((improvement, impIndex) => (
                           <Badge key={impIndex} variant="secondary" className="text-xs">
@@ -354,7 +354,7 @@ export function ContentImprovementModal({
           {/* Footer */}
           <div className="flex items-center justify-between pt-4 border-t">
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">How is this result?</span>
+              <span className="text-sm text-muted-foreground">How is this result?</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -363,7 +363,7 @@ export function ContentImprovementModal({
                     className={`w-5 h-5 ${
                       star <= userRating
                         ? 'text-yellow-400 fill-current'
-                        : 'text-gray-300'
+                        : 'text-muted-foreground/30'
                     }`}
                   >
                     <Star className="w-full h-full" />
@@ -382,7 +382,7 @@ export function ContentImprovementModal({
               
               {suggestions.length > 0 && (
                 <Button 
-                  className="bg-blue-600 hover:bg-blue-700 gap-2"
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 gap-2"
                   onClick={() => {
                     if (selectedSuggestion !== null) {
                       handleCopyContent(suggestions[selectedSuggestion].content);

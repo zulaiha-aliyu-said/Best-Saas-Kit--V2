@@ -206,7 +206,7 @@ export default function DashboardPage() {
       trend: "up",
       icon: Sparkles,
       color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      bgColor: "bg-blue-50 dark:bg-blue-900/30",
     },
     {
       title: "Credits Used",
@@ -215,7 +215,7 @@ export default function DashboardPage() {
       trend: "up",
       icon: Target,
       color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      bgColor: "bg-purple-50 dark:bg-purple-900/30",
     },
     {
       title: "Hours Saved",
@@ -224,7 +224,7 @@ export default function DashboardPage() {
       trend: "up",
       icon: Clock,
       color: "text-green-600",
-      bgColor: "bg-green-50",
+      bgColor: "bg-green-50 dark:bg-green-900/30",
     },
     {
       title: "Engagement Rate",
@@ -233,7 +233,7 @@ export default function DashboardPage() {
       trend: "up",
       icon: Heart,
       color: "text-red-600",
-      bgColor: "bg-red-50",
+      bgColor: "bg-red-50 dark:bg-red-900/30",
     },
   ];
 
@@ -249,7 +249,7 @@ export default function DashboardPage() {
       date: "2 hours ago",
       icon: "in",
       color: "text-blue-700",
-      bg: "bg-blue-50"
+      bg: "bg-blue-50 dark:bg-blue-900/30"
     },
     {
       id: 2,
@@ -261,7 +261,7 @@ export default function DashboardPage() {
       date: "Tomorrow 9:00 AM",
       icon: "𝕏",
       color: "text-blue-600",
-      bg: "bg-blue-50"
+      bg: "bg-blue-50 dark:bg-blue-900/30"
     },
     {
       id: 3,
@@ -273,7 +273,7 @@ export default function DashboardPage() {
       date: "1 day ago",
       icon: "📷",
       color: "text-pink-600",
-      bg: "bg-pink-50"
+      bg: "bg-pink-50 dark:bg-pink-900/30"
     },
     {
       id: 4,
@@ -285,7 +285,7 @@ export default function DashboardPage() {
       date: "3 days ago",
       icon: "✉️",
       color: "text-green-600",
-      bg: "bg-green-50"
+      bg: "bg-green-50 dark:bg-green-900/30"
     }
   ];
 
@@ -450,7 +450,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-2">Posts Generated</p>
-            <div className="bg-blue-50 rounded-lg p-2 text-xs group-hover:bg-blue-100 transition-colors">
+            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2 text-xs group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
               <span className="text-blue-600">{Math.floor(contentStats.postsGenerated * 0.07)} this month</span>
             </div>
           </CardContent>
@@ -514,7 +514,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-2">Hours Saved</p>
-            <div className="bg-green-50 rounded-lg p-2 text-xs group-hover:bg-green-100 transition-colors">
+            <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-2 text-xs group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
               <span className="text-green-600">{Math.floor(contentStats.hoursSaved * 0.12)} this month</span>
             </div>
           </CardContent>
@@ -545,7 +545,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-2">Engagement Rate</p>
-            <div className="bg-red-50 rounded-lg p-2 text-xs group-hover:bg-red-100 transition-colors">
+            <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-2 text-xs group-hover:bg-red-100 dark:group-hover:bg-red-900/50 transition-colors">
               <span className="text-red-600">from last month</span>
             </div>
           </CardContent>
@@ -851,13 +851,13 @@ export default function DashboardPage() {
                     switch (platform?.toLowerCase()) {
                       case 'twitter':
                       case 'x':
-                        return 'bg-blue-50';
+                        return 'bg-blue-50 dark:bg-blue-900/30';
                       case 'linkedin':
-                        return 'bg-blue-50';
+                        return 'bg-blue-50 dark:bg-blue-900/30';
                       case 'instagram':
                         return 'bg-pink-50';
                       case 'email':
-                        return 'bg-green-50';
+                        return 'bg-green-50 dark:bg-green-900/30';
                       default:
                         return 'bg-purple-50';
                     }
@@ -923,7 +923,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-4">
               <Button 
                 variant="outline" 
-                className="h-20 flex-col gap-2 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 hover:scale-105" 
+                className="h-20 flex-col gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 hover:scale-105" 
                 asChild
               >
                 <Link href="/dashboard/repurpose">
@@ -933,7 +933,7 @@ export default function DashboardPage() {
                 </Button>
               <Button 
                 variant="outline" 
-                className="h-20 flex-col gap-2 hover:bg-green-50 hover:border-green-200 transition-all duration-300 hover:scale-105" 
+                className="h-20 flex-col gap-2 hover:bg-green-50 dark:hover:bg-green-900/30 hover:border-green-200 dark:hover:border-green-800 transition-all duration-300 hover:scale-105" 
                 asChild
               >
                 <Link href="/dashboard/schedule">
@@ -955,7 +955,7 @@ export default function DashboardPage() {
                 </Button>
               <Button 
                 variant="outline" 
-                className="h-20 flex-col gap-2 hover:bg-red-50 hover:border-red-200 transition-all duration-300 hover:scale-105" 
+                className="h-20 flex-col gap-2 hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-200 dark:hover:border-red-800 transition-all duration-300 hover:scale-105" 
                 asChild
               >
                 <Link href="/dashboard/analytics">
@@ -983,9 +983,9 @@ export default function DashboardPage() {
                {/* Twitter */}
                <Link href="/dashboard/analytics?platform=twitter" className="block">
                  <div className="space-y-2 cursor-pointer group">
-                   <div className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 transition-colors">
+                   <div className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
                      <div className="flex items-center gap-3">
-                       <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                       <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
                          <span className="text-blue-600 font-bold text-sm">𝕏</span>
                        </div>
                        <span className="font-medium group-hover:text-blue-600 transition-colors">Twitter</span>
@@ -1004,9 +1004,9 @@ export default function DashboardPage() {
                {/* LinkedIn */}
                <Link href="/dashboard/analytics?platform=linkedin" className="block">
                  <div className="space-y-2 cursor-pointer group">
-                   <div className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 transition-colors">
+                   <div className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
                      <div className="flex items-center gap-3">
-                       <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                       <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
                          <span className="text-blue-700 font-bold text-xs">in</span>
                        </div>
                        <span className="font-medium group-hover:text-blue-700 transition-colors">LinkedIn</span>
@@ -1046,9 +1046,9 @@ export default function DashboardPage() {
                {/* Email */}
                <Link href="/dashboard/analytics?platform=email" className="block">
                  <div className="space-y-2 cursor-pointer group">
-                   <div className="flex items-center justify-between p-2 rounded-lg hover:bg-green-50 transition-colors">
+                   <div className="flex items-center justify-between p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors">
                      <div className="flex items-center gap-3">
-                       <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                       <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
                          <span className="text-green-600 text-sm">✉️</span>
                        </div>
                        <span className="font-medium group-hover:text-green-600 transition-colors">Email</span>
@@ -1166,22 +1166,22 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {isAdmin ? (
                 <>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">New user registered</p>
                       <p className="text-xs text-muted-foreground">john@example.com • 2 minutes ago</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Credits updated</p>
                       <p className="text-xs text-muted-foreground">sarah@startup.com • 5 minutes ago</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800">
+                    <div className="w-2 h-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">System maintenance</p>
                       <p className="text-xs text-muted-foreground">Scheduled update • 1 hour ago</p>
@@ -1197,14 +1197,14 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">LinkedIn post • 2 hours ago</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Post scheduled</p>
                       <p className="text-xs text-muted-foreground">Twitter thread • Tomorrow 9:00 AM</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">High engagement</p>

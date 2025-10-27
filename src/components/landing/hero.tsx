@@ -93,7 +93,7 @@ const Hero = () => {
               className="text-base font-medium px-6 py-3 h-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               asChild
             >
-              <Link href="/get-started" className="flex items-center space-x-2">
+              <Link href="/auth/signin" className="flex items-center space-x-2">
                 <span>Get Started</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -104,7 +104,7 @@ const Hero = () => {
               className="text-base font-medium px-6 py-3 h-12 rounded-lg border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
               asChild
             >
-              <Link href="/demo">View Live Demo</Link>
+              <Link href="/dashboard">View Dashboard Demo</Link>
             </Button>
           </motion.div>
         </motion.div>

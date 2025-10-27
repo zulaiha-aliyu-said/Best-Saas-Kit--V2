@@ -430,8 +430,8 @@ export default function BulkGeneratePage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="bg-gray-50 rounded p-3">
-                      <pre className="whitespace-pre-wrap text-sm font-mono">
+                    <div className="bg-muted/50 dark:bg-muted rounded p-3">
+                      <pre className="whitespace-pre-wrap text-sm font-mono text-foreground">
                         {content.text}
                       </pre>
                     </div>

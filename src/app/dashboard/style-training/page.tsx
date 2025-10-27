@@ -532,8 +532,8 @@ export default function StyleTrainingPage() {
                     </Button>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                  <pre className="whitespace-pre-wrap text-sm font-mono">
+                <div className="bg-muted/50 dark:bg-muted rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm font-mono text-foreground">
                     {generatedContent}
                   </pre>
                 </div>

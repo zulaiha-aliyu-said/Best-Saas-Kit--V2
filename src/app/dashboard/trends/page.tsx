@@ -97,7 +97,7 @@ export default function TrendsPage() {
         title: 'New trending topic detected',
         desc: topTrend.title.slice(0, 50) + (topTrend.title.length > 50 ? '...' : ''),
         time: 'Just now',
-        color: 'bg-red-50 border-red-200',
+        color: 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800',
         action: () => handleUseTopic(topTrend)
       });
     }
@@ -119,7 +119,7 @@ export default function TrendsPage() {
         title: 'Hashtag surge alert',
         desc: `${topHashtag[0]} +${growth}% across platforms`,
         time: '15 minutes ago',
-        color: 'bg-blue-50 border-blue-200',
+        color: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800',
         action: () => {
           navigator.clipboard.writeText(topHashtag[0]);
           toast.success(`${topHashtag[0]} copied!`);
@@ -150,7 +150,7 @@ export default function TrendsPage() {
         title: 'Multi-platform trends detected',
         desc: `Active trends from ${sources.length} sources: ${sources.join(', ')}`,
         time: '1 hour ago',
-        color: 'bg-green-50 border-green-200',
+        color: 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800',
         action: () => toast.info('Viewing all platform trends')
       });
     }
@@ -537,9 +537,9 @@ export default function TrendsPage() {
         </CardHeader>
         <CardContent>
           {performanceData.length > 0 ? (
-            <div className="relative h-64 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
+            <div className="relative h-64 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-6">
               {/* Legend */}
-              <div className="absolute top-4 right-4 flex flex-col gap-2 text-xs bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+              <div className="absolute top-4 right-4 flex flex-col gap-2 text-xs bg-card/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
                 {performanceData.map((series, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full bg-${series.color}-500`} />
@@ -590,7 +590,7 @@ export default function TrendsPage() {
               </div>
             </div>
           ) : (
-            <div className="h-64 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center">
+            <div className="h-64 bg-gradient-to-br from-muted/30 to-muted/50 rounded-lg flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <p className="text-sm font-medium">No performance data available</p>
                 <p className="text-xs mt-1">Data will appear when trends are loaded</p>
@@ -611,8 +611,8 @@ export default function TrendsPage() {
             <p className="text-muted-foreground text-base">Trending topics with high engagement potential</p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
+              <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
               <span className="text-green-700 font-semibold text-sm">Live Updates</span>
             </div>
             <span className="text-xs text-muted-foreground">Updated {formatTimeAgo(lastUpdated)}</span>
@@ -650,7 +650,7 @@ export default function TrendsPage() {
                 const badgeLower = badge.toLowerCase();
                 
                 if (badgeLower.includes('trending') || badgeLower.includes('#1')) 
-                  return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', accent: 'bg-red-500', badgeBg: 'bg-red-500' };
+                  return { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-800', text: 'text-red-700 dark:text-red-300', accent: 'bg-red-500 dark:bg-red-400', badgeBg: 'bg-red-500 dark:bg-red-600' };
                 if (badgeLower.includes('rising') || badgeLower.includes('#2')) 
                   return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', accent: 'bg-blue-500', badgeBg: 'bg-blue-500' };
                 if (badgeLower.includes('popular') || badgeLower.includes('#3')) 
@@ -668,7 +668,7 @@ export default function TrendsPage() {
                 if (badgeLower.includes('news')) 
                   return { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', accent: 'bg-cyan-500', badgeBg: 'bg-cyan-500' };
                 
-                return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', accent: 'bg-gray-500', badgeBg: 'bg-gray-500' };
+                return { bg: 'bg-muted/30', border: 'border-border', text: 'text-muted-foreground', accent: 'bg-muted', badgeBg: 'bg-muted' };
               };
               
               const colors = getCategoryColor(topic.badge);
@@ -682,7 +682,7 @@ export default function TrendsPage() {
                   data-highlighted-topic={isHighlighted ? "true" : "false"}
                   className={`group relative overflow-hidden rounded-xl shadow-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${
                     isHighlighted 
-                      ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg ring-2 ring-purple-200' 
+                      ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 shadow-lg ring-2 ring-purple-200 dark:ring-purple-800' 
                       : `${colors.bg} ${colors.border}`
                   }`}
                 >
@@ -739,7 +739,7 @@ export default function TrendsPage() {
                     </div>
 
                     {/* Footer with views and button */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
                       <div className="flex items-center gap-2">
                         {/* Eye icon for views */}
                         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -778,7 +778,7 @@ export default function TrendsPage() {
       </div>
 
       {/* Trending Hashtags by Platform */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
@@ -803,7 +803,7 @@ export default function TrendsPage() {
                 <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
-                <h3 className="font-bold text-gray-900">Twitter/X Trending</h3>
+                <h3 className="font-bold text-foreground">Twitter/X Trending</h3>
               </div>
               <Button 
                 size="sm" 
@@ -842,7 +842,7 @@ export default function TrendsPage() {
                 <svg className="w-5 h-5 text-blue-700" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                 </svg>
-                <h3 className="font-bold text-gray-900">LinkedIn Professional</h3>
+                <h3 className="font-bold text-foreground">LinkedIn Professional</h3>
               </div>
               <Button 
                 size="sm" 
@@ -881,7 +881,7 @@ export default function TrendsPage() {
                 <svg className="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                 </svg>
-                <h3 className="font-bold text-gray-900">Instagram Lifestyle</h3>
+                <h3 className="font-bold text-foreground">Instagram Lifestyle</h3>
               </div>
               <Button 
                 size="sm" 
@@ -920,7 +920,7 @@ export default function TrendsPage() {
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <h3 className="font-bold text-gray-900">Email Keywords</h3>
+                <h3 className="font-bold text-foreground">Email Keywords</h3>
               </div>
               <Button 
                 size="sm" 
@@ -989,7 +989,7 @@ export default function TrendsPage() {
                 {/* Category Header */}
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-2xl">{videos[0]?.youtubeCategoryEmoji || '📁'}</span>
-                  <h3 className="text-lg font-bold text-gray-900">{categoryName}</h3>
+                  <h3 className="text-lg font-bold text-foreground">{categoryName}</h3>
                   <span className="text-sm text-muted-foreground">({videos.length} videos)</span>
                 </div>
 
@@ -998,7 +998,7 @@ export default function TrendsPage() {
                   {videos.map((video: any) => (
               <div 
                 key={video.id} 
-                className="group bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-gray-100 hover:border-red-200 hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                className="group bg-gradient-to-br from-muted/20 to-card rounded-xl border-2 border-border hover:border-red-200 dark:hover:border-red-800 hover:shadow-lg transition-all cursor-pointer overflow-hidden"
                 onClick={() => window.open(video.videoUrl, '_blank')}
               >
                 {/* Thumbnail */}
@@ -1087,7 +1087,7 @@ export default function TrendsPage() {
 
       {/* Trending YouTube Hashtags by Category */}
       {youtubeVideos.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-8">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center shadow-lg">
               <span className="text-2xl">🎥</span>
@@ -1140,7 +1140,7 @@ export default function TrendsPage() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{data.emoji}</span>
-                        <h3 className="font-bold text-gray-900">{categoryName}</h3>
+                        <h3 className="font-bold text-foreground">{categoryName}</h3>
                       </div>
                       <Button 
                         size="sm" 
@@ -1293,14 +1293,14 @@ export default function TrendsPage() {
               <div 
                 key={tool.title} 
                 onClick={tool.action}
-                className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all cursor-pointer group border border-gray-100 hover:border-purple-200 hover:shadow-md"
+                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-950/30 dark:hover:to-pink-950/30 transition-all cursor-pointer group border border-border hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-md"
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-11 h-11 rounded-xl ${tool.color} flex items-center justify-center text-xl group-hover:scale-110 transition-transform`}>
                     {tool.icon}
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-gray-900 group-hover:text-purple-700 transition-colors">{tool.title}</p>
+                    <p className="font-bold text-sm text-foreground group-hover:text-purple-700 transition-colors">{tool.title}</p>
                     <p className="text-xs text-muted-foreground">{tool.desc}</p>
                   </div>
                 </div>
@@ -1340,7 +1340,7 @@ export default function TrendsPage() {
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{alert.icon}</span>
                   <div>
-                    <p className="font-bold text-sm text-gray-900">{alert.title}</p>
+                    <p className="font-bold text-sm text-foreground">{alert.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">{alert.desc}</p>
                   </div>
                 </div>
@@ -1372,7 +1372,7 @@ export default function TrendsPage() {
           <div className="space-y-6 py-4">
             {/* Topic Info */}
             {selectedTopic && (
-              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800">
                 <div className="flex items-start gap-3">
                   <div className="flex-1">
                     <h3 className="font-bold text-lg mb-2">{selectedTopic.title}</h3>

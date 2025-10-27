@@ -503,10 +503,10 @@ export default function CustomizeTemplatePage() {
                 <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
                   {/* Twitter/X Thread */}
                   {generatedOutput.x_thread && generatedOutput.x_thread.length > 0 && (
-                    <div className="border-2 border-blue-200 rounded-xl p-4 bg-blue-50/50 space-y-3">
+                    <div className="border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4 bg-blue-50/50 dark:bg-blue-900/30 space-y-3">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                          <div className="w-8 h-8 rounded-full bg-blue-500 dark:bg-blue-600 text-white flex items-center justify-center font-bold">
                             𝕏
                           </div>
                           <span className="font-semibold text-sm">Twitter/X Thread ({generatedOutput.x_thread.length} tweets)</span>
@@ -542,7 +542,7 @@ export default function CustomizeTemplatePage() {
                         </div>
                       </div>
                       {generatedOutput.x_thread.map((tweet: string, idx: number) => (
-                        <div key={idx} className="bg-white rounded-lg p-3 border border-blue-200">
+                        <div key={idx} className="bg-card rounded-lg p-3 border border-blue-200 dark:border-blue-800">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant="secondary" className="text-xs">Tweet {idx + 1}</Badge>
                             <span className="text-xs text-muted-foreground">{tweet.length}/280</span>
@@ -555,7 +555,7 @@ export default function CustomizeTemplatePage() {
 
                   {/* LinkedIn Post */}
                   {generatedOutput.linkedin_post && (
-                    <div className="border-2 border-blue-700/20 rounded-xl p-4 bg-blue-50/30">
+                    <div className="border-2 border-blue-700/20 dark:border-blue-700/40 rounded-xl p-4 bg-blue-50/30 dark:bg-blue-900/20">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded bg-blue-700 text-white flex items-center justify-center font-bold text-xs">
@@ -649,7 +649,7 @@ export default function CustomizeTemplatePage() {
 
                   {/* Email Newsletter */}
                   {generatedOutput.email_newsletter && (
-                    <div className="border-2 border-green-200 rounded-xl p-4 bg-green-50/50">
+                    <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-4 bg-green-50/50 dark:bg-green-900/30">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center text-lg">
@@ -724,9 +724,9 @@ export default function CustomizeTemplatePage() {
               {/* Platform Previews */}
               <div className="space-y-4">
                 {selectedPlatforms.includes('x') && (
-                  <div className="border-2 border-blue-200 rounded-xl p-4 bg-blue-50/50">
+                  <div className="border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4 bg-blue-50/50 dark:bg-blue-900/30">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-full bg-blue-500 dark:bg-blue-600 text-white flex items-center justify-center font-bold">
                         𝕏
                       </div>
                       <span className="font-semibold text-sm">Twitter/X Post</span>
@@ -744,7 +744,7 @@ export default function CustomizeTemplatePage() {
                 )}
 
                 {selectedPlatforms.includes('linkedin') && (
-                  <div className="border-2 border-blue-700/20 rounded-xl p-4 bg-blue-50/30">
+                  <div className="border-2 border-blue-700/20 dark:border-blue-700/40 rounded-xl p-4 bg-blue-50/30 dark:bg-blue-900/20">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded bg-blue-700 text-white flex items-center justify-center font-bold text-xs">
                         in
@@ -791,7 +791,7 @@ export default function CustomizeTemplatePage() {
                 )}
 
                 {selectedPlatforms.includes('email') && (
-                  <div className="border-2 border-green-200 rounded-xl p-4 bg-green-50/50">
+                  <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-4 bg-green-50/50 dark:bg-green-900/30">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center text-lg">
                         ✉️

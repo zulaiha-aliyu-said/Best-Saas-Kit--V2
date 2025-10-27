@@ -265,28 +265,28 @@ export default function SchedulePage(){
     scheduled: { 
       icon: Clock, 
       color: "text-blue-600", 
-      bg: "bg-blue-50", 
+      bg: "bg-blue-50 dark:bg-blue-900/30", 
       border: "border-blue-200",
       label: "Scheduled"
     },
     published: { 
       icon: CheckCircle, 
       color: "text-green-600", 
-      bg: "bg-green-50", 
+      bg: "bg-green-50 dark:bg-green-900/30", 
       border: "border-green-200",
       label: "Published"
     },
     failed: { 
       icon: XCircle, 
       color: "text-red-600", 
-      bg: "bg-red-50", 
+      bg: "bg-red-50 dark:bg-red-900/30", 
       border: "border-red-200",
       label: "Failed"
     },
     paused: { 
       icon: Pause, 
       color: "text-yellow-600", 
-      bg: "bg-yellow-50", 
+      bg: "bg-yellow-50 dark:bg-yellow-900/30", 
       border: "border-yellow-200",
       label: "Paused"
     }
@@ -1046,7 +1046,7 @@ export default function SchedulePage(){
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+          <Card className="border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -1082,7 +1082,7 @@ export default function SchedulePage(){
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           {/* Quick Content Scheduler */}
-          <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+          <Card className="border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
@@ -1098,8 +1098,8 @@ export default function SchedulePage(){
               <div 
                 className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-4 transition-all duration-200 cursor-pointer group ${
                   isDragOver 
-                    ? 'border-purple-400 bg-gradient-to-br from-purple-100/70 to-pink-100/70 scale-105' 
-                    : 'border-purple-200 bg-gradient-to-br from-purple-50/50 to-pink-50/50 hover:from-purple-100/50 hover:to-pink-100/50'
+                    ? 'border-purple-400 bg-gradient-to-br from-purple-100/70 to-pink-100/70 dark:from-purple-900/30 dark:to-pink-900/30 scale-105' 
+                    : 'border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-100/50 hover:to-pink-100/50 dark:hover:from-purple-900/40 dark:hover:to-pink-900/40'
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -1113,7 +1113,7 @@ export default function SchedulePage(){
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-center">
-                  <p className="font-semibold text-lg text-gray-900">
+                  <p className="font-semibold text-lg text-foreground">
                     {isDragOver ? 'Drop to schedule!' : 'Drop your content here'}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -1155,7 +1155,7 @@ export default function SchedulePage(){
           </Card>
 
           {/* Bulk Actions */}
-          <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+          <Card className="border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
@@ -1195,7 +1195,7 @@ export default function SchedulePage(){
           </Card>
 
           {/* This Week Stats */}
-          <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+          <Card className="border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
@@ -1208,8 +1208,8 @@ export default function SchedulePage(){
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-0 pb-6">
-              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-                <span className="text-sm font-medium text-gray-700">Total Posts</span>
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl">
+                <span className="text-sm font-medium text-foreground">Total Posts</span>
                 <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">12</span>
               </div>
               <div className="space-y-3">
@@ -1228,7 +1228,7 @@ export default function SchedulePage(){
                     <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full ${stat.color}`} />
-                        <span className="text-sm font-medium text-gray-700">{stat.platform}</span>
+                        <span className="text-sm font-medium text-foreground">{stat.platform}</span>
                   </div>
                       <span className="text-sm font-bold">{stat.count}</span>
                 </div>
@@ -1249,7 +1249,7 @@ export default function SchedulePage(){
       </div>
 
       {/* Connected Social Accounts */}
-      <Card className="border-0 bg-white shadow-sm">
+      <Card className="border-0 bg-card shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -1284,8 +1284,8 @@ export default function SchedulePage(){
           {isLoadingAccounts ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
-                <RefreshCw className="w-6 h-6 text-gray-400 animate-spin mx-auto mb-2" />
-                <p className="text-sm text-gray-500">Loading connected accounts...</p>
+                <RefreshCw className="w-6 h-6 text-muted-foreground animate-spin mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Loading connected accounts...</p>
               </div>
             </div>
           ) : (
@@ -1297,8 +1297,8 @@ export default function SchedulePage(){
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Plan Required</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Business Plan Required</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Account management requires Ayrshare Business Plan. You can still schedule posts by specifying platforms manually.
                   </p>
                   <div className="flex gap-3 justify-center">
@@ -1322,12 +1322,12 @@ export default function SchedulePage(){
               ) : connectedAccounts.length === 0 ? (
                 <div className="col-span-full text-center py-8">
                   <div className="w-16 h-16 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Connected Accounts</h3>
-                  <p className="text-sm text-gray-500 mb-4">Connect your social media accounts to start scheduling posts</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Connected Accounts</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Connect your social media accounts to start scheduling posts</p>
                   <Button 
                     className="repurpose-gradient gap-2"
                     onClick={() => {
@@ -1394,7 +1394,7 @@ export default function SchedulePage(){
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
       >
-        <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+        <Card className="border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200">
           <CardHeader className="pb-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -1508,7 +1508,7 @@ export default function SchedulePage(){
                     <h3 className="text-lg font-semibold">Weekly Engagement Pattern</h3>
               </div>
                   
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-muted/30 to-muted/50 border border-border">
                     <div className="space-y-3">
                       {timingData.weeklyPattern.map((day: any, index: number) => (
                         <motion.div 
@@ -1519,8 +1519,8 @@ export default function SchedulePage(){
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-700 w-20">{day.day}</span>
-                            <span className="text-sm font-bold text-gray-900">{day.engagement}%</span>
+                            <span className="text-sm font-medium text-foreground w-20">{day.day}</span>
+                            <span className="text-sm font-bold text-foreground">{day.engagement}%</span>
                         </div>
                           <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                             <motion.div
@@ -1541,7 +1541,7 @@ export default function SchedulePage(){
 
                   {/* Audience Insights */}
                   <div className="space-y-3">
-                    <h4 className="text-md font-semibold text-gray-900">Audience Insights</h4>
+                    <h4 className="text-md font-semibold text-foreground">Audience Insights</h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
                         <div className="text-xs text-blue-600 font-medium mb-1">Peak Day</div>
@@ -1583,7 +1583,7 @@ export default function SchedulePage(){
       </motion.div>
 
       {/* Recent Scheduling Activity */}
-      <Card className="border-0 bg-white shadow-sm">
+      <Card className="border-0 bg-card shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -1627,7 +1627,7 @@ export default function SchedulePage(){
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200">
+        <Card className="border-0 bg-card shadow-sm hover:shadow-md transition-all duration-200">
           <CardHeader className="pb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -1969,7 +1969,7 @@ export default function SchedulePage(){
             <div className="w-80 bg-gray-50 border-r border-gray-200 p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Selection</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Platform Selection</h3>
                   <div className="space-y-3">
                     <div className="p-3 bg-white rounded-lg border border-gray-200">
                       <div className="flex items-center space-x-3">
@@ -1979,8 +1979,8 @@ export default function SchedulePage(){
                           </span>
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900 capitalize">{postPlatform}</p>
-                          <p className="text-sm text-gray-500">Selected Platform</p>
+                          <p className="font-medium text-foreground capitalize">{postPlatform}</p>
+                          <p className="text-sm text-muted-foreground">Selected Platform</p>
                         </div>
                         <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center">
                           <div className="w-3 h-3 rounded-full bg-green-500"></div>
@@ -2006,7 +2006,7 @@ export default function SchedulePage(){
 
                 {/* Media Upload */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Media</h4>
+                  <h4 className="text-sm font-medium text-foreground mb-3">Media</h4>
                   <div
                     className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
                       isDragOverMedia
@@ -2017,7 +2017,7 @@ export default function SchedulePage(){
                     onDragLeave={handleMediaDragLeave}
                     onDrop={handleMediaDrop}
                   >
-                    <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                    <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
                     <p className="text-xs text-gray-600 mb-2">
                       Drag & drop images or videos
                     </p>
@@ -2059,7 +2059,7 @@ export default function SchedulePage(){
 
                 {/* Post Options */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Options</h4>
+                  <h4 className="text-sm font-medium text-foreground mb-3">Options</h4>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <Switch
@@ -2069,7 +2069,7 @@ export default function SchedulePage(){
                           setPostOptions({ ...postOptions, tagPeople: checked })
                         }
                       />
-                      <Label htmlFor="tag-people" className="text-sm text-gray-700">
+                      <Label htmlFor="tag-people" className="text-sm text-foreground">
                         Tag people
                       </Label>
                     </div>
@@ -2081,7 +2081,7 @@ export default function SchedulePage(){
                           setPostOptions({ ...postOptions, addLocation: checked })
                         }
                       />
-                      <Label htmlFor="add-location" className="text-sm text-gray-700">
+                      <Label htmlFor="add-location" className="text-sm text-foreground">
                         Add location
                       </Label>
                     </div>
@@ -2094,15 +2094,15 @@ export default function SchedulePage(){
             <div className="flex-1 flex flex-col">
               {/* Header */}
               <div className="border-b border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900">Create Post</h2>
-                <p className="text-sm text-gray-500">Compose your content and schedule it</p>
+                <h2 className="text-xl font-semibold text-foreground">Create Post</h2>
+                <p className="text-sm text-muted-foreground">Compose your content and schedule it</p>
               </div>
 
               {/* Content Area */}
               <div className="flex-1 p-6 space-y-6">
                 {/* Platform Selection */}
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2 block">Select Platform</Label>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">Select Platform</Label>
                   <Select value={postPlatform} onValueChange={setPostPlatform}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Choose a platform" />
@@ -2122,7 +2122,7 @@ export default function SchedulePage(){
 
                 {/* Caption Input */}
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2 block">Caption</Label>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">Caption</Label>
                   <Textarea
                     placeholder="What's on your mind?"
                     value={postContent}
@@ -2171,10 +2171,10 @@ export default function SchedulePage(){
 
                 {/* Schedule Section */}
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Schedule</h4>
+                  <h4 className="text-sm font-medium text-foreground mb-3">Schedule</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-xs text-gray-500 mb-1 block">Date</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">Date</Label>
                       <Input
                         type="date"
                         value={scheduledDateTime ? scheduledDateTime.toISOString().split('T')[0] : ''}
@@ -2186,7 +2186,7 @@ export default function SchedulePage(){
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-500 mb-1 block">Time</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">Time</Label>
                       <Input
                         type="time"
                         value={scheduledDateTime ? scheduledDateTime.toTimeString().slice(0, 5) : ''}
@@ -2225,7 +2225,7 @@ export default function SchedulePage(){
               <div className="w-80 bg-gray-50 border-l border-gray-200 p-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">Hashtag Suggestions</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-3">Hashtag Suggestions</h4>
                     <div className="space-y-2">
                       <Input
                         placeholder="Search hashtags..."
@@ -2252,7 +2252,7 @@ export default function SchedulePage(){
                         className="flex items-center justify-between p-2 bg-white rounded border cursor-pointer hover:bg-gray-50"
                         onClick={() => handleHashtagSelect(hashtag.hashtag)}
                       >
-                        <span className="text-sm text-gray-700">#{hashtag.hashtag}</span>
+                        <span className="text-sm text-foreground">#{hashtag.hashtag}</span>
                         <div className="w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
                           {selectedHashtags.includes(hashtag.hashtag) && (
                             <Check className="w-3 h-3 text-blue-500" />
@@ -2264,8 +2264,8 @@ export default function SchedulePage(){
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700">Selected Hashtags</span>
-                      <span className="text-xs text-gray-500">{selectedHashtags.length}/30</span>
+                      <span className="text-sm text-foreground">Selected Hashtags</span>
+                      <span className="text-xs text-muted-foreground">{selectedHashtags.length}/30</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {selectedHashtags.map((hashtag, index) => (
@@ -2299,7 +2299,7 @@ export default function SchedulePage(){
               <div className="w-80 bg-gray-50 border-l border-gray-200 p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-gray-900">Saved Captions</h4>
+                    <h4 className="text-sm font-medium text-foreground">Saved Captions</h4>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -2311,8 +2311,8 @@ export default function SchedulePage(){
 
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {savedCaptions.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <Bookmark className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Bookmark className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                         <p className="text-sm">No saved captions yet</p>
                         <p className="text-xs">Save your first caption to get started</p>
                       </div>
@@ -2330,14 +2330,14 @@ export default function SchedulePage(){
                           }}
                         >
                           <div className="flex items-start justify-between mb-2">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               {new Date(caption.createdAt).toLocaleDateString()}
                             </span>
                             <Badge variant="outline" className="text-xs">
                               {caption.platform}
                             </Badge>
                           </div>
-                          <p className="text-sm text-gray-700 line-clamp-3">
+                          <p className="text-sm text-foreground line-clamp-3">
                             {caption.content}
                           </p>
                           {caption.hashtags && caption.hashtags.length > 0 && (
@@ -2348,7 +2348,7 @@ export default function SchedulePage(){
                                 </span>
                               ))}
                               {caption.hashtags.length > 3 && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-muted-foreground">
                                   +{caption.hashtags.length - 3} more
                                 </span>
                               )}
