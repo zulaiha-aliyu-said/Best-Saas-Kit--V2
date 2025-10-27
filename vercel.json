@@ -5,8 +5,8 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/expire-codes",
-      "schedule": "0 1 * * *"
+      "path": "/api/emails/automation?secret=$EMAIL_AUTOMATION_SECRET&type=all",
+      "schedule": "0 9 * * *"
     }
   ]
 }
