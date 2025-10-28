@@ -136,7 +136,8 @@ export async function POST(req: NextRequest) {
     }
     
     const { user, session } = userResult;
-    const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id; // Convert to number for database functions
+    // Keep userId as string | number to avoid precision loss for BIGINT IDs
+    const userId: string | number = user!.id;
 
     const body = await req.json();
     const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};

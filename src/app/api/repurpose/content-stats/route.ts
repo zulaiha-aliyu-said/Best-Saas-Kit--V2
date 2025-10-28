@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getUserByGoogleId, getUserRepurposedContentStats } from '@/lib/database';
+import { getUserRepurposedContentStats } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,19 +13,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user from database
-    const user = await getUserByGoogleId(session.user.id);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+    // Ensure user exists (auto-create if missing)
+    const { ensureUserExists } = await import('@/lib/ensure-user');
+    const ensure = await ensureUserExists();
+    if (!ensure.success) {
+      return NextResponse.json({ error: ensure.error || 'Unauthorized' }, { status: ensure.status || 401 });
     }
 
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId: string | number = ensure.user!.id;
 
     // Get user repurposed content statistics
-    const stats = await getUserRepurposedContentStats(userId);
+    const stats = await getUserRepurposedContentStats(userId as any);
 
     return NextResponse.json({
       success: true,
