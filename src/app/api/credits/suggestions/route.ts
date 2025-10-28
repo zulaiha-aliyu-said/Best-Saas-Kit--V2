@@ -1,22 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import pool from '@/lib/db';
+import { pool } from '@/lib/database';
 
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Get user data
+    // Ensure user exists
+    const { ensureUserExists } = await import('@/lib/ensure-user');
+    const ensure = await ensureUserExists();
+    if (!ensure.success) {
+      return NextResponse.json({ error: ensure.error || 'Unauthorized' }, { status: ensure.status || 401 });
+    }
+    const dbUser = ensure.user!;
+    const userId: string | number = dbUser.id;
+
+    // Get user data (LTD-aware fields)
     const userResult = await pool.query(
-      `SELECT id, tier, credits, next_credit_refresh FROM users WHERE email = $1`,
-      [session.user.email]
+      `SELECT id, plan_type, ltd_tier, credits, monthly_credit_limit, credit_reset_date FROM users WHERE id = $1`,
+      [userId]
     );
 
     if (userResult.rows.length === 0) {
@@ -27,12 +36,12 @@ export async function GET(req: NextRequest) {
     }
 
     const user = userResult.rows[0];
-    const tier = user.tier || 1;
+    const tier = user.ltd_tier || 1;
     const credits = user.credits || 0;
 
     // Monthly credit limits by tier
     const creditLimits: Record<number, number> = {
-      1: 100,
+      1: 10,
       2: 300,
       3: 750,
       4: 2000,
@@ -44,17 +53,17 @@ export async function GET(req: NextRequest) {
     // Get usage patterns (last 30 days)
     const usageResult = await pool.query(
       `SELECT 
-        feature_type,
+        action_type,
         COUNT(*) as usage_count,
         SUM(credits_used) as total_credits
-       FROM credit_usage
-       WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days'
-       GROUP BY feature_type`,
+       FROM credit_usage_log
+       WHERE user_id = $1 AND created_at > NOW() - INTERVAL '30 days' AND credits_used > 0
+       GROUP BY action_type`,
       [user.id]
     );
 
     const usageByFeature = usageResult.rows.reduce((acc: any, row: any) => {
-      acc[row.feature_type] = {
+      acc[row.action_type] = {
         count: parseInt(row.usage_count),
         credits: parseInt(row.total_credits)
       };
@@ -62,7 +71,7 @@ export async function GET(req: NextRequest) {
     }, {});
 
     // Calculate days until refresh
-    const nextRefresh = user.next_credit_refresh ? new Date(user.next_credit_refresh) : null;
+    const nextRefresh = user.credit_reset_date ? new Date(user.credit_reset_date) : null;
     const daysUntilRefresh = nextRefresh 
       ? Math.ceil((nextRefresh.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : 30;
@@ -93,7 +102,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Heavy repurposing usage
-    const repurposeCredits = usageByFeature['repurpose']?.credits || 0;
+    const repurposeCredits = usageByFeature['content_repurposing']?.credits || 0;
     const totalCreditsUsed = monthlyCredits - credits;
     if (repurposeCredits > totalCreditsUsed * 0.7 && tier >= 2) {
       suggestions.push({
