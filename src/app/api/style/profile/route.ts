@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's writing style
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = user.id; // Keep as string to avoid precision loss
     const styleData = await getUserWritingStyle(userId);
 
     return NextResponse.json({

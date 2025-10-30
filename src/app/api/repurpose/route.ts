@@ -136,7 +136,15 @@ export async function POST(req: NextRequest) {
     }
     
     const { user, session } = userResult;
-    const userId = typeof user?.id === 'string' ? parseInt(user.id) : user?.id; // Convert to number for database functions
+    // Keep userId as string to avoid precision loss with large numbers
+    const userId = user?.id; // Use string directly, don't convert to number
+    
+    // Log user info for debugging
+    console.log('👤 User Info:', {
+      id: userId,
+      idType: typeof userId,
+      email: user?.email
+    });
 
     const body = await req.json();
     const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
@@ -181,10 +189,21 @@ export async function POST(req: NextRequest) {
     // Calculate credit cost based on number of platforms (1 credit per platform)
     const numPlatforms = platforms.length;
     const plan = await getUserPlan(userId!);
+    
+    // Log plan info for debugging
+    console.log('💳 Plan Info:', {
+      found: !!plan,
+      credits: plan?.credits,
+      planType: plan?.plan_type,
+      subscriptionStatus: plan?.subscription_status,
+      ltdTier: plan?.ltd_tier
+    });
+    
     const creditCostPerPlatform = calculateCreditCost('content_repurposing', plan?.ltd_tier ?? undefined);
     const totalCreditCost = creditCostPerPlatform * numPlatforms;
     
     console.log(`💳 Credit calculation: ${numPlatforms} platforms × ${creditCostPerPlatform} credits = ${totalCreditCost} total credits`);
+    console.log(`💳 User has ${plan?.credits || 0} credits, needs ${totalCreditCost} credits`);
 
     // Fetch content from URL if sourceType is 'url'
     let sourceText = String(text || '');
@@ -563,6 +582,13 @@ Return ONLY the JSON.`
     }
 
     // Deduct credits now that we have a result (1 credit per platform)
+    console.log('💳 Attempting to deduct credits:', {
+      userId: userId,
+      userIdType: typeof userId,
+      amount: totalCreditCost,
+      userCredits: plan?.credits
+    });
+    
     const creditResult = await deductLTDCredits(
       userId!,
       totalCreditCost,
@@ -576,7 +602,14 @@ Return ONLY the JSON.`
       }
     );
     
+    console.log('💳 Credit deduction result:', {
+      success: creditResult.success,
+      remaining: creditResult.remaining,
+      error: creditResult.error
+    });
+    
     if (!creditResult.success) {
+      console.error('❌ Credit deduction failed:', creditResult.error);
       return NextResponse.json({
         error: creditResult.error || 'Insufficient credits',
         code: 'INSUFFICIENT_CREDITS',

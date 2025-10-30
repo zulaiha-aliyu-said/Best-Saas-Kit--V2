@@ -21,13 +21,7 @@ export async function POST(
     const adminUser = authResult.admin;
 
     const resolvedParams = await params;
-    const userId = parseInt(resolvedParams.id);
-    if (isNaN(userId)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
-    }
+    const userId = resolvedParams.id; // Keep as string to avoid precision loss
 
     const body = await request.json();
     const { action, amount } = body;

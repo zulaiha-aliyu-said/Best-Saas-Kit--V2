@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = user.id; // Keep as string to avoid precision loss
 
     // Get user repurposed content statistics
     const stats = await getUserRepurposedContentStats(userId);

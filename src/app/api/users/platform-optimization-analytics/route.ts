@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get optimization stats
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = user.id; // Keep as string to avoid precision loss
     const [stats, platformBreakdown] = await Promise.all([
       getUserOptimizationStats(userId),
       getUserPlatformBreakdown(userId),

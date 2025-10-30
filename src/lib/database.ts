@@ -157,7 +157,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 // Get user by ID
-export async function getUserById(id: number): Promise<User | null> {
+export async function getUserById(id: string | number): Promise<User | null> {
   const client = await pool.connect()
 
   try {

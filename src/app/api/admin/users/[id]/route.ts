@@ -19,13 +19,7 @@ export async function GET(
     }
 
     const resolvedParams = await params;
-    const userId = parseInt(resolvedParams.id);
-    if (isNaN(userId)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
-    }
+    const userId = resolvedParams.id; // Keep as string to avoid precision loss
 
     const user = await getUserById(userId);
     if (!user) {
@@ -64,13 +58,7 @@ export async function DELETE(
     const adminUser = authResult.admin;
 
     const resolvedParams = await params;
-    const userId = parseInt(resolvedParams.id);
-    if (isNaN(userId)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
-    }
+    const userId = resolvedParams.id; // Keep as string to avoid precision loss
 
     // Get user details before deletion for logging
     const userToDelete = await getUserById(userId);

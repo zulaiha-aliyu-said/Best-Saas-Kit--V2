@@ -40,6 +40,7 @@ export default function RepurposePage() {
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState<GeneratedOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [creditError, setCreditError] = useState<{remaining: number; required: number} | null>(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [scheduleContent, setScheduleContent] = useState("");
   const [schedulePlatform, setSchedulePlatform] = useState<string>("all");
@@ -1193,9 +1194,36 @@ export default function RepurposePage() {
                       }
                     })
                   });
-                  const data = await res.json();
+                  let data;
+                  try {
+                    const responseText = await res.text();
+                    try {
+                      data = JSON.parse(responseText);
+                    } catch (parseError) {
+                      console.error('❌ Failed to parse JSON response:', parseError);
+                      console.error('  Response text:', responseText);
+                      setError('Invalid response from server. Please try again.');
+                      setCreditError(null);
+                      setOutput(null);
+                      setLoading(false);
+                      return;
+                    }
+                  } catch (readError) {
+                    console.error('❌ Failed to read response:', readError);
+                    setError('Failed to read server response. Please try again.');
+                    setCreditError(null);
+                    setOutput(null);
+                    setLoading(false);
+                    return;
+                  }
+                  
                   console.log('📥 FRONTEND: Received data from API');
+                  console.log('  Response status:', res.status);
+                  console.log('  Response ok:', res.ok);
                   console.log('  Full response:', data);
+                  console.log('  Has output:', !!data.output);
+                  console.log('  Has error:', !!data.error);
+                  console.log('  Has code:', data.code);
                   console.log('  output.x_thread:', data.output?.x_thread);
                   if (data.output?.x_thread && Array.isArray(data.output.x_thread)) {
                     console.log('  First tweet:', data.output.x_thread[0]);
@@ -1203,13 +1231,46 @@ export default function RepurposePage() {
                   }
                   
                   if (!res.ok) {
+                    console.log('❌ Response not OK, status:', res.status);
+                    // Handle 402 Payment Required (insufficient credits)
+                    if (res.status === 402 && data.code === 'INSUFFICIENT_CREDITS') {
+                      console.log('💰 Credit error detected:', { remaining: data.remaining, required: data.required });
+                      setCreditError({
+                        remaining: data.remaining || 0,
+                        required: data.required || 0
+                      });
+                      setError(null);
+                    } else {
+                      console.log('❌ Setting error:', data.error);
+                      setError(data.error || `Server error (${res.status}). Please try again.`);
+                      setCreditError(null);
+                    }
+                    setOutput(null);
+                  } else if (data.output) {
+                    // Success - set output (check for output field)
+                    console.log('✅ Success - setting output');
+                    setOutput(data.output as GeneratedOutput);
+                    setError(null);
+                    setCreditError(null);
+                  } else if (data.error) {
+                    // Response was OK but has error field
+                    console.log('⚠️ Response OK but has error field:', data.error);
                     setError(data.error || 'Failed to generate');
+                    setCreditError(null);
                     setOutput(null);
                   } else {
-                    setOutput(data.output as GeneratedOutput);
+                    // Unexpected response structure
+                    console.error('❌ Unexpected API response structure:', data);
+                    setError('Unexpected response from server. Please try again.');
+                    setCreditError(null);
+                    setOutput(null);
                   }
                 } catch (e: any) {
+                  console.error('❌ Exception caught:', e);
+                  console.error('  Error message:', e.message);
+                  console.error('  Error stack:', e.stack);
                   setError(e.message || 'Failed to generate');
+                  setCreditError(null);
                   setOutput(null);
                 } finally {
                   setLoading(false);
@@ -1374,7 +1435,7 @@ export default function RepurposePage() {
       </div>
 
       {/* Output */}
-      {(output || error) && (
+      {(output || error || creditError) && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -1386,8 +1447,48 @@ export default function RepurposePage() {
             </Button>
           </div>
           
+          {/* Credit Error Display */}
+          {creditError && (
+            <Card className="border-2 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2 text-amber-900 dark:text-amber-100">Insufficient Credits</h3>
+                    <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed mb-3">
+                      You need <strong>{creditError.required} credits</strong> to repurpose content to {creditError.required} platform{creditError.required > 1 ? 's' : ''}, but you only have <strong>{creditError.remaining} credits</strong> remaining.
+                    </p>
+                    <div className="bg-amber-100 dark:bg-amber-900/30 rounded-lg p-4 mb-4">
+                      <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">💡 Free Trial Information:</p>
+                      <ul className="text-xs text-amber-800 dark:text-amber-200 space-y-1 list-disc list-inside">
+                        <li>Free trial users get 10 credits (one-time)</li>
+                        <li>Each platform costs 1 credit (4 platforms = 4 credits)</li>
+                        <li>You can select fewer platforms to use fewer credits</li>
+                      </ul>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <Button variant="outline" size="sm" onClick={() => { setCreditError(null); setError(null); }}>
+                        Dismiss
+                      </Button>
+                      <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" asChild>
+                        <Link href="/redeem">Redeem LTD Code →</Link>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/dashboard/credits">View Credits →</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Error Display */}
-          {error && (
+          {error && !creditError && (
             <Card className="border-2 border-destructive/50 bg-destructive/5">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">

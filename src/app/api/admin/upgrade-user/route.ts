@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = user.id; // Keep as string to avoid precision loss
 
     // Update user to Pro subscription
     const updateResult = await updateUserSubscription(userId, {

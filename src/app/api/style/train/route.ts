@@ -235,7 +235,7 @@ Analyze these samples and provide a comprehensive style profile that captures th
     // Save the style profile and samples
     console.log('Updating user writing style in database...');
     try {
-      const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+      const userId = user.id; // Keep as string to avoid precision loss
       await updateUserWritingStyle(userId, styleProfile, processedSamples, confidenceScore);
       console.log('Successfully updated user writing style');
     } catch (dbError) {

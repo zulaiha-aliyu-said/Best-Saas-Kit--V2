@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert user ID to number for database function
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = user.id; // Keep as string to avoid precision loss
 
     // Get user schedule analytics
     const analytics = await getUserScheduleAnalytics(userId);

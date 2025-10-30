@@ -12,8 +12,8 @@ export async function POST(req: NextRequest) {
     const user = await getUserByGoogleId(session.user.id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 });
 
-    // Convert user ID to number for database functions
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    // Keep user ID as string to avoid precision loss with large numbers
+    const userId = user.id;
 
     const body = await req.json();
     const { platform, content, scheduledAt, timezone = 'UTC' } = body || {};

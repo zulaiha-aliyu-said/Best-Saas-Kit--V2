@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           // Method 2: Try to find user by metadata user ID
           if (!user && session.metadata?.userId) {
             try {
-              const userId = parseInt(session.metadata.userId);
+              const userId = session.metadata.userId; // Keep as string to avoid precision loss
               user = await getUserById(userId);
               if (user) {
                 console.log(`Found user by metadata user ID ${userId}: ${user.email}`);
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
           if (user) {
             try {
               // Update user to Pro subscription
-              const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+              const userId = user.id; // Keep as string to avoid precision loss
               const updateResult = await updateUserSubscription(userId, {
                 subscription_status: 'pro',
                 stripe_customer_id: session.customer as string,

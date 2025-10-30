@@ -282,7 +282,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setEditingCreditsUserId(parseInt(user.id));
+                        setEditingCreditsUserId(user.id); // Keep as string
                         setCreditsAmount("");
                         setCreditsAction("add");
                       }}
@@ -326,7 +326,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     </div>
                     <DialogFooter>
                       <Button
-                        onClick={() => handleCreditsUpdate(parseInt(user.id))}
+                        onClick={() => handleCreditsUpdate(user.id)} // Keep as string
                         disabled={!creditsAmount || isNaN(parseInt(creditsAmount))}
                       >
                         {creditsAction === "add" ? "Add Credits" : "Set Credits"}
@@ -341,7 +341,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     <Button
                       variant="destructive"
                       size="sm"
-                      disabled={deletingUserId === parseInt(user.id)}
+                      disabled={deletingUserId === user.id} // Keep as string
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -357,7 +357,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => handleDeleteUser(parseInt(user.id))}
+                        onClick={() => handleDeleteUser(user.id)} // Keep as string
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Delete User

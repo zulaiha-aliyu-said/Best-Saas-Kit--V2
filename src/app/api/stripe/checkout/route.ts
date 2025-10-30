@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Convert user ID to number for database functions
-    const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+    const userId = user.id; // Keep as string to avoid precision loss
 
     // Check if user already has pro subscription
     if (user.subscription_status === 'pro') {
