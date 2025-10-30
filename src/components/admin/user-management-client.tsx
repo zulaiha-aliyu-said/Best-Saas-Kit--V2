@@ -125,7 +125,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
+  const handleDeleteUser = async (userId: string | number) => {
     setDeletingUserId(userId);
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -158,7 +158,7 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
     }
   };
 
-  const handleCreditsUpdate = async (userId: number) => {
+  const handleCreditsUpdate = async (userId: string | number) => {
     const amount = parseInt(creditsAmount);
     if (isNaN(amount) || amount < 0) {
       toast({

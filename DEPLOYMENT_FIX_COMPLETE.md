@@ -26,18 +26,25 @@ Type error: Argument of type 'string' is not assignable to parameter of type 'Se
 at src/components/admin/user-management-client.tsx:285:49
 ```
 
+### Fifth Deployment Error:
+```
+Type error: Argument of type 'string' is not assignable to parameter of type 'number'.
+at src/components/admin/user-management-client.tsx:329:60
+```
+
 ## Root Cause
 When we fixed the user ID precision issue (changing from `number` to `string`), we updated the API routes but didn't update:
 1. Database functions that accept userId parameters
 2. Database interfaces that define user_id fields
 3. Stripe helper functions that accept userId parameters
 4. React component state types that store user IDs
+5. React component handler functions that accept userId parameters
 
 ## Solution Applied
-Updated all functions, interfaces, and state types across the codebase to accept `userId: string | number` or `user_id: string | number`:
+Updated all functions, interfaces, state types, and handlers across the codebase to accept `userId: string | number` or `user_id: string | number`:
 - `src/lib/database.ts` - All database functions and interfaces
 - `src/lib/stripe.ts` - All Stripe checkout functions
-- `src/components/admin/user-management-client.tsx` - React state types for user IDs
+- `src/components/admin/user-management-client.tsx` - React state types and handler functions for user IDs
 
 ## Files Updated
 
@@ -91,6 +98,10 @@ Updated all functions, interfaces, and state types across the codebase to accept
 ### React Component State (2 state variables updated):
 1. ✅ `deletingUserId` state - **Critical fix #4** (was causing fourth deployment failure)
 2. ✅ `editingCreditsUserId` state - Admin credits management UI
+
+### React Component Handlers (2 handler functions updated):
+1. ✅ `handleDeleteUser` - Delete user handler
+2. ✅ `handleCreditsUpdate` - **Critical fix #5** (was causing fifth deployment failure)
 
 ## Changes Made
 
@@ -168,6 +179,33 @@ const [deletingUserId, setDeletingUserId] = useState<string | number | null>(nul
 const [editingCreditsUserId, setEditingCreditsUserId] = useState<string | number | null>(null);
 ```
 
+### React Component Handlers
+**Before:**
+```typescript
+const handleCreditsUpdate = async (userId: number) => {  // ❌ Only accepts number
+  const amount = parseInt(creditsAmount);
+  // ...
+}
+
+const handleDeleteUser = async (userId: number) => {  // ❌ Only accepts number
+  setDeletingUserId(userId);
+  // ...
+}
+```
+
+**After:**
+```typescript
+const handleCreditsUpdate = async (userId: string | number) => {  // ✅ Accepts both
+  const amount = parseInt(creditsAmount);
+  // ...
+}
+
+const handleDeleteUser = async (userId: string | number) => {  // ✅ Accepts both
+  setDeletingUserId(userId);
+  // ...
+}
+```
+
 ## Why This Fix Works
 
 1. **JavaScript Safety**: User IDs like `104799763406502560000` exceed JavaScript's `Number.MAX_SAFE_INTEGER` (9,007,199,254,740,991)
@@ -182,6 +220,7 @@ const [editingCreditsUserId, setEditingCreditsUserId] = useState<string | number
 ✅ **Database Interfaces Updated**: 10 interfaces with consistent type signature
 ✅ **Stripe Functions Updated**: 2 functions with consistent type signature
 ✅ **React State Updated**: 2 state variables with consistent type signature
+✅ **React Handlers Updated**: 2 handler functions with consistent type signature
 ✅ **Type Safety**: `string | number` union type allows both formats
 ✅ **Deployment Ready**: Should now build successfully on Vercel
 
@@ -198,13 +237,14 @@ const [editingCreditsUserId, setEditingCreditsUserId] = useState<string | number
 - ✅ 10 database interfaces updated
 - ✅ 2 Stripe functions updated
 - ✅ 2 React state variables updated
+- ✅ 2 React handler functions updated
 - ✅ 20 API routes updated (from previous fix)
 - ✅ 0 TypeScript errors remaining
 
 ## Related Files
 - `src/lib/database.ts` - All database functions and interfaces
 - `src/lib/stripe.ts` - Stripe checkout functions
-- `src/components/admin/user-management-client.tsx` - **NEW** Admin component state types
+- `src/components/admin/user-management-client.tsx` - Admin component state types and handlers
 - `src/app/api/admin/upgrade-user/route.ts` - Was failing during first build
 - `src/app/api/ai/predict-performance/route.ts` - Was failing during second build
 - `src/app/api/stripe/checkout/route.ts` - Was failing during third build
