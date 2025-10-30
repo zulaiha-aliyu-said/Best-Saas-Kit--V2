@@ -24,25 +24,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI SAAS Kit - Build AI-Powered Applications in Minutes",
-  description: "The ultimate toolkit for developers to create, customize, and launch AI-powered SAAS applications with authentication, payments, and modern UI components.",
-  keywords: ["AI", "SAAS", "Next.js", "TypeScript", "Tailwind CSS", "ShadCN", "OpenRouter", "Clerk", "Neon"],
-  authors: [{ name: "AI SAAS Kit Team" }],
-  creator: "AI SAAS Kit",
-  publisher: "AI SAAS Kit",
+  title: "Reporposely - AI-Powered Content Repurposing Platform",
+  description: "Transform your content across multiple platforms with AI-powered repurposing. Create optimized posts for Twitter, LinkedIn, Instagram, and Email in seconds.",
+  keywords: ["content repurposing", "AI content", "social media", "content creation", "multi-platform", "Reporposely"],
+  authors: [{ name: "Reporposely Team" }],
+  creator: "Reporposely",
+  publisher: "Reporposely",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://aisaaskit.com",
-    title: "AI SAAS Kit - Build AI-Powered Applications in Minutes",
-    description: "The ultimate toolkit for developers to create, customize, and launch AI-powered SAAS applications with authentication, payments, and modern UI components.",
-    siteName: "AI SAAS Kit",
+    url: "https://reporposely.com",
+    title: "Reporposely - AI-Powered Content Repurposing Platform",
+    description: "Transform your content across multiple platforms with AI-powered repurposing. Create optimized posts for Twitter, LinkedIn, Instagram, and Email in seconds.",
+    siteName: "Reporposely",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI SAAS Kit - Build AI-Powered Applications in Minutes",
-    description: "The ultimate toolkit for developers to create, customize, and launch AI-powered SAAS applications with authentication, payments, and modern UI components.",
-    creator: "@aisaaskit",
+    title: "Reporposely - AI-Powered Content Repurposing Platform",
+    description: "Transform your content across multiple platforms with AI-powered repurposing. Create optimized posts for Twitter, LinkedIn, Instagram, and Email in seconds.",
+    creator: "@reporposely",
   },
   robots: {
     index: true,

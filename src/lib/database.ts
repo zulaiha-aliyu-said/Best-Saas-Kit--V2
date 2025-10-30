@@ -226,7 +226,7 @@ export async function getUserStats() {
 // Admin Functions
 
 // Delete user by ID (admin only)
-export async function deleteUserById(userId: number): Promise<boolean> {
+export async function deleteUserById(userId: string | number): Promise<boolean> {
   const client = await pool.connect()
 
   try {
@@ -392,7 +392,7 @@ export async function deductCredits(googleId: string, amount: number = 1): Promi
 }
 
 // Add credits to user (admin function)
-export async function addCredits(userId: number, amount: number): Promise<{ success: boolean; newBalance: number }> {
+export async function addCredits(userId: string | number, amount: number): Promise<{ success: boolean; newBalance: number }> {
   const client = await pool.connect()
 
   try {
@@ -415,7 +415,7 @@ export async function addCredits(userId: number, amount: number): Promise<{ succ
 }
 
 // Set user credits (admin function)
-export async function setUserCredits(userId: number, credits: number): Promise<{ success: boolean; newBalance: number }> {
+export async function setUserCredits(userId: string | number, credits: number): Promise<{ success: boolean; newBalance: number }> {
   const client = await pool.connect()
 
   try {
@@ -570,7 +570,7 @@ export async function insertPost(params: {
   }
 }
 
-export async function listRecentGenerations(userId: number, limit = 20): Promise<GenerationRow[]> {
+export async function listRecentGenerations(userId: string | number, limit = 20): Promise<GenerationRow[]> {
   const client = await pool.connect()
   try {
     const result = await client.query(
@@ -583,7 +583,7 @@ export async function listRecentGenerations(userId: number, limit = 20): Promise
   }
 }
 
-export async function listRecentPosts(userId: number, limit = 20): Promise<PostRow[]> {
+export async function listRecentPosts(userId: string | number, limit = 20): Promise<PostRow[]> {
   const client = await pool.connect()
   try {
     const result = await client.query(
@@ -633,7 +633,7 @@ export async function insertSchedule(params: {
 
 // Update user subscription status
 export async function updateUserSubscription(
-  userId: number,
+  userId: string | number,
   subscriptionData: {
     subscription_status: string
     stripe_customer_id?: string
@@ -707,7 +707,7 @@ export async function getSubscriptionStats() {
 }
 
 // Check if user has active subscription
-export async function hasActiveSubscription(userId: number): Promise<boolean> {
+export async function hasActiveSubscription(userId: string | number): Promise<boolean> {
   const client = await pool.connect()
 
   try {
@@ -1356,7 +1356,7 @@ export async function createPerformancePrediction(predictionData: CreatePerforma
 }
 
 // Get user's recent predictions
-export async function getUserPredictions(userId: number, limit: number = 20): Promise<PerformancePrediction[]> {
+export async function getUserPredictions(userId: string | number, limit: number = 20): Promise<PerformancePrediction[]> {
   const client = await pool.connect()
   
   try {
@@ -1435,7 +1435,7 @@ export async function createPerformanceFeedback(feedbackData: CreatePerformanceF
 }
 
 // Get user prediction statistics
-export async function getUserPredictionStats(userId: number) {
+export async function getUserPredictionStats(userId: string | number) {
   const client = await pool.connect()
   
   try {
@@ -1641,7 +1641,7 @@ export async function getPredictionsWithFeedback(limit: number = 50): Promise<an
 }
 
 // Get user repurposed content statistics
-export async function getUserRepurposedContentStats(userId: number) {
+export async function getUserRepurposedContentStats(userId: string | number) {
   const client = await pool.connect()
   
   try {
@@ -1809,7 +1809,7 @@ export async function getAdminRepurposedContentAnalytics() {
 }
 
 // Get user schedule analytics
-export async function getUserScheduleAnalytics(userId: number) {
+export async function getUserScheduleAnalytics(userId: string | number) {
   const client = await pool.connect()
   
   try {
@@ -2081,7 +2081,7 @@ export interface StyleAnalysisResult {
   };
 }
 
-export async function getUserPreferences(userId: number): Promise<UserPreferences> {
+export async function getUserPreferences(userId: string | number): Promise<UserPreferences> {
   try {
     const query = `
       SELECT * FROM user_preferences 
@@ -2144,7 +2144,7 @@ export async function getUserPreferences(userId: number): Promise<UserPreference
   }
 }
 
-export async function updateUserPreferences(userId: number, preferences: Partial<UserPreferences>): Promise<void> {
+export async function updateUserPreferences(userId: string | number, preferences: Partial<UserPreferences>): Promise<void> {
   try {
     const query = `
       INSERT INTO user_preferences (
@@ -2238,7 +2238,7 @@ export async function updateUserPreferences(userId: number, preferences: Partial
   }
 }
 
-export async function generateUserApiKey(userId: number): Promise<string> {
+export async function generateUserApiKey(userId: string | number): Promise<string> {
   try {
     const apiKey = `sk_user_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
     
@@ -2256,7 +2256,7 @@ export async function generateUserApiKey(userId: number): Promise<string> {
   }
 }
 
-export async function exportUserData(userId: number): Promise<any> {
+export async function exportUserData(userId: string | number): Promise<any> {
   try {
     // Get user data
     const userQuery = `SELECT * FROM users WHERE id = $1`;
@@ -2548,7 +2548,7 @@ export async function testEmailConnection(): Promise<void> {
 
 // Writing Style Functions (Talk Like Me feature)
 
-export async function getUserWritingStyle(userId: number): Promise<{
+export async function getUserWritingStyle(userId: string | number): Promise<{
   profile: WritingStyleProfile | null;
   confidence_score: number;
   sample_count: number;
@@ -2620,7 +2620,7 @@ export async function updateUserWritingStyle(
   }
 }
 
-export async function toggleUserStyleEnabled(userId: number, enabled: boolean): Promise<void> {
+export async function toggleUserStyleEnabled(userId: string | number, enabled: boolean): Promise<void> {
   try {
     const query = `
       INSERT INTO user_preferences (user_id, style_enabled)
@@ -2760,7 +2760,7 @@ export async function insertOptimizationAnalytics(
   }
 }
 
-export async function getUserOptimizationStats(userId: number): Promise<{
+export async function getUserOptimizationStats(userId: string | number): Promise<{
   total_optimizations: number;
   platforms_optimized: number;
   total_threads_created: number;
@@ -2810,7 +2810,7 @@ export async function getUserOptimizationStats(userId: number): Promise<{
   }
 }
 
-export async function getUserPlatformBreakdown(userId: number): Promise<Array<{
+export async function getUserPlatformBreakdown(userId: string | number): Promise<Array<{
   platform: string;
   optimization_count: number;
   avg_character_count: number;
@@ -3024,7 +3024,7 @@ export async function getUserConversations(userId: string, includeArchived: bool
 }
 
 // Get conversation by ID
-export async function getConversationById(conversationId: number, userId: number): Promise<ChatConversation | null> {
+export async function getConversationById(conversationId: number, userId: string | number): Promise<ChatConversation | null> {
   const client = await pool.connect();
   
   try {
@@ -3041,7 +3041,7 @@ export async function getConversationById(conversationId: number, userId: number
 }
 
 // Update conversation
-export async function updateConversation(conversationId: number, userId: number, updates: { title?: string; is_archived?: boolean }): Promise<ChatConversation | null> {
+export async function updateConversation(conversationId: number, userId: string | number, updates: { title?: string; is_archived?: boolean }): Promise<ChatConversation | null> {
   const client = await pool.connect();
   
   try {
@@ -3081,7 +3081,7 @@ export async function updateConversation(conversationId: number, userId: number,
 }
 
 // Delete conversation
-export async function deleteConversation(conversationId: number, userId: number): Promise<boolean> {
+export async function deleteConversation(conversationId: number, userId: string | number): Promise<boolean> {
   const client = await pool.connect();
   
   try {

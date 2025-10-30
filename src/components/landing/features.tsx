@@ -109,7 +109,7 @@ const Features = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-2">
               <Image
                 src="/best saas kit.png"
-                alt="Best SAAS Kit V2 - Complete AI-Powered SAAS Starter Kit"
+                alt="Reporposely - Complete AI-Powered Content Repurposing Platform"
                 width={1200}
                 height={800}
                 className="w-full h-auto rounded-xl"

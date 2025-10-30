@@ -11,7 +11,7 @@ function getResendApiKey(): string {
 export const EMAIL_CONFIG = {
   FROM_EMAIL: process.env.FROM_EMAIL || 'onboarding@bestsaaskit.com',
   SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || 'support@bestsaaskit.com',
-  SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || 'Best SAAS Kit V2',
+  SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || 'Reporposely',
   SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
 } as const;
 

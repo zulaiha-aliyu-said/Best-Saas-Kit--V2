@@ -28,10 +28,10 @@ export default function DocsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Best SAAS Kit V2 Documentation
+              Reporposely Documentation
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Complete guide to building and deploying AI-powered SAAS applications with our comprehensive starter kit
+              Complete guide to using Reporposely - AI-powered content repurposing platform
             </p>
             <div className="flex justify-center gap-2 mt-6">
               <Badge variant="secondary">Next.js 15</Badge>
@@ -108,8 +108,8 @@ export default function DocsPage() {
                     Project Overview
                   </CardTitle>
                   <CardDescription>
-                    Best SAAS Kit V2 is a production-ready, feature-complete SAAS starter kit built with Next.js 15, 
-                    designed to help developers launch AI-powered applications quickly and efficiently.
+                    Reporposely is a production-ready, feature-complete AI-powered content repurposing platform built with Next.js 15, 
+                    designed to help creators transform their content across multiple platforms efficiently.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -380,7 +380,7 @@ export default function DocsPage() {
                       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                         <code className="text-sm">
                           git clone https://github.com/zainulabedeen123/Best-Saas-Kit--V2.git<br/>
-                          cd Best-Saas-Kit--V2
+                          cd Reporposely
                         </code>
                       </div>
                     </div>
@@ -650,7 +650,7 @@ export default function DocsPage() {
                 <CardContent>
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-x-auto">
                     <pre className="text-sm">
-{`best-saas-kit-v2/
+{`reporposely/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── admin/             # Admin panel pages
@@ -1131,7 +1131,7 @@ export default function DocsPage() {
             {/* Footer */}
             <div className="text-center py-8 border-t">
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Built with ❤️ by the Best SAAS Kit team
+                Built with ❤️ by the Reporposely team
               </p>
               <div className="flex justify-center gap-4 text-sm">
                 <Link href="https://bestsaaskit.com" target="_blank" className="text-blue-600 hover:text-blue-800">
