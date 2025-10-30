@@ -40,7 +40,7 @@ export async function createStripeCustomer(email: string, name?: string) {
 // Create checkout session for Pro plan
 export async function createCheckoutSession(
   customerId: string,
-  userId: number,
+  userId: string | number,
   userEmail: string,
   successUrl: string,
   cancelUrl: string
@@ -139,7 +139,7 @@ export async function deleteStripeCoupon(couponId: string) {
 // Create checkout session with optional discount
 export async function createCheckoutSessionWithDiscount(
   customerId: string,
-  userId: number,
+  userId: string | number,
   userEmail: string,
   successUrl: string,
   cancelUrl: string,
