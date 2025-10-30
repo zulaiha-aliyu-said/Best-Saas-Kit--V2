@@ -37,8 +37,8 @@ export function UserManagementClient({ initialUsers }: UserManagementClientProps
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
-  const [editingCreditsUserId, setEditingCreditsUserId] = useState<number | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | number | null>(null);
+  const [editingCreditsUserId, setEditingCreditsUserId] = useState<string | number | null>(null);
   const [creditsAmount, setCreditsAmount] = useState("");
   const [creditsAction, setCreditsAction] = useState<"add" | "set">("add");
   const { toast } = useToast();

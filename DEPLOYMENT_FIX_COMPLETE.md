@@ -20,16 +20,24 @@ Type error: Argument of type 'string' is not assignable to parameter of type 'nu
 at src/app/api/stripe/checkout/route.ts:86:11
 ```
 
+### Fourth Deployment Error:
+```
+Type error: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<number | null>'.
+at src/components/admin/user-management-client.tsx:285:49
+```
+
 ## Root Cause
 When we fixed the user ID precision issue (changing from `number` to `string`), we updated the API routes but didn't update:
 1. Database functions that accept userId parameters
 2. Database interfaces that define user_id fields
 3. Stripe helper functions that accept userId parameters
+4. React component state types that store user IDs
 
 ## Solution Applied
-Updated all functions and interfaces across the codebase to accept `userId: string | number` or `user_id: string | number`:
+Updated all functions, interfaces, and state types across the codebase to accept `userId: string | number` or `user_id: string | number`:
 - `src/lib/database.ts` - All database functions and interfaces
 - `src/lib/stripe.ts` - All Stripe checkout functions
+- `src/components/admin/user-management-client.tsx` - React state types for user IDs
 
 ## Files Updated
 
@@ -79,6 +87,10 @@ Updated all functions and interfaces across the codebase to accept `userId: stri
 ### Stripe Functions (2 functions updated):
 1. ✅ `createCheckoutSession` - **Critical fix #3** (was causing third deployment failure)
 2. ✅ `createCheckoutSessionWithDiscount` - Checkout with discount support
+
+### React Component State (2 state variables updated):
+1. ✅ `deletingUserId` state - **Critical fix #4** (was causing fourth deployment failure)
+2. ✅ `editingCreditsUserId` state - Admin credits management UI
 
 ## Changes Made
 
@@ -143,6 +155,19 @@ export async function createCheckoutSession(
 )
 ```
 
+### React Component State
+**Before:**
+```typescript
+const [deletingUserId, setDeletingUserId] = useState<number | null>(null);  // ❌ Only accepts number
+const [editingCreditsUserId, setEditingCreditsUserId] = useState<number | null>(null);
+```
+
+**After:**
+```typescript
+const [deletingUserId, setDeletingUserId] = useState<string | number | null>(null);  // ✅ Accepts both
+const [editingCreditsUserId, setEditingCreditsUserId] = useState<string | number | null>(null);
+```
+
 ## Why This Fix Works
 
 1. **JavaScript Safety**: User IDs like `104799763406502560000` exceed JavaScript's `Number.MAX_SAFE_INTEGER` (9,007,199,254,740,991)
@@ -152,10 +177,11 @@ export async function createCheckoutSession(
 
 ## Testing
 
-✅ **Linter Check**: No TypeScript errors in database.ts or stripe.ts
+✅ **Linter Check**: No TypeScript errors in database.ts, stripe.ts, or user-management-client.tsx
 ✅ **Database Functions Updated**: 29 functions with consistent type signature
 ✅ **Database Interfaces Updated**: 10 interfaces with consistent type signature
-✅ **Stripe Functions Updated**: 2 functions with consistent type signature  
+✅ **Stripe Functions Updated**: 2 functions with consistent type signature
+✅ **React State Updated**: 2 state variables with consistent type signature
 ✅ **Type Safety**: `string | number` union type allows both formats
 ✅ **Deployment Ready**: Should now build successfully on Vercel
 
@@ -171,14 +197,16 @@ export async function createCheckoutSession(
 - ✅ 29 database functions updated
 - ✅ 10 database interfaces updated
 - ✅ 2 Stripe functions updated
+- ✅ 2 React state variables updated
 - ✅ 20 API routes updated (from previous fix)
 - ✅ 0 TypeScript errors remaining
 
 ## Related Files
 - `src/lib/database.ts` - All database functions and interfaces
-- `src/lib/stripe.ts` - **NEW** Stripe checkout functions
+- `src/lib/stripe.ts` - Stripe checkout functions
+- `src/components/admin/user-management-client.tsx` - **NEW** Admin component state types
 - `src/app/api/admin/upgrade-user/route.ts` - Was failing during first build
 - `src/app/api/ai/predict-performance/route.ts` - Was failing during second build
-- `src/app/api/stripe/checkout/route.ts` - **NEW** Was failing during third build
+- `src/app/api/stripe/checkout/route.ts` - Was failing during third build
 - `USER_ID_PRECISION_FIX_COMPLETE.md` - Original user ID fix documentation
 
