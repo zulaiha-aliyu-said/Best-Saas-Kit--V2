@@ -468,7 +468,7 @@ export async function getCreditStats() {
 
 export interface ContentRow {
   id: string
-  user_id: number
+  user_id: string | number
   source_type: 'text' | 'url' | 'file'
   source_url?: string | null
   title?: string | null
@@ -479,7 +479,7 @@ export interface ContentRow {
 
 export interface GenerationRow {
   id: string
-  user_id: number
+  user_id: string | number
   content_id?: string | null
   platform: 'x' | 'linkedin' | 'instagram' | 'email'
   tone: string
@@ -492,7 +492,7 @@ export interface GenerationRow {
 
 export interface PostRow {
   id: string
-  user_id: number
+  user_id: string | number
   generation_id?: string | null
   platform: 'x' | 'linkedin' | 'instagram' | 'email'
   body: string
@@ -503,7 +503,7 @@ export interface PostRow {
 }
 
 export async function createContent(params: {
-  userId: number
+  userId: string | number
   source_type: 'text' | 'url' | 'file'
   source_url?: string | null
   title?: string | null
@@ -525,7 +525,7 @@ export async function createContent(params: {
 }
 
 export async function insertGeneration(params: {
-  userId: number
+  userId: string | number
   contentId?: string | null
   platform: 'x' | 'linkedin' | 'instagram' | 'email'
   tone: string
@@ -549,7 +549,7 @@ export async function insertGeneration(params: {
 }
 
 export async function insertPost(params: {
-  userId: number
+  userId: string | number
   generationId?: string | null
   platform: 'x' | 'linkedin' | 'instagram' | 'email'
   body: string
@@ -598,7 +598,7 @@ export async function listRecentPosts(userId: string | number, limit = 20): Prom
 
 export interface ScheduleRow {
   id: string
-  user_id: number
+  user_id: string | number
   post_id: string
   scheduled_at: Date
   timezone: string
@@ -609,7 +609,7 @@ export interface ScheduleRow {
 }
 
 export async function insertSchedule(params: {
-  userId: number
+  userId: string | number
   postId: string
   scheduledAt: Date
   timezone?: string
@@ -1224,7 +1224,7 @@ export async function getDiscountAnalytics() {
 
 export interface PerformancePrediction {
   id: number
-  user_id: number
+  user_id: string | number
   content: string
   platform: 'x' | 'linkedin' | 'instagram' | 'facebook' | 'tiktok' | 'email'
   tone: string
@@ -1254,7 +1254,7 @@ export interface PerformancePrediction {
 }
 
 export interface CreatePerformancePredictionData {
-  user_id: number
+  user_id: string | number
   content: string
   platform: 'x' | 'linkedin' | 'instagram' | 'facebook' | 'tiktok' | 'email'
   tone?: string
@@ -1284,7 +1284,7 @@ export interface CreatePerformancePredictionData {
 export interface PerformanceFeedback {
   id: number
   prediction_id: number
-  user_id: number
+  user_id: string | number
   actual_likes: number
   actual_comments: number
   actual_shares: number
@@ -1298,7 +1298,7 @@ export interface PerformanceFeedback {
 
 export interface CreatePerformanceFeedbackData {
   prediction_id: number
-  user_id: number
+  user_id: string | number
   actual_likes?: number
   actual_comments?: number
   actual_shares?: number
@@ -1975,7 +1975,7 @@ export async function getAdminScheduleAnalytics() {
 // User Preferences Functions
 export interface UserPreferences {
   id?: number;
-  user_id: number;
+  user_id: string | number;
   // Profile
   name?: string;
   email?: string;
@@ -2588,7 +2588,7 @@ export async function getUserWritingStyle(userId: string | number): Promise<{
 }
 
 export async function updateUserWritingStyle(
-  userId: number, 
+  userId: string | number, 
   profile: WritingStyleProfile, 
   samples: StyleTrainingSample[], 
   confidenceScore: number
@@ -2696,7 +2696,7 @@ export async function analyzeStyleSamples(samples: StyleTrainingSample[]): Promi
 
 export interface PlatformOptimizationAnalytics {
   id?: number;
-  user_id: number;
+  user_id: string | number;
   generation_id?: string;
   platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'tiktok';
   optimization_applied: boolean;
