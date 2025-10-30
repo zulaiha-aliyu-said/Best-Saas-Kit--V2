@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserPlan } from '@/lib/feature-gate';
 import { pool } from '@/lib/database';
-import crypto from 'crypto';
 
 export const runtime = 'edge';
+
+// Helper function to generate random hex string using Web Crypto API
+function generateRandomHex(length: number): string {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate invitation token
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = generateRandomHex(32);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Create invitation

@@ -6,7 +6,15 @@
 import { pool } from './database';
 import { LTDTier } from './ltd-tiers';
 import { logAdminAction } from './admin-auth';
-import crypto from 'crypto';
+
+// Helper function to generate random hex string using Web Crypto API
+function generateRandomHex(length: number): string {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 export interface LTDCode {
   id: number;
@@ -46,7 +54,7 @@ export interface CodeFilters {
  * Generate a unique code with prefix
  */
 function generateUniqueCode(prefix: string): string {
-  const randomPart = crypto.randomBytes(4).toString('hex').toUpperCase();
+  const randomPart = generateRandomHex(4).toUpperCase();
   const formatted = randomPart.match(/.{1,4}/g)?.join('-') || randomPart;
   return `${prefix}${formatted}`;
 }
@@ -69,7 +77,7 @@ export async function generateLTDCodes(params: GenerateCodesParams): Promise<LTD
     throw new Error('Quantity must be between 1 and 1000');
   }
 
-  const batchId = `BATCH-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+  const batchId = `BATCH-${Date.now()}-${generateRandomHex(4)}`;
   const codes: LTDCode[] = [];
   const client = await pool.connect();
 
