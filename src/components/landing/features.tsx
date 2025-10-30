@@ -16,7 +16,6 @@ import {
   Globe
 } from "lucide-react"
 import { motion } from "framer-motion"
-import Image from "next/image"
 
 const Features = () => {
   const features = [
@@ -97,37 +96,6 @@ const Features = () => {
   return (
     <section id="features" className="py-24 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero Image Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          viewport={{ once: true }}
-          className="text-center mb-20"
-        >
-          <div className="relative max-w-5xl mx-auto">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-2">
-              <Image
-                src="/best saas kit.png"
-                alt="Reporposely - Complete AI-Powered Content Repurposing Platform"
-                width={1200}
-                height={800}
-                className="w-full h-auto rounded-xl"
-                priority
-                quality={95}
-              />
-              {/* Overlay gradient for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-transparent rounded-xl" />
-            </div>
-
-            {/* Floating elements for visual appeal */}
-            <div className="absolute -top-4 -left-4 w-8 h-8 bg-primary/20 rounded-full blur-sm" />
-            <div className="absolute -top-2 -right-6 w-6 h-6 bg-secondary/30 rounded-full blur-sm" />
-            <div className="absolute -bottom-3 left-8 w-5 h-5 bg-accent/25 rounded-full blur-sm" />
-            <div className="absolute -bottom-4 -right-3 w-7 h-7 bg-primary/15 rounded-full blur-sm" />
-          </div>
-        </motion.div>
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

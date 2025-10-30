@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles, Zap, Rocket } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { motion } from "framer-motion"
 
 const Hero = () => {
@@ -106,6 +107,38 @@ const Hero = () => {
             >
               <Link href="/dashboard">View Dashboard Demo</Link>
             </Button>
+          </motion.div>
+
+          {/* Product Screenshot */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="pt-12 sm:pt-16 lg:pt-20 px-4"
+          >
+            <div className="relative max-w-6xl mx-auto">
+              {/* Glow Effect Behind Image */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-primary/20 blur-3xl opacity-50 -z-10 scale-105" />
+              
+              {/* Image Container with Border and Shadow */}
+              <div className="relative rounded-2xl overflow-hidden border-2 border-border/50 shadow-2xl bg-card/50 backdrop-blur-sm">
+                <Image
+                  src="/best saas kit.png"
+                  alt="AI-Powered Content Transformation Interface"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto object-cover"
+                  priority
+                />
+                
+                {/* Subtle Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent pointer-events-none" />
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl -z-10" />
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl -z-10" />
+            </div>
           </motion.div>
         </motion.div>
       </div>
