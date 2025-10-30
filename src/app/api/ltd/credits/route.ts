@@ -15,6 +15,8 @@ import {
 } from '@/lib/feature-gate';
 import { calculateCreditCost } from '@/lib/ltd-tiers';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -122,4 +124,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

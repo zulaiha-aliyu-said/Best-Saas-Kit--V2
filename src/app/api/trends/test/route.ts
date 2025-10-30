@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = 'edge';
+
 // Simple test endpoint to verify API is working
 export async function GET() {
   const envCheck = {

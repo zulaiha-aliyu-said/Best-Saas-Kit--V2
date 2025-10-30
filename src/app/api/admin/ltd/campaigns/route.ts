@@ -9,6 +9,8 @@ import { pool } from '@/lib/database';
 import { sendEmail } from '@/lib/resend';
 import { createEmailCampaign, updateCampaignStats, trackEmailSent } from '@/lib/email-tracking';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAdminAccess();
@@ -232,7 +234,6 @@ function renderCampaignEmail(message: string, user: any): string {
     </html>
   `;
 }
-
 
 
 

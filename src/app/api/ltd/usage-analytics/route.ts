@@ -8,6 +8,8 @@ import { auth } from '@/lib/auth';
 import { getCreditUsageAnalytics, getUserPlan } from '@/lib/feature-gate';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -93,4 +95,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

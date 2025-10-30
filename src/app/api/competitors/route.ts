@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from '@neondatabase/serverless';
 
+export const runtime = 'edge';
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /**
@@ -130,5 +132,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserByGoogleId, exportUserData } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
@@ -32,7 +34,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
 
 
 

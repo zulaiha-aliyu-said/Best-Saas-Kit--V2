@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserByGoogleId, getConversationById, updateConversation, deleteConversation, getConversationMessages } from '@/lib/database';
 
+export const runtime = 'edge';
+
 // GET /api/chat/conversations/[id] - Get conversation with messages
 export async function GET(
   request: NextRequest,

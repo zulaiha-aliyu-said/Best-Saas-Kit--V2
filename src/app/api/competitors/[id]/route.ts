@@ -3,6 +3,8 @@ import { Pool } from '@neondatabase/serverless';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+export const runtime = 'edge';
+
 /**
  * GET /api/competitors/[id]
  * Get full competitor details including posts and content gaps

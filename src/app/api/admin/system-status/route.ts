@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess } from '@/lib/admin-auth';
 import { testDatabaseConnection, testOpenRouterConnection, testGroqConnection, testEmailConnection } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function GET(req: NextRequest) {
   try {
     await requireAdminAccess();
@@ -55,7 +57,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
 
 
 

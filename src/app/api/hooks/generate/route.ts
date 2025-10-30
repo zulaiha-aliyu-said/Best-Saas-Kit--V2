@@ -4,6 +4,8 @@ import { pool } from '@/lib/database';
 import { deductCredits as deductLTDCredits, getUserPlan } from '@/lib/feature-gate';
 import { calculateCreditCost } from '@/lib/ltd-tiers';
 
+export const runtime = 'edge';
+
 // Placeholder replacement values
 const AMOUNTS = ['10K', '50K', '100K', '250K', '500K', '1M'];
 const NUMBERS = [3, 5, 7, 10, 12, 15];
@@ -196,7 +198,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 
 
 

@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { getLTDCodeById, updateLTDCode, deleteLTDCode } from '@/lib/ltd-admin';
 
+export const runtime = 'edge';
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

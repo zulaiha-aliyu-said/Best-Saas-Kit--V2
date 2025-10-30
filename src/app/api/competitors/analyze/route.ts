@@ -11,6 +11,8 @@ import {
 } from '@/lib/rapidapi';
 import { competitorCache } from '@/lib/competitor-cache';
 
+export const runtime = 'edge';
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /**
@@ -435,4 +437,3 @@ async function analyzeContentGaps(
 
   return gaps;
 }
-

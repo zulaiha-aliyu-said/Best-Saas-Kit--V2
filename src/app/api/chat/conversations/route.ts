@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserByGoogleId, createConversation, getUserConversations } from '@/lib/database';
 
+export const runtime = 'edge';
+
 // GET /api/chat/conversations - List user's conversations
 export async function GET(request: NextRequest) {
   try {
@@ -79,5 +81,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 

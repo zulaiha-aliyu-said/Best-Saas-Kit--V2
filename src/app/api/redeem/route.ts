@@ -10,6 +10,8 @@ import { LTD_TIERS, getSubscriptionStatusFromTier, type LTDTier } from '@/lib/lt
 import { sendEmail, welcomeEmailTemplate, codeStackedEmailTemplate } from '@/lib/email';
 import { trackEmailSent } from '@/lib/email-tracking';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   console.log('🎫 === CODE REDEMPTION REQUEST ===');
   
@@ -286,4 +288,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

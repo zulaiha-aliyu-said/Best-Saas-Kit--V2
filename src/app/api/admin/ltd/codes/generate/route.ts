@@ -8,6 +8,8 @@ import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { generateLTDCodes, exportCodesToCSV } from '@/lib/ltd-admin';
 import { LTDTier } from '@/lib/ltd-tiers';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     // Check admin access
@@ -103,7 +105,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 
 
 

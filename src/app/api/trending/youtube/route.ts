@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { getUserPlan } from '@/lib/feature-gate';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -218,4 +220,3 @@ function getRelativeTime(dateString: string): string {
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
   return `${Math.floor(diffDays / 30)} months ago`;
 }
-

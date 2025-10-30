@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getPromptTemplates, incrementTemplateUsage } from '@/lib/database';
 
+export const runtime = 'edge';
+
 // GET /api/prompts/templates - Get system prompt templates
 export async function GET(request: NextRequest) {
   try {
@@ -84,5 +86,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 

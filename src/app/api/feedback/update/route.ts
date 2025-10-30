@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import pool from '@/lib/db';
 import { isAdminEmail } from '@/lib/admin-auth';
 
+export const runtime = 'edge';
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -72,6 +74,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 
 

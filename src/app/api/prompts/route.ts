@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserByGoogleId, getUserPrompts, createPrompt, getPromptStatistics } from '@/lib/database';
 
+export const runtime = 'edge';
+
 // GET /api/prompts - Get user's prompts with optional filtering
 export async function GET(request: NextRequest) {
   try {
@@ -124,5 +126,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 

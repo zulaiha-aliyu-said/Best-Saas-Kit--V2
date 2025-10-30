@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess, logAdminAction } from '@/lib/admin-auth';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAdminAccess();
@@ -117,7 +119,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 
 
 

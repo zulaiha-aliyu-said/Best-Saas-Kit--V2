@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { getUserPlan, deductCredits } from '@/lib/feature-gate';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 const TRAINING_CREDIT_COST = 5;
 
 export async function POST(request: NextRequest) {
@@ -251,4 +253,3 @@ function identifyPatterns(content: string): string[] {
 
   return patterns;
 }
-

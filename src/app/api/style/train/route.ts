@@ -4,6 +4,8 @@ import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 import { createGroqCompletionWithSDK } from '@/lib/groq';
 import { getUserByGoogleId, updateUserWritingStyle, analyzeStyleSamples, type StyleTrainingSample, type WritingStyleProfile } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication

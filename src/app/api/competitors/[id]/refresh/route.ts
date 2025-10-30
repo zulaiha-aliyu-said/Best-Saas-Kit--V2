@@ -9,6 +9,8 @@ import {
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+export const runtime = 'edge';
+
 /**
  * POST /api/competitors/[id]/refresh
  * Refresh competitor data from social media APIs

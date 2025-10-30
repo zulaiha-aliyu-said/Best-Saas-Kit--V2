@@ -6,6 +6,8 @@ import { deductCredits, getUserCredits } from '@/lib/database';
 import { getUserPlan } from '@/lib/feature-gate';
 import { checkChatLimit, incrementChatUsage } from '@/lib/tier-usage';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication

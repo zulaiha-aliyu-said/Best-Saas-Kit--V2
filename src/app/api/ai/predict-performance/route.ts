@@ -4,6 +4,8 @@ import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 import { getUserByGoogleId, deductCredits, createPerformancePrediction, getUserCredits } from '@/lib/database';
 import { getUserPlan } from '@/lib/feature-gate';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication

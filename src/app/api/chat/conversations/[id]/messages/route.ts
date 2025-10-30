@@ -4,6 +4,8 @@ import { getUserByGoogleId, getConversationById, addMessage, getUserChatContext 
 import { createChatCompletion, type ChatMessage as OpenRouterMessage } from '@/lib/openrouter';
 import { createGroqCompletionWithSDK } from '@/lib/groq';
 
+export const runtime = 'edge';
+
 // POST /api/chat/conversations/[id]/messages - Add message and get AI response
 export async function POST(
   request: NextRequest,

@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { deductCredits } from '@/lib/feature-gate';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 const GENERATION_CREDIT_COST = 1;
 
 export async function POST(request: NextRequest) {
@@ -221,4 +223,3 @@ function calculateStyleMatchScore(content: string, profile: any): number {
 
   return Math.min(maxScore, score);
 }
-

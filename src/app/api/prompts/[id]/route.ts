@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getUserByGoogleId, getPromptById, updatePrompt, deletePrompt } from '@/lib/database';
 
+export const runtime = 'edge';
+
 // GET /api/prompts/[id] - Get single prompt
 export async function GET(
   request: NextRequest,

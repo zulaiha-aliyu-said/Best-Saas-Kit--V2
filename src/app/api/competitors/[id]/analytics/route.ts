@@ -3,6 +3,8 @@ import { Pool } from '@neondatabase/serverless';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+export const runtime = 'edge';
+
 /**
  * GET /api/competitors/[id]/analytics
  * Get advanced analytics data formatted for charts and visualization

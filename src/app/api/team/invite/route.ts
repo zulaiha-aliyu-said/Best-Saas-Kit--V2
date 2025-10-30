@@ -4,6 +4,8 @@ import { getUserPlan } from '@/lib/feature-gate';
 import { pool } from '@/lib/database';
 import crypto from 'crypto';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -96,4 +98,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

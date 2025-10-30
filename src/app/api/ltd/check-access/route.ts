@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { checkFeatureAccess, checkCreditAccess, getUserPlan } from '@/lib/feature-gate';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -53,4 +55,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

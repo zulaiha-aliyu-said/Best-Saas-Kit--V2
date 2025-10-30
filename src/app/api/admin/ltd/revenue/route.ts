@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAccess } from '@/lib/admin-auth';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 const TIER_PRICES = {
   1: 59,
   2: 139,
@@ -179,7 +181,6 @@ function calculateGrowthRate(monthlyData: any[]): number {
   
   return Math.round(((current - previous) / previous) * 100);
 }
-
 
 
 

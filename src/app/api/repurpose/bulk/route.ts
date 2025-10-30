@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { getUserPlan, deductCredits } from '@/lib/feature-gate';
 import { calculateCreditCost } from '@/lib/ltd-tiers';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -286,4 +288,3 @@ P.S. I'm hosting a free workshop on ${topic} next week. Hit reply if you'd like 
     mentions: []
   };
 }
-

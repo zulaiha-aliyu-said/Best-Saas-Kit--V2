@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import pool from '@/lib/db';
 
+export const runtime = 'edge';
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -58,6 +60,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 
 

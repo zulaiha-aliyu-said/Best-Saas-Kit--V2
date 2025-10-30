@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   // Declare variables outside try block for catch block access
   let content = '';

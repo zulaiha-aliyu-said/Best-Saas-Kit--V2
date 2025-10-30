@@ -9,6 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/database';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret (optional security)
@@ -71,4 +73,3 @@ export async function GET(request: NextRequest) {
 
 // Allow GET requests
 export const dynamic = 'force-dynamic';
-

@@ -3,6 +3,8 @@ import { createChatCompletion, type ChatMessage } from '@/lib/openrouter';
 import { deductCredits as deductLTDCredits, getUserPlan } from '@/lib/feature-gate';
 import { calculateCreditCost } from '@/lib/ltd-tiers';
 
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     // Import the helper function
@@ -398,5 +400,4 @@ function generateMockImprovements(originalContent: string, platform: string, ton
     analysis: platformData.analysis
   };
 }
-
 
