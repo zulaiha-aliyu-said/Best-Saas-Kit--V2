@@ -49,13 +49,43 @@ export function PricingClient({ plan, isAuthenticated }: PricingClientProps) {
       return;
     }
 
+    if (plan.name === 'Lifetime Deal') {
+      // Simple tier selection prompt for now (1..4)
+      const tier = window.prompt('Choose LTD tier to purchase (1, 2, 3, or 4):', '3');
+      if (!tier) return;
+      if (!['1', '2', '3', '4'].includes(tier)) {
+        alert('Invalid tier. Please enter 1, 2, 3, or 4.');
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/flutterwave/ltd/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier }),
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to create LTD checkout');
+        }
+        const { url } = await response.json();
+        window.location.href = url;
+      } catch (error) {
+        console.error('LTD Flutterwave checkout error:', error);
+        alert('Failed to start LTD checkout. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (plan.name !== 'Pro') {
       // Handle other plans
       if (plan.name === 'Starter') {
         window.location.href = '/auth/signin';
       } else {
-        // Enterprise/LTD inquiries
-        window.location.href = 'mailto:support@bestsaaskit.com?subject=Plan Inquiry';
+        // Enterprise inquiries
+        window.location.href = 'mailto:support@bestsaaskit.com?subject=Enterprise Plan Inquiry';
       }
       return;
     }
