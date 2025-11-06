@@ -10,6 +10,7 @@ import FAQ from "@/components/landing/faq"
 import Footer from "@/components/landing/footer"
 import { SmoothScroll } from "@/components/ui/smooth-scroll"
 import { ScrollToTop } from "@/components/ui/scroll-to-top"
+import { BlackFridayBanner } from "@/components/landing/black-friday-banner"
 
 export default async function Home() {
   const session = await auth();
@@ -18,6 +19,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       <SmoothScroll />
+      <BlackFridayBanner />
       <Navigation />
       <Hero />
       <Features />
