@@ -4,13 +4,17 @@ import Features from "@/components/landing/features"
 import HowItWorks from "@/components/landing/how-it-works"
 import UseCases from "@/components/landing/use-cases"
 import Pricing from "@/components/landing/pricing"
+import { auth } from "@/lib/auth"
 import Testimonials from "@/components/landing/testimonials"
 import FAQ from "@/components/landing/faq"
 import Footer from "@/components/landing/footer"
 import { SmoothScroll } from "@/components/ui/smooth-scroll"
 import { ScrollToTop } from "@/components/ui/scroll-to-top"
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  const isAuthenticated = !!session?.user?.id;
+
   return (
     <div className="min-h-screen">
       <SmoothScroll />
@@ -19,7 +23,7 @@ export default function Home() {
       <Features />
       <HowItWorks />
       <UseCases />
-      <Pricing />
+      <Pricing isAuthenticated={isAuthenticated} />
       <Testimonials />
       <FAQ />
       <Footer />
