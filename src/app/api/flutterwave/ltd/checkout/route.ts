@@ -5,11 +5,12 @@ import { createFlutterwavePaymentLink } from '@/lib/flutterwave';
 
 export const runtime = 'edge';
 
+// Black Friday discounted prices
 const LTD_TIER_CONFIG: Record<string, { amount: number; monthly: number; title: string; description: string }> = {
-  '1': { amount: 59, monthly: 100, title: 'LTD Tier 1', description: 'Lifetime deal - Tier 1' },
-  '2': { amount: 139, monthly: 300, title: 'LTD Tier 2', description: 'Lifetime deal - Tier 2' },
-  '3': { amount: 249, monthly: 750, title: 'LTD Tier 3', description: 'Lifetime deal - Tier 3' },
-  '4': { amount: 449, monthly: 2000, title: 'LTD Tier 4', description: 'Lifetime deal - Tier 4' },
+  '1': { amount: 49, monthly: 100, title: 'LTD Tier 1', description: 'Lifetime deal - Tier 1 (Black Friday)' },
+  '2': { amount: 119, monthly: 300, title: 'LTD Tier 2', description: 'Lifetime deal - Tier 2 (Black Friday)' },
+  '3': { amount: 219, monthly: 750, title: 'LTD Tier 3', description: 'Lifetime deal - Tier 3 (Black Friday)' },
+  '4': { amount: 399, monthly: 2000, title: 'LTD Tier 4', description: 'Lifetime deal - Tier 4 (Black Friday)' },
 };
 
 export async function POST(request: NextRequest) {

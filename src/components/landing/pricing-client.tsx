@@ -3,126 +3,73 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Zap, Loader2 } from "lucide-react";
-import { redirectToCheckout } from "@/lib/stripe-client";
-import { DiscountInput } from "@/components/checkout/discount-input";
+
+interface PlanFeature {
+  text: string;
+  included: boolean;
+}
+
+interface Plan {
+  name: string;
+  description: string;
+  price: string;
+  originalPrice: string;
+  saveText: string;
+  period: string;
+  annualSavingsText: string;
+  creditsPerMonth: number;
+  rolloverMonths: number;
+  features: PlanFeature[];
+  cta: string;
+  popular: boolean;
+  variant: "default" | "outline";
+  tier: string;
+}
 
 interface PricingClientProps {
-  plan: {
-    name: string;
-    popular: boolean;
-    variant: "default" | "outline";
-    cta: string;
-  };
+  plan: Plan;
   isAuthenticated: boolean;
 }
 
 export function PricingClient({ plan, isAuthenticated }: PricingClientProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
-  const [showDiscountInput, setShowDiscountInput] = useState(false);
 
   const handlePurchase = async () => {
     if (!isAuthenticated) {
-      // Redirect to sign in
       window.location.href = '/auth/signin?callbackUrl=/dashboard/billing';
       return;
     }
 
-    if (plan.name === 'Pro Trial') {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/flutterwave/checkout', {
-          method: 'POST',
-        });
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || 'Failed to create Flutterwave checkout');
-        }
-        const { url } = await response.json();
-        window.location.href = url;
-      } catch (error) {
-        console.error('Flutterwave checkout error:', error);
-        alert('Failed to start checkout. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
-    if (plan.name === 'Lifetime Deal') {
-      // Simple tier selection prompt for now (1..4)
-      const tier = window.prompt('Choose LTD tier to purchase (1, 2, 3, or 4):', '3');
-      if (!tier) return;
-      if (!['1', '2', '3', '4'].includes(tier)) {
-        alert('Invalid tier. Please enter 1, 2, 3, or 4.');
-        return;
-      }
+    // Handle License Tier (LTD) purchases via Flutterwave
+    if (plan.name.startsWith('License Tier')) {
       setIsLoading(true);
       try {
         const response = await fetch('/api/flutterwave/ltd/checkout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tier }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ tier: plan.tier }),
         });
+
         if (!response.ok) {
           const err = await response.json();
-          throw new Error(err.error || 'Failed to create LTD checkout');
+          throw new Error(err.error || 'Failed to create Flutterwave LTD checkout');
         }
+
         const { url } = await response.json();
-        window.location.href = url;
-      } catch (error) {
-        console.error('LTD Flutterwave checkout error:', error);
-        alert('Failed to start LTD checkout. Please try again.');
+        window.location.href = url; // Redirect to Flutterwave hosted payment page
+      } catch (error: any) {
+        console.error('Flutterwave LTD checkout error:', error);
+        alert(error.message || 'Failed to start checkout. Please try again.');
       } finally {
         setIsLoading(false);
       }
       return;
     }
 
-    if (plan.name !== 'Pro') {
-      // Handle other plans
-      if (plan.name === 'Starter') {
-        window.location.href = '/auth/signin';
-      } else {
-        // Enterprise inquiries
-        window.location.href = 'mailto:support@bestsaaskit.com?subject=Enterprise Plan Inquiry';
-      }
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      // Create checkout session for Pro plan with optional discount
-      const requestBody: any = { plan: 'pro' };
-      if (appliedDiscount) {
-        requestBody.discountCode = appliedDiscount.code;
-      }
-
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create checkout session');
-      }
-
-      const { sessionId } = await response.json();
-
-      // Redirect to Stripe Checkout
-      await redirectToCheckout(sessionId);
-
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Failed to start checkout process. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Fallback for any other plan types
+    alert('This plan is not available for direct purchase.');
   };
 
   return (

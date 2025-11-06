@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, Star, Zap } from "lucide-react"
+import { Check, X, Star, Zap } from "lucide-react"
 import { motion } from "framer-motion"
 import { PricingClient } from "./pricing-client"
 
@@ -10,60 +10,145 @@ interface PricingProps {
   isAuthenticated?: boolean;
 }
 
+interface PlanFeature {
+  text: string;
+  included: boolean;
+}
+
+interface Plan {
+  name: string;
+  description: string;
+  price: string;
+  originalPrice: string;
+  saveText: string;
+  period: string;
+  annualSavingsText: string;
+  creditsPerMonth: number;
+  rolloverMonths: number;
+  features: PlanFeature[];
+  cta: string;
+  popular: boolean;
+  variant: "default" | "outline";
+  tier: string;
+}
+
 const Pricing = ({ isAuthenticated = false }: PricingProps) => {
-  const plans = [
+  const plans: Plan[] = [
     {
-      name: "Pro Trial",
-      price: "$5",
-      period: "first month",
-      description: "Test Pro for a month via Flutterwave",
-      features: [
-        "All Pro features for 1 month",
-        "Intro price via Flutterwave",
-        "200 bonus trial credits"
-      ],
-      cta: "Start $5 Trial",
-      popular: false,
-      variant: "outline" as const
-    },
-    {
-      name: "Pro",
-      price: "$29",
-      period: "month",
-      description: "For creators & businesses who need more",
-      features: [
-        "Unlimited credits",
-        "All platform integrations",
-        "Viral hooks generator",
-        "Competitor analysis",
-        "Content scheduling",
-        "Advanced analytics",
-        "AI style training",
-        "Priority support",
-        "Unlimited generations"
-      ],
-      cta: "Upgrade to Pro",
-      popular: true,
-      variant: "default" as const
-    },
-    {
-      name: "Lifetime Deal",
+      name: "License Tier 1",
+      description: "Solo creators, bloggers, small business owners",
       price: "$49",
-      period: "one-time",
-      description: "Pay once, use forever - 4 tiers available",
+      originalPrice: "$59",
+      saveText: "Save $10",
+      period: "one-time payment",
+      annualSavingsText: "Save $289/year",
+      creditsPerMonth: 100,
+      rolloverMonths: 12,
       features: [
-        "Lifetime access (no recurring fees)",
-        "100-2,000 credits/month (tier based)",
-        "12-month credit rollover",
-        "Early bird pricing available",
-        "Code stacking to multiply credits",
-        "All features unlock at higher tiers",
-        "Priority support (tier 2+)",
-        "Future updates included"
+        { text: "4 platforms repurposing", included: true },
+        { text: "15 templates", included: true },
+        { text: "Viral hook generator", included: false },
+        { text: "Content scheduling", included: false },
+        { text: "AI chat assistant", included: false },
+        { text: "Predictive performance AI", included: false },
+        { text: "Style training", included: false },
+        { text: "30 days analytics", included: true },
+        { text: "Watermark on content", included: false },
+        { text: "1x processing speed", included: true },
+        { text: "Community support", included: true },
       ],
-      cta: "View LTD Tiers",
+      cta: "Get Started",
       popular: false,
-      variant: "outline" as const
+      variant: "outline" as const,
+      tier: "1"
+    },
+    {
+      name: "License Tier 2",
+      description: "Content marketers, freelancers, small agencies",
+      price: "$119",
+      originalPrice: "$139",
+      saveText: "Save $20",
+      period: "one-time payment",
+      annualSavingsText: "Save $557 (2 years)",
+      creditsPerMonth: 300,
+      rolloverMonths: 12,
+      features: [
+        { text: "4 platforms repurposing", included: true },
+        { text: "40 templates", included: true },
+        { text: "Viral hook generator", included: true },
+        { text: "Schedule 30 posts/month", included: true },
+        { text: "AI chat assistant", included: false },
+        { text: "Predictive performance AI", included: false },
+        { text: "Style training", included: false },
+        { text: "180 days analytics", included: true },
+        { text: "Watermark on content", included: false },
+        { text: "2x processing speed", included: true },
+        { text: "Priority email (48hr)", included: true },
+      ],
+      cta: "Get Started",
+      popular: false,
+      variant: "outline" as const,
+      tier: "2"
+    },
+    {
+      name: "License Tier 3",
+      description: "Agencies, marketing teams, power users",
+      price: "$219",
+      originalPrice: "$249",
+      saveText: "Save $30",
+      period: "one-time payment",
+      annualSavingsText: "Save $939/year",
+      creditsPerMonth: 750,
+      rolloverMonths: 12,
+      features: [
+        { text: "4 platforms repurposing", included: true },
+        { text: "60 templates", included: true },
+        { text: "Viral hook generator", included: true },
+        { text: "Schedule 100 posts/month", included: true },
+        { text: "AI Chat (200 msg/mo)", included: true },
+        { text: "Predictive performance AI", included: true },
+        { text: "Style training (1 profile)", included: true },
+        { text: "Bulk generation", included: true },
+        { text: "Unlimited analytics", included: true },
+        { text: "No watermark", included: true },
+        { text: "3x processing speed", included: true },
+        { text: "Priority email (24hr)", included: true },
+      ],
+      cta: "Get Started",
+      popular: true,
+      variant: "default" as const,
+      tier: "3"
+    },
+    {
+      name: "License Tier 4",
+      description: "Large agencies, enterprise teams",
+      price: "$399",
+      originalPrice: "$449",
+      saveText: "Save $50",
+      period: "one-time payment",
+      annualSavingsText: "Save $1,927 (2 years)",
+      creditsPerMonth: 2000,
+      rolloverMonths: 12,
+      features: [
+        { text: "4 platforms repurposing", included: true },
+        { text: "60 templates", included: true },
+        { text: "Viral hook generator", included: true },
+        { text: "Schedule unlimited posts/month", included: true },
+        { text: "AI Chat (unlimited)", included: true },
+        { text: "Predictive performance AI", included: true },
+        { text: "Style training (3 profiles)", included: true },
+        { text: "Bulk generation", included: true },
+        { text: "Team (3 members)", included: true },
+        { text: "API access (2,500/mo)", included: true },
+        { text: "Unlimited analytics", included: true },
+        { text: "No watermark", included: true },
+        { text: "5x processing speed", included: true },
+        { text: "Priority chat (4hr)", included: true },
+      ],
+      cta: "Get Started",
+      popular: false,
+      variant: "outline" as const,
+      tier: "4"
     }
   ]
 
@@ -75,20 +160,20 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8"
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            Simple, Transparent
-            <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              {" "}Pricing
-            </span>
+            Get Your <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">Lifetime Deal</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose the plan that fits your needs. Pro monthly or pay once for lifetime access.
-          </p>
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 max-w-2xl mx-auto mb-8">
+            <p className="text-lg text-foreground flex items-center justify-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />
+              Early bird pricing available for limited time! Save up to $50 on your lifetime deal.
+            </p>
+          </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -99,34 +184,48 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
               className="relative"
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
-                    <Star className="w-4 h-4" />
-                    <span>Most Popular</span>
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                    MOST POPULAR
                   </div>
                 </div>
               )}
               
               <Card className={`h-full ${plan.popular ? 'border-primary shadow-lg scale-105' : 'border-border'} hover:shadow-lg transition-all duration-300`}>
-                <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    {plan.period && (
-                      <span className="text-muted-foreground ml-2">/{plan.period}</span>
-                    )}
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-xl font-bold mb-2">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm mb-4">{plan.description}</CardDescription>
+                  
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-2xl line-through text-muted-foreground">{plan.originalPrice}</span>
+                      <span className="text-4xl font-bold">{plan.price}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">{plan.saveText}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{plan.period}</p>
+                    <p className="text-sm text-green-600 font-medium">{plan.annualSavingsText}</p>
                   </div>
-                  <CardDescription className="text-base mt-2">
-                    {plan.description}
-                  </CardDescription>
                 </CardHeader>
                 
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
+                <CardContent className="space-y-4">
+                  <div className="bg-primary/10 rounded-lg p-3 text-center">
+                    <p className="text-sm font-semibold">{plan.creditsPerMonth.toLocaleString()} credits/month (lifetime)</p>
+                    <p className="text-xs text-muted-foreground mt-1">Rollover for {plan.rolloverMonths} months</p>
+                  </div>
+
+                  <ul className="space-y-2 text-sm">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start space-x-3">
-                        <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                      <li key={featureIndex} className="flex items-start space-x-2">
+                        {feature.included ? (
+                          <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <X className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        )}
+                        <span className={feature.included ? "text-foreground" : "text-muted-foreground line-through"}>
+                          {feature.text}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -140,23 +239,6 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
             </motion.div>
           ))}
         </div>
-
-        {/* Money Back Guarantee */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-2xl p-8 border border-primary/20">
-            <Zap className="w-12 h-12 mx-auto mb-4 text-primary" />
-            <h3 className="text-xl font-bold mb-2">Start Creating Content Today</h3>
-            <p className="text-muted-foreground">
-              Join thousands of content creators using RepurposeAI to save time and reach more people.
-            </p>
-          </div>
-        </motion.div>
       </div>
     </section>
   )
