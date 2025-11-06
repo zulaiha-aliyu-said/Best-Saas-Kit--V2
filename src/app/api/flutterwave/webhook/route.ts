@@ -56,6 +56,37 @@ export async function POST(request: NextRequest) {
           });
           // Add trial credits (smaller than Stripe path)
           await addCredits(uid, 200);
+          
+          // Log Black Friday sale
+          const client = await pool.connect();
+          try {
+            await client.query(
+              `INSERT INTO black_friday_sales (
+                transaction_id, tx_ref, amount, currency,
+                user_id, user_email, user_name,
+                plan_type, tier, monthly_credits,
+                payment_status, payment_method, metadata
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+              ON CONFLICT (transaction_id) DO NOTHING`,
+              [
+                String(txId),
+                data.tx_ref || '',
+                verifiedAmount,
+                verifiedCurrency,
+                user.id,
+                user.email,
+                user.name || null,
+                'pro_trial',
+                null,
+                200,
+                'completed',
+                'flutterwave',
+                JSON.stringify(data)
+              ]
+            );
+          } finally {
+            client.release();
+          }
         }
 
         // LTD purchase handling (Black Friday discounted prices)
@@ -88,6 +119,32 @@ export async function POST(request: NextRequest) {
               );
               // Add upfront credits equal to monthly limit
               await addCredits(user.id, monthly);
+              
+              // Log Black Friday sale
+              await client.query(
+                `INSERT INTO black_friday_sales (
+                  transaction_id, tx_ref, amount, currency,
+                  user_id, user_email, user_name,
+                  plan_type, tier, monthly_credits,
+                  payment_status, payment_method, metadata
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                ON CONFLICT (transaction_id) DO NOTHING`,
+                [
+                  String(txId),
+                  data.tx_ref || '',
+                  verifiedAmount,
+                  verifiedCurrency,
+                  user.id,
+                  user.email,
+                  user.name || null,
+                  'ltd',
+                  Number(tier),
+                  monthly,
+                  'completed',
+                  'flutterwave',
+                  JSON.stringify(data)
+                ]
+              );
             } finally {
               client.release();
             }
