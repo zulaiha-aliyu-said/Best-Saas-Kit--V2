@@ -13,6 +13,20 @@ interface PricingProps {
 const Pricing = ({ isAuthenticated = false }: PricingProps) => {
   const plans = [
     {
+      name: "Pro Trial",
+      price: "$5",
+      period: "first month",
+      description: "Test Pro for a month via Flutterwave",
+      features: [
+        "All Pro features for 1 month",
+        "Intro price via Flutterwave",
+        "200 bonus trial credits"
+      ],
+      cta: "Start $5 Trial",
+      popular: false,
+      variant: "outline" as const
+    },
+    {
       name: "Pro",
       price: "$29",
       period: "month",

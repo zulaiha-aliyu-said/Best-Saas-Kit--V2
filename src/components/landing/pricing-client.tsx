@@ -28,13 +28,34 @@ export function PricingClient({ plan, isAuthenticated }: PricingClientProps) {
       return;
     }
 
+    if (plan.name === 'Pro Trial') {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/flutterwave/checkout', {
+          method: 'POST',
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to create Flutterwave checkout');
+        }
+        const { url } = await response.json();
+        window.location.href = url;
+      } catch (error) {
+        console.error('Flutterwave checkout error:', error);
+        alert('Failed to start checkout. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (plan.name !== 'Pro') {
-      // Handle other plans (Free, Enterprise)
+      // Handle other plans
       if (plan.name === 'Starter') {
         window.location.href = '/auth/signin';
       } else {
-        // Enterprise - contact sales
-        window.location.href = 'mailto:support@bestsaaskit.com?subject=Enterprise Plan Inquiry';
+        // Enterprise/LTD inquiries
+        window.location.href = 'mailto:support@bestsaaskit.com?subject=Plan Inquiry';
       }
       return;
     }
