@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import EnhancedLTDDashboard from '@/components/ltd/EnhancedLTDDashboard';
+import { verifyFlutterwaveTransaction } from '@/lib/flutterwave';
 
-export default async function MyLTDPage() {
+export default async function MyLTDPage({ searchParams }: { searchParams?: { status?: string; tx_ref?: string; transaction_id?: string } }) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -32,6 +33,97 @@ export default async function MyLTDPage() {
   // Get user data
   const client = await pool.connect();
   try {
+    // If redirected back from Flutterwave with success, verify and activate plan (idempotent)
+    const status = searchParams?.status;
+    const txRef = searchParams?.tx_ref;
+    const transactionId = searchParams?.transaction_id;
+
+    if (status === 'successful' && transactionId) {
+      try {
+        const verify = await verifyFlutterwaveTransaction(transactionId);
+        const data = verify?.data;
+        const verifiedStatus = data?.status?.toLowerCase();
+        const verifiedCurrency = (data?.currency || '').toUpperCase();
+        const verifiedAmount = Number(data?.amount || 0);
+
+        // Require successful charge
+        if (verifiedStatus === 'successful') {
+          // Determine tier from either metadata or tx_ref pattern
+          let tier = String(data?.meta?.tier || '');
+          if (!tier && txRef && txRef.startsWith('ltd_t')) {
+            const m = txRef.match(/^ltd_t(\d)_/);
+            if (m) tier = m[1];
+          }
+
+          // Accept only USD and known LTD prices
+          const TIER_MONTHLY: Record<string, number> = { '1': 100, '2': 300, '3': 750, '4': 2000 };
+          const TIER_AMOUNT: Record<string, number> = { '1': 49, '2': 119, '3': 219, '4': 399 };
+          const monthly = TIER_MONTHLY[tier];
+          const expectedAmount = TIER_AMOUNT[tier];
+
+          if (tier && monthly && expectedAmount && verifiedCurrency === 'USD' && verifiedAmount === expectedAmount) {
+            // Upsert sale record first to ensure idempotency on credits
+            await client.query('BEGIN');
+            const saleRes = await client.query(
+              `INSERT INTO black_friday_sales (
+                transaction_id, tx_ref, amount, currency,
+                user_id, user_email, user_name,
+                plan_type, tier, monthly_credits,
+                payment_status, payment_method, metadata
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+              ON CONFLICT (transaction_id) DO NOTHING
+              RETURNING id`,
+              [
+                String(data.id),
+                data.tx_ref || txRef || '',
+                verifiedAmount,
+                verifiedCurrency,
+                userId,
+                data?.customer?.email || null,
+                data?.customer?.name || null,
+                'ltd',
+                Number(tier),
+                monthly,
+                'completed',
+                'flutterwave',
+                JSON.stringify(data)
+              ]
+            );
+
+            // Always set user to LTD (idempotent update)
+            await client.query(
+              `UPDATE users 
+               SET plan_type = 'ltd',
+                   subscription_status = $1,
+                   ltd_tier = $2,
+                   monthly_credit_limit = $3,
+                   credit_reset_date = COALESCE(credit_reset_date, CURRENT_TIMESTAMP + INTERVAL '1 month'),
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE id = $4`,
+              [
+                `ltd_tier_${tier}`,
+                Number(tier),
+                monthly,
+                userId,
+              ]
+            );
+
+            await client.query('COMMIT');
+
+            // Add upfront credits only if this transaction is newly recorded
+            if (saleRes.rowCount && saleRes.rowCount > 0) {
+              // Add credits outside the transaction using helper
+              const { addCredits } = await import('@/lib/database');
+              await addCredits(userId, monthly);
+            }
+          }
+        }
+      } catch (e) {
+        // Swallow errors to not block page render; webhook may still complete
+        console.error('LTD confirm on redirect failed:', e);
+      }
+    }
+
     const userResult = await client.query(
       `SELECT * FROM users WHERE id = $1`,
       [userId]

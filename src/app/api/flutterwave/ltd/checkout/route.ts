@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       tx_ref: txRef,
       amount: cfg.amount,
       currency: 'USD',
-      redirect_url: `${siteUrl}/dashboard/billing?success=true`,
+      redirect_url: `${siteUrl}/dashboard/my-ltd?success=true`,
       customer: { email: user.email, name: user.name || undefined },
       meta: {
         plan: 'ltd',
