@@ -21,7 +21,7 @@ import Link from 'next/link';
 import EnhancedLTDDashboard from '@/components/ltd/EnhancedLTDDashboard';
 import { verifyFlutterwaveTransaction } from '@/lib/flutterwave';
 
-export default async function MyLTDPage({ searchParams }: { searchParams?: { status?: string; tx_ref?: string; transaction_id?: string } }) {
+export default async function MyLTDPage({ searchParams }: { searchParams?: Promise<{ status?: string | string[]; tx_ref?: string | string[]; transaction_id?: string | string[] }> }) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -34,9 +34,11 @@ export default async function MyLTDPage({ searchParams }: { searchParams?: { sta
   const client = await pool.connect();
   try {
     // If redirected back from Flutterwave with success, verify and activate plan (idempotent)
-    const status = searchParams?.status;
-    const txRef = searchParams?.tx_ref;
-    const transactionId = searchParams?.transaction_id;
+    const sp = searchParams ? await searchParams : undefined;
+    const norm = (v?: string | string[]) => Array.isArray(v) ? v[0] : v;
+    const status = norm(sp?.status);
+    const txRef = norm(sp?.tx_ref);
+    const transactionId = norm(sp?.transaction_id);
 
     if (status === 'successful' && transactionId) {
       try {
