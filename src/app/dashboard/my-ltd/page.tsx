@@ -21,6 +21,8 @@ import Link from 'next/link';
 import EnhancedLTDDashboard from '@/components/ltd/EnhancedLTDDashboard';
 import { verifyFlutterwaveTransaction } from '@/lib/flutterwave';
 
+export const runtime = 'nodejs';
+
 export default async function MyLTDPage({ searchParams }: { searchParams?: Promise<{ status?: string | string[]; tx_ref?: string | string[]; transaction_id?: string | string[] }> }) {
   const session = await auth();
 
@@ -57,13 +59,14 @@ export default async function MyLTDPage({ searchParams }: { searchParams?: Promi
             if (m) tier = m[1];
           }
 
-          // Accept only USD and known LTD prices
-          const TIER_MONTHLY: Record<string, number> = { '1': 100, '2': 300, '3': 750, '4': 2000 };
-          const TIER_AMOUNT: Record<string, number> = { '1': 49, '2': 119, '3': 219, '4': 399 };
-          const monthly = TIER_MONTHLY[tier];
-          const expectedAmount = TIER_AMOUNT[tier];
+          // Validate the payment belongs to this user by meta or tx_ref
+          const metaUserId = data?.meta?.userId ? String(data.meta.userId) : undefined;
+          const belongsToUser = (metaUserId && metaUserId === userId) || (txRef && txRef.includes(`_${userId}_`));
 
-          if (tier && monthly && expectedAmount && verifiedCurrency === 'USD' && verifiedAmount === expectedAmount) {
+          const TIER_MONTHLY: Record<string, number> = { '1': 100, '2': 300, '3': 750, '4': 2000 };
+          const monthly = TIER_MONTHLY[tier];
+
+          if (belongsToUser && tier && monthly) {
             // Upsert sale record first to ensure idempotency on credits
             await client.query('BEGIN');
             const saleRes = await client.query(
@@ -78,8 +81,8 @@ export default async function MyLTDPage({ searchParams }: { searchParams?: Promi
               [
                 String(data.id),
                 data.tx_ref || txRef || '',
-                verifiedAmount,
-                verifiedCurrency,
+                verifiedAmount || null,
+                verifiedCurrency || null,
                 userId,
                 data?.customer?.email || null,
                 data?.customer?.name || null,
