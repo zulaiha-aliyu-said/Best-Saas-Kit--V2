@@ -20,6 +20,7 @@ import {
 import Link from 'next/link';
 import EnhancedLTDDashboard from '@/components/ltd/EnhancedLTDDashboard';
 import { verifyFlutterwaveTransaction } from '@/lib/flutterwave';
+import { sendEmail, createLTDActivationEmail } from '@/lib/resend';
 
 export const runtime = 'nodejs';
 
@@ -120,6 +121,17 @@ export default async function MyLTDPage({ searchParams }: { searchParams?: Promi
               // Add credits outside the transaction using helper
               const { addCredits } = await import('@/lib/database');
               await addCredits(userId, monthly);
+              // Send LTD welcome email (best-effort)
+              try {
+                const u = await client.query('SELECT name, email FROM users WHERE id = $1', [userId]);
+                const urow = u.rows[0] || {};
+                const toEmail = urow.email || data?.customer?.email;
+                if (toEmail) {
+                  await sendEmail(createLTDActivationEmail(urow.name || toEmail, toEmail, Number(tier), monthly));
+                }
+              } catch (mailErr) {
+                console.error('Failed sending LTD email:', mailErr);
+              }
             }
           }
         }
@@ -185,6 +197,16 @@ export default async function MyLTDPage({ searchParams }: { searchParams?: Promi
                   if (saleRes.rowCount && saleRes.rowCount > 0) {
                     const { addCredits } = await import('@/lib/database');
                     await addCredits(userId, monthly);
+                    try {
+                      const u = await client.query('SELECT name, email FROM users WHERE id = $1', [userId]);
+                      const urow = u.rows[0] || {};
+                      const toEmail = urow.email;
+                      if (toEmail) {
+                        await sendEmail(createLTDActivationEmail(urow.name || toEmail, toEmail, Number(tier), monthly));
+                      }
+                    } catch (mailErr) {
+                      console.error('Failed sending LTD email (fallback):', mailErr);
+                    }
                   }
                 }
               }

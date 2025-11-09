@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyFlutterwaveWebhookSignature, verifyFlutterwaveTransaction, FLUTTERWAVE_CONFIG } from '@/lib/flutterwave';
 import { getUserByEmail, getUserById, updateUserSubscription, addCredits, pool } from '@/lib/database';
+import { sendEmail, createLTDActivationEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
   try {
@@ -121,14 +122,15 @@ export async function POST(request: NextRequest) {
               await addCredits(user.id, monthly);
               
               // Log Black Friday sale
-              await client.query(
+              const saleRes = await client.query(
                 `INSERT INTO black_friday_sales (
                   transaction_id, tx_ref, amount, currency,
                   user_id, user_email, user_name,
                   plan_type, tier, monthly_credits,
                   payment_status, payment_method, metadata
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-                ON CONFLICT (transaction_id) DO NOTHING`,
+                ON CONFLICT (transaction_id) DO NOTHING
+                RETURNING id`,
                 [
                   String(txId),
                   data.tx_ref || '',
@@ -146,6 +148,17 @@ export async function POST(request: NextRequest) {
                 ]
               );
             } finally {
+              // Send LTD welcome email once per transaction
+              try {
+                // Only send if newly recorded to avoid duplicates
+                // We can't access saleRes here because of scope; re-query with transaction_id
+                const check = await pool.query('SELECT id FROM black_friday_sales WHERE transaction_id = $1', [String(txId)]);
+                if (check.rowCount && check.rowCount > 0) {
+                  await sendEmail(createLTDActivationEmail(user.name || user.email, user.email, Number(tier), monthly));
+                }
+              } catch (mailErr) {
+                console.error('Failed sending LTD email (webhook):', mailErr);
+              }
               client.release();
             }
           }

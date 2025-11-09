@@ -317,6 +317,77 @@ export function createSubscriptionConfirmationEmail(userName: string, userEmail:
   return { to: userEmail, subject, html };
 }
 
+// LTD activation email
+export function createLTDActivationEmail(userName: string, userEmail: string, tier: number, monthly: number) {
+  const subject = `🎉 Your RepurposeAI LTD (Tier ${tier}) is Active!`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>LTD Activated</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #111827; max-width: 680px; margin: 0 auto; padding: 0; background: #f8fafc; }
+        .wrap { padding: 24px; }
+        .card { background: #fff; border-radius: 14px; box-shadow: 0 6px 24px rgba(2,6,23,0.06); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: #fff; padding: 32px; text-align: center; }
+        .title { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.3px; }
+        .content { padding: 28px 32px; }
+        .hi { font-size: 18px; font-weight: 700; margin: 0 0 8px 0; }
+        .p { margin: 10px 0; color: #374151; }
+        .badge { display: inline-block; background: #F59E0B; color: #111827; font-weight: 700; font-size: 12px; padding: 6px 10px; border-radius: 999px; margin: 8px 0; }
+        .box { background: #F9FAFB; border-left: 4px solid #8B5CF6; padding: 16px; border-radius: 10px; margin: 18px 0; }
+        .btn { display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: #fff !important; font-weight: 700; text-decoration: none; border-radius: 12px; }
+        .muted { color: #6b7280; font-size: 13px; }
+        .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 16px; }
+        ul { margin: 8px 0 0 18px; color: #374151; }
+      </style>
+    </head>
+    <body>
+      <div class="wrap">
+        <div class="card">
+          <div class="header">
+            <h1 class="title">Your Lifetime Deal is Live 🎉</h1>
+            <div class="badge">Tier ${tier} • ${monthly} credits/month</div>
+          </div>
+          <div class="content">
+            <p class="hi">Hi ${userName || 'there'},</p>
+            <p class="p">Thanks for supporting RepurposeAI! Your Lifetime Deal (Tier ${tier}) is now active. You’ll receive <strong>${monthly} credits every month</strong>, forever.</p>
+
+            <div class="box">
+              <strong>What you can do now</strong>
+              <ul>
+                <li>Create and repurpose content across platforms</li>
+                <li>Use the Viral Hook Generator to craft scroll-stoppers</li>
+                <li>Find trends (YouTube, Reddit, News) to plug into your niche</li>
+                <li>Schedule posts and plan your calendar</li>
+                <li>Train the AI to match your writing style</li>
+              </ul>
+            </div>
+
+            <p class="p"><a href="${EMAIL_CONFIG.SITE_URL}/dashboard" class="btn">Open Dashboard</a></p>
+
+            <p class="p muted">You can review your plan anytime at <a href="${EMAIL_CONFIG.SITE_URL}/dashboard/my-ltd">My LTD</a>. Need help? Reply to this email or contact <a href="mailto:${EMAIL_CONFIG.SUPPORT_EMAIL}">${EMAIL_CONFIG.SUPPORT_EMAIL}</a>.</p>
+          </div>
+        </div>
+        <p class="footer">© ${new Date().getFullYear()} ${EMAIL_CONFIG.SITE_NAME}. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return { 
+    to: userEmail, 
+    subject, 
+    html,
+    tags: [
+      { name: 'category', value: 'ltd_activation' },
+      { name: 'tier', value: String(tier) }
+    ]
+  };
+}
+
 // Password reset email template (for future use)
 export function createPasswordResetEmail(userName: string, userEmail: string, resetToken: string) {
   const resetUrl = `${EMAIL_CONFIG.SITE_URL}/auth/reset-password?token=${resetToken}`;
