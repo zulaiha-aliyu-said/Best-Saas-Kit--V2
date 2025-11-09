@@ -29,7 +29,7 @@ const Footer = () => {
     legal: [
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
-      { name: "Refund Policy", href: "/refunds" },
+      { name: "Refund Policy", href: "/refund-policy" },
       { name: "Cookie Policy", href: "/cookies" },
       { name: "Security", href: "/security" }
     ]
@@ -170,6 +170,10 @@ const Footer = () => {
             © 2025 RepurposeAI. All rights reserved.
           </div>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
+            <a href="/refund-policy" className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full border bg-background hover:bg-muted transition-colors" aria-label="Refund Policy - 60 Day Money Back Guarantee">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-600"></span>
+              60‑Day Money‑Back Guarantee
+            </a>
             <div className="flex items-center space-x-2 text-muted-foreground text-sm">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>All systems operational</span>

@@ -163,7 +163,7 @@ export function LTDPricingCard({
         </div>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="flex-col items-stretch gap-2">
         <Button 
           className="w-full" 
           size="lg"
@@ -173,6 +173,10 @@ export function LTDPricingCard({
         >
           {isCurrentTier ? 'Current Plan' : canUpgrade ? 'Get Started' : 'Lower Tier'}
         </Button>
+        <a href="/refund-policy" className="self-center inline-flex items-center gap-2 text-[11px] px-2 py-1 rounded-full border bg-background hover:bg-muted transition-colors">
+          <span className="inline-block w-2 h-2 rounded-full bg-green-600"></span>
+          60‑Day Money‑Back Guarantee
+        </a>
       </CardFooter>
     </Card>
   );

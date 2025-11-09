@@ -289,6 +289,7 @@ export function createSubscriptionConfirmationEmail(userName: string, userEmail:
       <div class="content">
         <h2>Hi ${userName}!</h2>
         <p>Congratulations! Your ${planName} subscription has been successfully activated.</p>
+        <p style=\"color:#6b7280;\">Covered by our <strong>60‑Day Money‑Back Guarantee</strong>. See our <a href=\"${EMAIL_CONFIG.SITE_URL}/refund-policy\">Refund Policy</a>.</p>
         
         <p>You now have access to:</p>
         <ul>
@@ -368,7 +369,7 @@ export function createLTDActivationEmail(userName: string, userEmail: string, ti
 
             <p class="p"><a href="${EMAIL_CONFIG.SITE_URL}/dashboard" class="btn">Open Dashboard</a></p>
 
-            <p class="p muted">You can review your plan anytime at <a href="${EMAIL_CONFIG.SITE_URL}/dashboard/my-ltd">My LTD</a>. Need help? Reply to this email or contact <a href="mailto:${EMAIL_CONFIG.SUPPORT_EMAIL}">${EMAIL_CONFIG.SUPPORT_EMAIL}</a>.</p>
+            <p class=\"p muted\">You can review your plan anytime at <a href=\"${EMAIL_CONFIG.SITE_URL}/dashboard/my-ltd\">My LTD</a>. Need help? Reply to this email or contact <a href=\"mailto:${EMAIL_CONFIG.SUPPORT_EMAIL}\">${EMAIL_CONFIG.SUPPORT_EMAIL}</a>.<br/>Covered by our <strong>60‑Day Money‑Back Guarantee</strong>. See our <a href=\"${EMAIL_CONFIG.SITE_URL}/refund-policy\">Refund Policy</a>.</p>
           </div>
         </div>
         <p class="footer">© ${new Date().getFullYear()} ${EMAIL_CONFIG.SITE_NAME}. All rights reserved.</p>
