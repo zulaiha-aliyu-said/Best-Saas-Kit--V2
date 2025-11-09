@@ -21,9 +21,9 @@ export default function RefundPolicyPage() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">60-Day Money-Back Guarantee</h2>
+          <h2 className="text-xl font-semibold">14-Day Money-Back Guarantee</h2>
           <ul className="list-disc pl-6 space-y-1">
-            <li><strong>Time Window:</strong> 60 days from date of purchase</li>
+            <li><strong>Time Window:</strong> 14 days from date of purchase</li>
             <li><strong>Coverage:</strong> Full refund of purchase price</li>
             <li>
               <strong>Process:</strong> Email 
@@ -58,7 +58,7 @@ export default function RefundPolicyPage() {
           <h2 className="text-xl font-semibold">Terms</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li>Refunds apply to the original purchase price</li>
-            <li>Offer valid for 60 days from purchase date</li>
+            <li>Offer valid for 14 days from purchase date</li>
             <li>Valid for first-time purchases only (no multiple refund requests)</li>
             <li>We reserve the right to refuse refunds for abuse/fraudulent activity</li>
           </ul>
