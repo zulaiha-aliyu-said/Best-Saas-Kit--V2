@@ -80,7 +80,7 @@ export default function PublicPricingPage() {
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Is there a money-back guarantee?</h3>
               <p className="text-muted-foreground">
-                Yes! AppSumo offers a 60-day money-back guarantee. If you're not satisfied, get a full refund.
+                Yes! AppSumo offers a 14-day money-back guarantee. If you're not satisfied, get a full refund.
               </p>
             </div>
             <div className="space-y-4">
