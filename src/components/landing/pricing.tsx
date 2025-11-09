@@ -238,7 +238,7 @@ const Pricing = ({ isAuthenticated = false }: PricingProps) => {
                   <div className="pt-3 text-center">
                     <a href="/refund-policy" className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full border bg-background hover:bg-muted transition-colors">
                       <span className="inline-block w-2 h-2 rounded-full bg-green-600"></span>
-                      60‑Day Money‑Back Guarantee
+                      14‑Day Money‑Back Guarantee
                     </a>
                   </div>
                 </CardContent>

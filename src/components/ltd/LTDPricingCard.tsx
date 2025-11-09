@@ -175,7 +175,7 @@ export function LTDPricingCard({
         </Button>
         <a href="/refund-policy" className="self-center inline-flex items-center gap-2 text-[11px] px-2 py-1 rounded-full border bg-background hover:bg-muted transition-colors">
           <span className="inline-block w-2 h-2 rounded-full bg-green-600"></span>
-          60‑Day Money‑Back Guarantee
+          14‑Day Money‑Back Guarantee
         </a>
       </CardFooter>
     </Card>
