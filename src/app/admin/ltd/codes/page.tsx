@@ -42,6 +42,8 @@ export default function CodesManagementPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteSummary, setDeleteSummary] = useState<{ deleted: number; skipped: number } | null>(null);
 
   useEffect(() => {
     fetchCodes();
@@ -162,6 +164,39 @@ export default function CodesManagementPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const confirmation = confirm(
+      'Are you sure you want to bulk delete codes? This will delete all codes matching the current filters that have not been redeemed. This action is irreversible.'
+    );
+    if (!confirmation) return;
+
+    setIsDeleting(true);
+    setDeleteSummary(null);
+    try {
+      const params = new URLSearchParams();
+      if (tierFilter) params.append('tier', tierFilter.toString());
+      if (statusFilter) params.append('status', statusFilter);
+      if (search) params.append('search', search);
+
+      const response = await fetch(`/api/admin/ltd/codes/bulk?${params.toString()}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setDeleteSummary({ deleted: data.deletedCount, skipped: data.skippedCount });
+        fetchCodes(); // Refresh the list
+      } else {
+        alert(data.error || 'Bulk delete failed');
+      }
+    } catch (error) {
+      console.error('Error during bulk delete:', error);
+      alert('An unexpected error occurred during bulk delete.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -215,10 +250,30 @@ export default function CodesManagementPage() {
 
       {/* Filters */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Filters</CardTitle>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleBulkDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="mr-2 h-4 w-4" />
+            )}
+            Bulk Delete
+          </Button>
         </CardHeader>
         <CardContent>
+          {deleteSummary && (
+            <Alert className="mb-4">
+              <AlertDescription>
+                Bulk delete complete: {deleteSummary.deleted} codes deleted, {deleteSummary.skipped} codes skipped (already redeemed).
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="md:col-span-2">
