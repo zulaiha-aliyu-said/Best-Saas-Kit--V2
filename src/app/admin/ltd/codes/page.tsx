@@ -41,6 +41,7 @@ export default function CodesManagementPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchCodes();
@@ -130,6 +131,34 @@ export default function CodesManagementPage() {
       }
     } catch (error) {
       console.error('Error toggling code status:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (tierFilter) params.append('tier', tierFilter.toString());
+      if (statusFilter) params.append('status', statusFilter);
+      if (search) params.append('search', search);
+
+      const response = await fetch(`/api/admin/ltd/codes/export?${params.toString()}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'codes.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Export failed');
+      }
+    } catch (error) {
+      console.error('Error exporting codes:', error);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -242,8 +271,12 @@ export default function CodesManagementPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Codes</CardTitle>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
+              {isExporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
               Export CSV
             </Button>
           </div>
