@@ -312,6 +312,87 @@ export async function deleteLTDCode(codeId: number): Promise<void> {
   }
 }
 
+
+/**
+ * Bulk delete LTD codes based on filters
+ */
+export async function bulkDeleteLTDCodes(
+  filters: Omit<CodeFilters, 'page' | 'limit'>
+): Promise<{ deletedCount: number; skippedCount: number }> {
+  const { tier, status, batchId, search } = filters;
+
+  const conditions: string[] = [];
+  const values: any[] = [];
+  let paramIndex = 1;
+
+  // Build WHERE conditions from filters
+  if (tier) {
+    conditions.push(`tier = $${paramIndex++}`);
+    values.push(tier);
+  }
+  if (status) {
+    // Similar to getLTDCodes, but we build the condition string
+    switch (status) {
+      case 'active':
+        conditions.push(`is_active = true AND (expires_at IS NULL OR expires_at > NOW()) AND current_redemptions < max_redemptions`);
+        break;
+      case 'expired':
+        conditions.push(`expires_at IS NOT NULL AND expires_at <= NOW()`);
+        break;
+      case 'redeemed':
+        // This will result in 0 deletions, but is supported for consistency
+        conditions.push(`current_redemptions >= max_redemptions`);
+        break;
+      case 'disabled':
+        conditions.push(`is_active = false`);
+        break;
+    }
+  }
+  if (batchId) {
+    conditions.push(`batch_id = $${paramIndex++}`);
+    values.push(batchId);
+  }
+  if (search) {
+    conditions.push(`(code ILIKE $${paramIndex} OR notes ILIKE $${paramIndex})`);
+    values.push(`%${search}%`);
+  }
+
+  // We only want to delete codes that have NOT been redeemed
+  conditions.push(`current_redemptions = 0`);
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const client = await pool.connect();
+  try {
+    // First, count how many we are about to delete
+    const selectToDelete = `SELECT id FROM ltd_codes ${whereClause}`;
+    const toDeleteRes = await client.query(selectToDelete, values);
+    const deletedCount = toDeleteRes.rowCount || 0;
+
+    // Also, count how many would have been deleted but were skipped due to redemption
+    const skippedConditions = conditions.filter(c => c !== 'current_redemptions = 0');
+    skippedConditions.push('current_redemptions > 0');
+    const whereSkippedClause = `WHERE ${skippedConditions.join(' AND ')}`;
+    const selectSkipped = `SELECT id FROM ltd_codes ${whereSkippedClause}`;
+    const skippedRes = await client.query(selectSkipped, values);
+    const skippedCount = skippedRes.rowCount || 0;
+
+    if (deletedCount > 0) {
+      // Perform the deletion
+      const deleteQuery = `DELETE FROM ltd_codes ${whereClause}`;
+      await client.query(deleteQuery, values);
+    }
+
+    return { deletedCount, skippedCount };
+  } catch (error) {
+    console.error('Error during bulk code deletion:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+
 /**
  * Get code statistics
  */
