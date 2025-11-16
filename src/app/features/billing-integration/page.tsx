@@ -97,7 +97,7 @@ export default function BillingIntegrationPage() {
           description: "Purchase lifetime access with one-time payment"
         },
         {
-          title: "AppSumo Customers",
+          title: "Lifetime Deal Customers",
           description: "Redeem codes and activate lifetime tier access"
         },
         {

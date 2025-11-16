@@ -228,7 +228,7 @@ export default function GenerateCodesPage() {
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., AppSumo Batch #3, Black Friday Sale 2025"
+              placeholder="e.g., Lifetime Deal Batch #3, Black Friday Sale 2025"
               rows={3}
             />
             <p className="text-sm text-muted-foreground">
