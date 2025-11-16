@@ -57,7 +57,7 @@ const TIER_FEATURES = {
 
 const STEPS = [
   {
-    title: "Welcome to RepurposeAI!",
+    title: "Welcome to repurposely!",
     description: "Let's get you started with your lifetime deal",
   },
   {
@@ -164,7 +164,7 @@ export function WelcomeModal({ isOpen, onComplete, userTier, userName, isNewUser
                     {isNewUser ? `Welcome${userName ? `, ${userName}` : ''}! 🎉` : 'Welcome Back!'}
                   </h3>
                   <p className="text-muted-foreground mt-2">
-                    You're now part of the RepurposeAI family with{' '}
+                    You're now part of the repurposely family with{' '}
                     <Badge className="mx-1" variant="secondary">Tier {userTier}</Badge>
                     lifetime access!
                   </p>

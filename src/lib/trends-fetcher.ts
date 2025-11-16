@@ -24,7 +24,7 @@ export async function fetchRedditTrends() {
         headers: {
           'Authorization': `Basic ${auth}`,
           'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'RepurposeAI/1.0',
+          'User-Agent': 'repurposely/1.0',
         },
         timeout: 10000, // 10 second timeout
       }
@@ -43,7 +43,7 @@ export async function fetchRedditTrends() {
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
-            'User-Agent': 'RepurposeAI/1.0',
+            'User-Agent': 'repurposely/1.0',
           },
           params: { limit: 5 },
         }

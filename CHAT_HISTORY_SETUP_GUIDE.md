@@ -423,6 +423,6 @@ Users can now have ongoing, context-aware conversations that persist forever. Th
 
 ---
 
-**Built with ❤️ for RepurposeAI**
+**Built with ❤️ for repurposely**
 
 

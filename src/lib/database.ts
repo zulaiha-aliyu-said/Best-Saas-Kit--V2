@@ -464,7 +464,7 @@ export async function getCreditStats() {
   }
 }
 
-// RepurposeAI Tables
+// repurposely Tables
 
 export interface ContentRow {
   id: string

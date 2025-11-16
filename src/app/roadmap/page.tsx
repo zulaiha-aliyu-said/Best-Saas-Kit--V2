@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { Map, Zap, Clock, CheckCircle2, Target } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Roadmap | RepurposeAI',
-  description: 'Explore what we are building next at RepurposeAI. See upcoming features and our product vision.',
+  title: 'Roadmap | repurposely',
+  description: 'Explore what we are building next at repurposely. See upcoming features and our product vision.',
 }
 
 interface RoadmapItem {
@@ -86,7 +86,7 @@ const roadmap: RoadmapItem[] = [
   },
   {
     title: 'Zapier & Make Integration',
-    description: 'Connect RepurposeAI with 5000+ apps through automation platforms.',
+    description: 'Connect repurposely with 5000+ apps through automation platforms.',
     status: 'planned',
     quarter: 'Q2 2026',
     category: 'integration',
@@ -260,7 +260,7 @@ export default function RoadmapPage() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Product Roadmap</h1>
           <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-            See what we're building next at RepurposeAI. Our roadmap is driven by your feedback 
+            See what we're building next at repurposely. Our roadmap is driven by your feedback
             and our vision to make content creation effortless.
           </p>
         </div>

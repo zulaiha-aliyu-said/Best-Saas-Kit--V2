@@ -36,8 +36,8 @@ export default function LTDSystemPage() {
         },
         {
           icon: Gift,
-          title: "AppSumo Exclusive",
-          description: "Special lifetime deal pricing available through AppSumo"
+          title: "Exclusive Deal",
+          description: "Special lifetime deal pricing available for a limited time"
         }
       ]}
       
@@ -51,7 +51,7 @@ export default function LTDSystemPage() {
         {
           step: "2",
           title: "One-Time Payment",
-          description: "Pay once through AppSumo or direct purchase",
+          description: "Pay once through our website or other platforms",
           color: "from-yellow-500 to-orange-500"
         },
         {
@@ -105,7 +105,7 @@ export default function LTDSystemPage() {
           description: "Built for large organizations with high content volume"
         },
         {
-          title: "AppSumo Buyers",
+          title: "Deal Buyers",
           description: "Stack codes to reach higher tiers at exclusive pricing"
         },
         {

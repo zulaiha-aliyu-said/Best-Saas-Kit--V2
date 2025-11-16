@@ -29,7 +29,7 @@ import {
   Bot
 } from "lucide-react"
 
-// Regular user navigation items (RepurposeAI)
+// Regular user navigation items (repurposely)
 const regularUserItems = [
   { name: "Repurpose", href: "/dashboard/repurpose", icon: MessageSquare },
   { name: "AI Chat", href: "/dashboard/chat-new", icon: Bot },
@@ -96,7 +96,7 @@ export function DashboardClient({ children, session, isAdmin }: DashboardClientP
               <div className="flex h-8 w-8 items-center justify-center rounded-lg repurpose-gradient">
                 <Zap className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-semibold">RepurposeAI</span>
+              <span className="text-lg font-semibold">repurposely</span>
             </div>
           <Button
             variant="ghost"
@@ -173,7 +173,7 @@ export function DashboardClient({ children, session, isAdmin }: DashboardClientP
         <main className="p-6">
           {children}
           <div className="mt-10 text-center text-xs text-muted-foreground">
-            💖 Built with love by Zulaiha Aliyu — RepurposeAI © 2025.
+            💖 Built with love by Zulaiha Aliyu — repurposely © 2025.
           </div>
         </main>
       </div>

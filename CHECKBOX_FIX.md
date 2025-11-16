@@ -143,7 +143,7 @@ All admin pages should now be fully functional:
 
 2. **Fill in Campaign:**
    ```
-   Subject: Welcome to RepurposeAI LTD!
+   Subject: Welcome to repurposely LTD!
    Message: Hi {{name}}, thanks for choosing Tier {{tier}}...
    ```
 

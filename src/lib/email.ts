@@ -62,7 +62,7 @@ export function welcomeEmailTemplate(name: string, tier: number, credits: number
       <body>
         <div class="container">
           <div class="header">
-            <h1>🎉 Welcome to RepurposeAI LTD!</h1>
+            <h1>🎉 Welcome to repurposely LTD!</h1>
           </div>
           <div class="content">
             <p>Hi ${name || 'there'},</p>
@@ -101,7 +101,7 @@ export function welcomeEmailTemplate(name: string, tier: number, credits: number
             
             <div class="footer">
               <p>Questions? Reply to this email or visit our <a href="${process.env.NEXT_PUBLIC_APP_URL}/help">Help Center</a></p>
-              <p style="margin-top: 20px;">© 2025 RepurposeAI. All rights reserved.</p>
+              <p style="margin-top: 20px;">© 2025 repurposely. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -150,7 +150,7 @@ export function codeStackedEmailTemplate(name: string, newTier: number, totalCre
             
             <div class="footer">
               <p>Questions? Reply to this email or visit our <a href="${process.env.NEXT_PUBLIC_APP_URL}/help">Help Center</a></p>
-              <p style="margin-top: 20px;">© 2025 RepurposeAI. All rights reserved.</p>
+              <p style="margin-top: 20px;">© 2025 repurposely. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -206,7 +206,7 @@ export function creditLowWarningEmail(name: string, remainingCredits: number, mo
             
             <div class="footer">
               <p>Questions? Reply to this email or visit our <a href="${process.env.NEXT_PUBLIC_APP_URL}/help">Help Center</a></p>
-              <p style="margin-top: 20px;">© 2025 RepurposeAI. All rights reserved.</p>
+              <p style="margin-top: 20px;">© 2025 repurposely. All rights reserved.</p>
             </div>
           </div>
         </div>

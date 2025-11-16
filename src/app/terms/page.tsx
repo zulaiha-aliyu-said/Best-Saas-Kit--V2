@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { FileText, Scale, CreditCard, AlertCircle, Shield, Users } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | RepurposeAI',
-  description: 'Terms of Service for RepurposeAI - Legal terms and conditions for using our platform.',
+  title: 'Terms of Service | repurposely',
+  description: 'Terms of Service for repurposely - Legal terms and conditions for using our platform.',
 }
 
 export default function TermsOfServicePage() {
@@ -37,7 +37,7 @@ export default function TermsOfServicePage() {
         <div className="prose prose-neutral dark:prose-invert max-w-none">
           <div className="bg-card/50 backdrop-blur-sm border rounded-lg p-6 mb-8">
             <p className="text-base leading-relaxed m-0">
-              Welcome to RepurposeAI. By accessing or using our AI-powered content repurposing platform, 
+              Welcome to repurposely. By accessing or using our AI-powered content repurposing platform,
               you agree to be bound by these Terms of Service. Please read them carefully.
             </p>
           </div>
@@ -55,7 +55,7 @@ export default function TermsOfServicePage() {
             
             <div className="bg-card/30 border rounded-lg p-6">
               <p className="mb-4">
-                By creating an account or using RepurposeAI, you acknowledge that you have read, understood, 
+                By creating an account or using repurposely, you acknowledge that you have read, understood,
                 and agree to be bound by these Terms of Service and our Privacy Policy.
               </p>
               <ul className="space-y-2 mb-0">
@@ -155,7 +155,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-2xl font-bold mb-4">4. Service Features</h2>
             
             <div className="bg-card/30 border rounded-lg p-6">
-              <p className="mb-4">RepurposeAI provides the following features (availability depends on plan):</p>
+              <p className="mb-4">repurposely provides the following features (availability depends on plan):</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-0">
                 <ul className="space-y-1 mb-0">
                   <li>✓ AI Content Repurposing</li>
@@ -256,7 +256,7 @@ export default function TermsOfServicePage() {
 
               <h3 className="text-xl font-semibold mb-3 mt-6">Our Platform</h3>
               <ul className="space-y-2 mb-0">
-                <li>RepurposeAI, our logo, and platform features are our intellectual property</li>
+                <li>repurposely, our logo, and platform features are our intellectual property</li>
                 <li>You may not copy, modify, or create derivative works</li>
                 <li>Templates and AI-generated suggestions remain subject to our license</li>
               </ul>
@@ -343,7 +343,7 @@ export default function TermsOfServicePage() {
             
             <div className="bg-card/30 border rounded-lg p-6">
               <p className="mb-0">
-                These Terms are governed by the laws of the jurisdiction in which RepurposeAI operates. 
+                These Terms are governed by the laws of the jurisdiction in which repurposely operates.
                 Any disputes will be resolved through binding arbitration or in the courts of that jurisdiction.
               </p>
             </div>
@@ -360,14 +360,14 @@ export default function TermsOfServicePage() {
               <ul className="space-y-2 mb-0 list-none pl-0">
                 <li>
                   <strong>Email:</strong>{' '}
-                  <a href="mailto:legal@repurposeai.com" className="text-primary hover:underline">
-                    legal@repurposeai.com
+                  <a href="mailto:legal@repurposely.com" className="text-primary hover:underline">
+                    legal@repurposely.com
                   </a>
                 </li>
                 <li>
                   <strong>Support:</strong>{' '}
-                  <a href="mailto:support@repurposeai.com" className="text-primary hover:underline">
-                    support@repurposeai.com
+                  <a href="mailto:support@repurposely.com" className="text-primary hover:underline">
+                    support@repurposely.com
                   </a>
                 </li>
               </ul>

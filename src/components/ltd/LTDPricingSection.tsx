@@ -24,7 +24,7 @@ export function LTDPricingSection({ onSelectTier, currentTier }: LTDPricingSecti
       <div className="text-center mb-12">
         <Badge className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
           <Gift className="w-3 h-3 mr-1" />
-          AppSumo Lifetime Deal
+          Lifetime Deal
         </Badge>
         <h2 className="text-4xl font-bold mb-4">
           Transform Content Into 10+ Posts in Seconds
@@ -172,7 +172,7 @@ function FAQSection() {
   const faqs = [
     {
       q: 'How long is this deal available?',
-      a: 'This AppSumo lifetime deal is available for a limited time only. Once it\'s gone, it\'s gone forever.',
+      a: 'This lifetime deal is available for a limited time only. Once it\'s gone, it\'s gone forever.',
     },
     {
       q: 'Do credits expire?',

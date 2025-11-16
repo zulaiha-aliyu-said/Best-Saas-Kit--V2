@@ -36,9 +36,9 @@ const Footer = () => {
   }
 
   const socialLinks = [
-    { name: "Twitter", href: "https://twitter.com/repurposeai", icon: Twitter },
-    { name: "LinkedIn", href: "https://linkedin.com/company/repurposeai", icon: Linkedin },
-    { name: "Email", href: "mailto:hello@repurposeai.com", icon: Mail }
+    { name: "Twitter", href: "https://twitter.com/repurposely", icon: Twitter },
+    { name: "LinkedIn", href: "https://linkedin.com/company/repurposely", icon: Linkedin },
+    { name: "Email", href: "mailto:hello@repurposely.com", icon: Mail }
   ]
 
   return (
@@ -52,7 +52,7 @@ const Footer = () => {
               <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
                 <Zap className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground">RepurposeAI</span>
+              <span className="text-xl font-bold text-foreground">repurposely</span>
             </div>
             <p className="text-muted-foreground mb-6 max-w-sm">
               Transform your content across platforms with AI. Discover trending topics, 
@@ -167,7 +167,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <div className="text-muted-foreground text-sm">
-            © 2025 RepurposeAI. All rights reserved.
+            © 2025 repurposely. All rights reserved.
           </div>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
             <a href="/refund-policy" className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full border bg-background hover:bg-muted transition-colors" aria-label="Refund Policy - 14 Day Money Back Guarantee">

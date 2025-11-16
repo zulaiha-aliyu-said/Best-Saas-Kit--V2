@@ -1,4 +1,4 @@
-# 🎁 RepurposeAI - AppSumo
+# 🎁 repurposely - Lifetime Deal
 
 ## Transform One Piece of Content Into 10+ Platform-Specific Posts in Seconds
 
@@ -6,10 +6,10 @@
 
 ---
 
-## 🚀 AppSumo TIERS
+## 🚀 LIFETIME DEAL TIERS
 
 ### 💎 License Tier 1 - $59
-**Best for:** Solo creators, bloggers, small businesses  
+**Best for:** Solo creators, bloggers, small businesses
 **Regular Price:** $348/year | **You Save:** $289/year
 
 #### What You Get Forever:
@@ -24,7 +24,7 @@
 ---
 
 ### 🚀 License Tier 2 - $139
-**Best for:** Content marketers, freelancers, small agencies  
+**Best for:** Content marketers, freelancers, small agencies
 **Regular Price:** $696 (2 years) | **You Save:** $557
 
 #### Everything in Tier 1, PLUS:
@@ -40,7 +40,7 @@
 ---
 
 ### ⭐ License Tier 3 - $249 (MOST POPULAR)
-**Best for:** Agencies, marketing teams, power users  
+**Best for:** Agencies, marketing teams, power users
 **Regular Price:** $1,188/year | **You Save:** $939/year
 
 #### Everything in Tier 2, PLUS:
@@ -59,7 +59,7 @@
 ---
 
 ### 👑 License Tier 4 - $449
-**Best for:** Large agencies, enterprise teams  
+**Best for:** Large agencies, enterprise teams
 **Regular Price:** $2,376 (2 years) | **You Save:** $1,927
 
 #### Everything in Tier 3, PLUS:
@@ -179,7 +179,7 @@ Not satisfied? Get a full refund within 60 days, no questions asked.
 
 ---
 
-## 🌟 WHY CHOOSE RepurposeAI?
+## 🌟 WHY CHOOSE repurposely?
 
 ### ⚡ Save Time
 - Turn 1 piece of content into 10+ posts in seconds
@@ -211,7 +211,7 @@ Not satisfied? Get a full refund within 60 days, no questions asked.
 ## ❓ FAQ
 
 ### How long is this deal available?
-This AppSumo is available for a limited time only. Once it's gone, it's gone forever. Regular pricing will be significantly higher.
+This Lifetime Deal is available for a limited time only. Once it's gone, it's gone forever. Regular pricing will be significantly higher.
 
 ### Can I upgrade to a higher tier later?
 Yes! You can upgrade by purchasing additional codes or paying the difference to the next tier within 60 days of your initial purchase.
@@ -237,20 +237,20 @@ This exclusive offer won't last forever. Secure your lifetime access now and sta
 
 ---
 
-**🔥 Claim Your AppSumo Now →**
+**🔥 Claim Your Lifetime Deal Now →**
 
 ---
 
 ## 📞 Questions?
 
-- **Email:** support@repurposeai.com
-- **Documentation:** https://docs.repurposeai.com
-- **Video Tutorial:** https://youtube.com/repurposeai
+- **Email:** support@repurposely.com
+- **Documentation:** https://docs.repurposely.com
+- **Video Tutorial:** https://youtube.com/repurposely
 - **Live Chat:** Available during business hours
 
 ---
 
-**© 2025 RepurposeAI. All rights reserved.**
+**© 2025 repurposely. All rights reserved.**
 
 ---
 
@@ -260,8 +260,8 @@ This exclusive offer won't last forever. Secure your lifetime access now and sta
 
 > "We manage 15 client accounts and this has been a game-changer. The team features in Tier 4 are worth every penny." - Mark T., Agency Owner
 
-> "The AI actually learns your voice. It's scary how good it is. My engagement has doubled since using RepurposeAI." - James L., Marketer
+> "The AI actually learns your voice. It's scary how good it is. My engagement has doubled since using repurposely." - James L., Marketer
 
 ---
 
-**🎉 Join the RepurposeAI Revolution Today!**
+**🎉 Join the repurposely Revolution Today!**

@@ -294,9 +294,9 @@ Currently using mock data for demonstration. Real API integration coming soon:
 ## 📞 Support
 
 Need help? Contact us:
-- Email: support@repurpose.ai
-- Documentation: https://docs.repurpose.ai/competitor-analysis
-- Video tutorials: https://youtube.com/repurposeai
+- Email: support@repurposely.ai
+- Documentation: https://docs.repurposely.ai/competitor-analysis
+- Video tutorials: https://youtube.com/repurposely
 
 ## 🎉 Success Stories
 
@@ -308,7 +308,7 @@ Need help? Contact us:
 
 ---
 
-**Made with 💜 by the RepurposeAI Team**
+**Made with 💜 by the repurposely Team**
 
 Happy analyzing! 🕵️✨
 

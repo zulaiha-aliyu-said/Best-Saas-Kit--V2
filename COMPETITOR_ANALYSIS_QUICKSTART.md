@@ -4,7 +4,7 @@ Get started with competitor analysis in 5 minutes!
 
 ## 📋 Prerequisites
 
-- RepurposeAI account (free tier works)
+- repurposely account (free tier works)
 - At least one competitor to track
 - Their social media username or profile URL
 

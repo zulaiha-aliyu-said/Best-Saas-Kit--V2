@@ -67,14 +67,14 @@ export async function sendEmail(data: EmailData) {
 
 // Welcome email template
 export function createWelcomeEmail(userName: string, userEmail: string) {
-  const subject = `🎉 Welcome to RepurposeAI - Transform Your Content Today!`;
+  const subject = `🎉 Welcome to repurposely - Transform Your Content Today!`;
   const html = `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to RepurposeAI</title>
+      <title>Welcome to repurposely</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f7; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -111,7 +111,7 @@ export function createWelcomeEmail(userName: string, userEmail: string) {
     <body>
       <div class="container">
         <div class="header">
-          <h1 class="hero-title">🎉 Welcome to RepurposeAI!</h1>
+          <h1 class="hero-title">🎉 Welcome to repurposely!</h1>
           <p class="hero-subtitle">AI-Powered Content Creation at Your Fingertips</p>
         </div>
         <div class="content">
@@ -126,7 +126,7 @@ export function createWelcomeEmail(userName: string, userEmail: string) {
           </div>
           
           <div class="features-box">
-            <h3 class="section-title">✨ What You Can Do with RepurposeAI</h3>
+            <h3 class="section-title">✨ What You Can Do with repurposely</h3>
             <div class="feature-item">
               <span class="feature-icon">🔄</span><strong>Content Repurposing:</strong> Transform one piece of content into multiple platform-optimized posts
             </div>
@@ -238,12 +238,12 @@ export function createWelcomeEmail(userName: string, userEmail: string) {
         </div>
         
         <div class="footer">
-          <p class="footer-title"><strong>RepurposeAI</strong> - Transform Your Content with AI</p>
+          <p class="footer-title"><strong>repurposely</strong> - Transform Your Content with AI</p>
           <p class="footer-text">
-            You're receiving this email because you created an account at RepurposeAI.<br>
+            You're receiving this email because you created an account at repurposely.<br>
             Have questions? Just hit reply - we'd love to hear from you!
           </p>
-          <p class="footer-copyright">© 2025 RepurposeAI. All rights reserved.</p>
+          <p class="footer-copyright">© 2025 repurposely. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -320,7 +320,7 @@ export function createSubscriptionConfirmationEmail(userName: string, userEmail:
 
 // LTD activation email
 export function createLTDActivationEmail(userName: string, userEmail: string, tier: number, monthly: number) {
-  const subject = `🎉 Your RepurposeAI LTD (Tier ${tier}) is Active!`;
+  const subject = `🎉 Your repurposely LTD (Tier ${tier}) is Active!`;
   const html = `
     <!DOCTYPE html>
     <html>
@@ -354,7 +354,7 @@ export function createLTDActivationEmail(userName: string, userEmail: string, ti
           </div>
           <div class="content">
             <p class="hi">Hi ${userName || 'there'},</p>
-            <p class="p">Thanks for supporting RepurposeAI! Your Lifetime Deal (Tier ${tier}) is now active. You’ll receive <strong>${monthly} credits every month</strong>, forever.</p>
+            <p class="p">Thanks for supporting repurposely! Your Lifetime Deal (Tier ${tier}) is now active. You’ll receive <strong>${monthly} credits every month</strong>, forever.</p>
 
             <div class="box">
               <strong>What you can do now</strong>
@@ -514,7 +514,7 @@ export function welcomeEmailTemplate(name: string, tier: number, credits: number
       <body>
         <div class="container">
           <div class="header">
-            <h1>🎉 Welcome to RepurposeAI LTD!</h1>
+            <h1>🎉 Welcome to repurposely LTD!</h1>
           </div>
           <div class="content">
             <p>Hi ${name || 'there'},</p>
@@ -553,7 +553,7 @@ export function welcomeEmailTemplate(name: string, tier: number, credits: number
             
             <div class="footer">
               <p>Questions? Reply to this email or visit our <a href="${EMAIL_CONFIG.SITE_URL}/help">Help Center</a></p>
-              <p style="margin-top: 20px;">© 2025 RepurposeAI. All rights reserved.</p>
+              <p style="margin-top: 20px;">© 2025 repurposely. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -603,7 +603,7 @@ export function codeStackedEmailTemplate(name: string, newTier: number, totalCre
             
             <div class="footer">
               <p>Questions? Reply to this email or visit our <a href="${EMAIL_CONFIG.SITE_URL}/help">Help Center</a></p>
-              <p style="margin-top: 20px;">© 2025 RepurposeAI. All rights reserved.</p>
+              <p style="margin-top: 20px;">© 2025 repurposely. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -660,7 +660,7 @@ export function creditLowWarningEmail(name: string, remainingCredits: number, mo
             
             <div class="footer">
               <p>Questions? Reply to this email or visit our <a href="${EMAIL_CONFIG.SITE_URL}/help">Help Center</a></p>
-              <p style="margin-top: 20px;">© 2025 RepurposeAI. All rights reserved.</p>
+              <p style="margin-top: 20px;">© 2025 repurposely. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -836,9 +836,9 @@ export function createCreditWarningUpgradeEmail(
         </div>
         
         <div class="footer">
-          <p style="color: #F3F4F6; font-weight: 600; margin: 0 0 15px 0;">RepurposeAI</p>
+          <p style="color: #F3F4F6; font-weight: 600; margin: 0 0 15px 0;">repurposely</p>
           <p style="color: #6B7280; font-size: 13px; margin: 0;">
-            © 2025 RepurposeAI. All rights reserved.
+            © 2025 repurposely. All rights reserved.
           </p>
         </div>
       </div>
@@ -869,7 +869,7 @@ export function createReengagementEmail(
     ? `We miss you! 🎁 Here's 50 bonus credits to come back`
     : daysSinceLastLogin >= 30
     ? `Your content strategy is waiting for you... 💜`
-    : `We miss you! Here's what's new at RepurposeAI ✨`;
+    : `We miss you! Here's what's new at repurposely ✨`;
   
   const html = `
     <!DOCTYPE html>
@@ -928,7 +928,7 @@ export function createReengagementEmail(
           <div class="stats-box">
             <p style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 15px 0;">🚀 What You're Missing</p>
             <p style="color: #4B5563; font-size: 15px; margin: 0;">
-              Since you've been away, <strong>12,458 creators</strong> have generated <strong>1.2M+ pieces of content</strong> using RepurposeAI. Don't let your competitors get ahead!
+              Since you've been away, <strong>12,458 creators</strong> have generated <strong>1.2M+ pieces of content</strong> using repurposely. Don't let your competitors get ahead!
             </p>
           </div>
           
@@ -973,7 +973,7 @@ export function createReengagementEmail(
           <div class="success-stories">
             <p style="font-size: 18px; font-weight: 600; color: #065F46; margin: 0 0 15px 0;">🏆 Recent Success Stories</p>
             <p style="color: #047857; font-size: 15px; margin: 0 0 12px 0;">
-              "I came back after 2 months and RepurposeAI helped me get back on track. Created 50 posts in one week!"
+              "I came back after 2 months and repurposely helped me get back on track. Created 50 posts in one week!"
               <br><span style="font-size: 13px; font-style: italic;">— Mike Rodriguez, Marketing Consultant</span>
             </p>
             <p style="color: #047857; font-size: 15px; margin: 0;">
@@ -1151,7 +1151,7 @@ export function createPerformanceSummaryEmail(
             <p style="font-size: 24px; margin: 0 0 10px 0;">🎉 Achievement Unlocked!</p>
             <p style="color: #92400E; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Content Machine</p>
             <p style="color: #78350F; font-size: 14px; margin: 0;">
-              You've created ${stats.postsCreated}+ posts! You're in the top 15% of RepurposeAI creators. 🌟
+              You've created ${stats.postsCreated}+ posts! You're in the top 15% of repurposely creators. 🌟
             </p>
           </div>
           ` : ''}
@@ -1226,7 +1226,7 @@ export function createPerformanceSummaryEmail(
             <p style="color: #4B5563; font-size: 15px; margin: 0 0 15px 0;">Proud of your progress? Share it!</p>
             <div style="display: inline-block; background: #F9FAFB; padding: 15px 25px; border-radius: 8px;">
               <p style="margin: 0; color: #1a1a1a; font-weight: 600; font-size: 16px;">
-                "I created ${stats.postsCreated} posts ${stats.weekNumber ? 'this week' : 'this month'} with @RepurposeAI 🚀"
+                "I created ${stats.postsCreated} posts ${stats.weekNumber ? 'this week' : 'this month'} with @repurposely 🚀"
               </p>
             </div>
           </div>
@@ -1239,9 +1239,9 @@ export function createPerformanceSummaryEmail(
         </div>
         
         <div class="footer">
-          <p style="color: #F3F4F6; font-weight: 600; margin: 0 0 15px 0;">RepurposeAI</p>
+          <p style="color: #F3F4F6; font-weight: 600; margin: 0 0 15px 0;">repurposely</p>
           <p style="color: #6B7280; font-size: 13px; margin: 0 0 15px 0;">
-            © 2025 RepurposeAI. All rights reserved.
+            © 2025 repurposely. All rights reserved.
           </p>
           <p style="color: #6B7280; font-size: 12px; margin: 0;">
             <a href="${EMAIL_CONFIG.SITE_URL}/settings/preferences" style="color: #9CA3AF; text-decoration: none;">Email Preferences</a>

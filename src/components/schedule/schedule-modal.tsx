@@ -110,9 +110,9 @@ export function ScheduleModal({
     {
       id: '3',
       platform: 'x',
-      username: 'RepurposeAI',
-      handle: '@RepurposeAI',
-      name: 'RepurposeAI',
+      username: 'repurposely',
+      handle: '@repurposely',
+      name: 'repurposely',
       avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=32&h=32&fit=crop&crop=face',
       isActive: false
     },

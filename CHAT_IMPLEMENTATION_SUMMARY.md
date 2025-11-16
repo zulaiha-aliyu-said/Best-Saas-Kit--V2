@@ -410,7 +410,7 @@ You now have a professional, production-ready chat system with:
 
 **Built by:** AI Assistant
 **Date:** 2024
-**For:** RepurposeAI - Best Saas Kit V2
+**For:** repurposely - Best Saas Kit V2
 
 🚀 **Ready to transform your chat experience!**
 

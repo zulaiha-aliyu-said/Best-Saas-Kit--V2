@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const metadata = {
-  title: 'Lifetime Deal Pricing | RepurposeAI',
-  description: 'Get lifetime access to RepurposeAI with our exclusive AppSumo deal. 5 tiers available with increasing credits and features.',
+  title: 'Lifetime Deal Pricing | repurposely',
+  description: 'Get lifetime access to repurposely with our exclusive Lifetime Deal. 5 tiers available with increasing credits and features.',
 };
 
 export default function PublicLTDPricingPage() {
@@ -62,7 +62,7 @@ export default function PublicLTDPricingPage() {
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Can I upgrade my tier?</h3>
               <p className="text-muted-foreground">
-                Yes! You can stack AppSumo codes or upgrade directly to reach higher tiers with more credits and features.
+                Yes! You can stack Lifetime Deal codes or upgrade directly to reach higher tiers with more credits and features.
               </p>
             </div>
             <div className="space-y-4">
@@ -80,13 +80,13 @@ export default function PublicLTDPricingPage() {
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Is there a money-back guarantee?</h3>
               <p className="text-muted-foreground">
-                Yes! AppSumo offers a 60-day money-back guarantee. If you're not satisfied, get a full refund.
+                Yes! We offer a 60-day money-back guarantee. If you're not satisfied, get a full refund.
               </p>
             </div>
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">How do I redeem my AppSumo code?</h3>
+              <h3 className="font-semibold text-lg">How do I redeem my Lifetime Deal code?</h3>
               <p className="text-muted-foreground">
-                Sign up for RepurposeAI, go to your dashboard, and enter your AppSumo code in the billing section.
+                Sign up for repurposely, go to your dashboard, and enter your Lifetime Deal code in the billing section.
               </p>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function PublicLTDPricingPage() {
           <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/30 rounded-2xl p-12 max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of content creators using RepurposeAI to save time and reach more people.
+              Join thousands of content creators using repurposely to save time and reach more people.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/auth/signin">

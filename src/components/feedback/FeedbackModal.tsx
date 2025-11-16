@@ -109,7 +109,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             </div>
             <h3 className="text-xl font-semibold mb-2">Thank you!</h3>
             <p className="text-muted-foreground">
-              Your feedback helps us improve RepurposeAI
+              Your feedback helps us improve repurposely
             </p>
           </motion.div>
         ) : (

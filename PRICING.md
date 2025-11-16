@@ -1,4 +1,4 @@
-# 💎 RepurposeAI - Pricing Plans
+# 💎 repurposely - Pricing Plans
 
 ## Table of Contents
 - [Subscription Plans](#subscription-plans)
@@ -240,8 +240,6 @@
 ---
 
 ## 🎁 LIFETIME DEAL (LTD) PLANS
-
-Perfect for platform listings on AppSumo, ProductHunt Marketplace, PitchGround, etc.
 
 ### 💎 LTD TIER 1 - $59 (One-time)
 **Regular Price:** $29/month × 12 = $348/year  
@@ -664,31 +662,6 @@ All LTD tiers are **100% stackable**! Buy multiple codes to multiply your limits
 
 ---
 
-## 🎯 APPSUMO LAUNCH PRICING (Limited Time)
-
-### Week 1-2 (Early Bird)
-- Tier 1: **$49** (save $10)
-- Tier 2: **$119** (save $20)
-- Tier 3: **$219** (save $30)
-- Tier 4: **$399** (save $50)
-- Tier 5: **$699** (save $100)
-
-### Week 3-4 (Standard)
-- Tier 1: **$59**
-- Tier 2: **$139**
-- Tier 3: **$249**
-- Tier 4: **$449**
-- Tier 5: **$799**
-
-### Post-Launch (Regular LTD)
-- Tier 1: **$69** (+$10)
-- Tier 2: **$159** (+$20)
-- Tier 3: **$279** (+$30)
-- Tier 4: **$499** (+$50)
-- Tier 5: **$899** (+$100)
-
----
-
 ## ⚡ BONUS FEATURES (ALL LTD PLANS)
 
 ### Included Forever:
@@ -711,30 +684,55 @@ Not happy? Full refund within 60 days, no questions asked.
 
 ---
 
-## 📞 Contact & Support
+## 🚀 APPSUMO LAUNCH PRICING (LIMITED TIME)
 
-- **Email:** support@repurposeai.com
-- **Documentation:** https://docs.repurposeai.com
-- **Community:** https://community.repurposeai.com
-- **AppSumo Listing:** https://appsumo.com/repurposeai
+### Tier 1 - $59 (Retail: $348/yr)
+- **100 credits/month**
+- Content Repurposing (4 platforms)
+- Text, URL, YouTube
+- 15 Templates
+- Trending Topics
+- 30-day Analytics
+
+### Tier 2 - $139 (Retail: $696/2yrs)
+- **300 credits/month**
+- All Tier 1 features
+- Viral Hook Generator
+- Content Scheduling (30/mo)
+- 40+ Templates
+- 6-month Analytics
+- 2x Faster Processing
+
+### Tier 3 - $249 (Retail: $1,188/yr)
+- **750 credits/month**
+- All Tier 2 features
+- AI Performance Predictions
+- AI Chat Assistant
+- "Talk Like Me" Style Training
+- Bulk Generation
+- Unlimited Custom Templates
+- No Watermarks
+- 3x Faster Processing
+
+### Tier 4 - $449 (Retail: $2,376/2yrs)
+- **2,000 credits/month**
+- All Tier 3 features
+- Team Collaboration (3 members)
+- Unlimited AI Chat
+- Advanced Style Training
+- API Access
+- White-label Options
+- 5x Faster Processing
 
 ---
 
-**Last Updated:** October 2025  
+## 📞 Contact & Support
+
+- **Email:** support@repurposely.com
+- **Documentation:** https://docs.repurposely.com
+- **Community:** https://community.repurposely.com
+
+---
+
+**Last Updated:** October 2025
 **Version:** 2.0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
