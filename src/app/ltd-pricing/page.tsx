@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 export const metadata = {
   title: 'Lifetime Deal Pricing | RepurposeAI',
-  description: 'Get lifetime access to RepurposeAI with our exclusive AppSumo deal. 5 tiers available with increasing credits and features.',
+  description: 'Get lifetime access to RepurposeAI with our exclusive Lifetime Deal. 5 tiers available with increasing credits and features.',
 };
 
 export default function PublicLTDPricingPage() {
@@ -62,7 +62,7 @@ export default function PublicLTDPricingPage() {
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Can I upgrade my tier?</h3>
               <p className="text-muted-foreground">
-                Yes! You can stack AppSumo codes or upgrade directly to reach higher tiers with more credits and features.
+                Yes! You can stack Lifetime Deal codes or upgrade directly to reach higher tiers with more credits and features.
               </p>
             </div>
             <div className="space-y-4">
@@ -80,13 +80,13 @@ export default function PublicLTDPricingPage() {
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Is there a money-back guarantee?</h3>
               <p className="text-muted-foreground">
-                Yes! AppSumo offers a 60-day money-back guarantee. If you're not satisfied, get a full refund.
+                Yes! We offer a 60-day money-back guarantee. If you're not satisfied, get a full refund.
               </p>
             </div>
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">How do I redeem my AppSumo code?</h3>
+              <h3 className="font-semibold text-lg">How do I redeem my Lifetime Deal code?</h3>
               <p className="text-muted-foreground">
-                Sign up for RepurposeAI, go to your dashboard, and enter your AppSumo code in the billing section.
+                Sign up for RepurposeAI, go to your dashboard, and enter your Lifetime Deal code in the billing section.
               </p>
             </div>
           </div>

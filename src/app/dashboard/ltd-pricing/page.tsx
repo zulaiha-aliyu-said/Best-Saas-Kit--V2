@@ -5,7 +5,7 @@ import { getUserPlan } from '@/lib/feature-gate';
 
 export const metadata = {
   title: 'Lifetime Deal Pricing | RepurposeAI',
-  description: 'Get lifetime access to RepurposeAI with our exclusive AppSumo deal',
+  description: 'Get lifetime access to RepurposeAI with our exclusive Lifetime Deal',
 };
 
 export default async function LTDPricingPage() {

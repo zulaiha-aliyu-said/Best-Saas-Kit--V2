@@ -1,6 +1,5 @@
 /**
  * LTD (Lifetime Deal) Pricing Tiers Configuration
- * Based on AppSumo pricing structure
  */
 
 export type LTDTier = 1 | 2 | 3 | 4;

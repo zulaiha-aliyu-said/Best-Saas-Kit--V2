@@ -241,8 +241,6 @@
 
 ## 🎁 LIFETIME DEAL (LTD) PLANS
 
-Perfect for platform listings on AppSumo, ProductHunt Marketplace, PitchGround, etc.
-
 ### 💎 LTD TIER 1 - $59 (One-time)
 **Regular Price:** $29/month × 12 = $348/year  
 **You Save:** $289 first year alone!
@@ -664,31 +662,6 @@ All LTD tiers are **100% stackable**! Buy multiple codes to multiply your limits
 
 ---
 
-## 🎯 APPSUMO LAUNCH PRICING (Limited Time)
-
-### Week 1-2 (Early Bird)
-- Tier 1: **$49** (save $10)
-- Tier 2: **$119** (save $20)
-- Tier 3: **$219** (save $30)
-- Tier 4: **$399** (save $50)
-- Tier 5: **$699** (save $100)
-
-### Week 3-4 (Standard)
-- Tier 1: **$59**
-- Tier 2: **$139**
-- Tier 3: **$249**
-- Tier 4: **$449**
-- Tier 5: **$799**
-
-### Post-Launch (Regular LTD)
-- Tier 1: **$69** (+$10)
-- Tier 2: **$159** (+$20)
-- Tier 3: **$279** (+$30)
-- Tier 4: **$499** (+$50)
-- Tier 5: **$899** (+$100)
-
----
-
 ## ⚡ BONUS FEATURES (ALL LTD PLANS)
 
 ### Included Forever:
@@ -716,25 +689,8 @@ Not happy? Full refund within 60 days, no questions asked.
 - **Email:** support@repurposeai.com
 - **Documentation:** https://docs.repurposeai.com
 - **Community:** https://community.repurposeai.com
-- **AppSumo Listing:** https://appsumo.com/repurposeai
 
 ---
 
 **Last Updated:** October 2025  
 **Version:** 2.0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
