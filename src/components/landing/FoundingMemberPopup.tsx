@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FoundingMemberPopupProps {
   remainingSpots: number;
 }
+
+const POPUP_DELAY_MS = 4000;
 
 const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,79 +22,101 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
       const timer = setTimeout(() => {
         setIsOpen(true);
         sessionStorage.setItem("foundingMemberPopupShown", "true");
-      }, 4000);
+      }, POPUP_DELAY_MS);
 
       return () => clearTimeout(timer);
     }
   }, []);
 
+  const handleClose = () => setIsOpen(false);
+
+  const handleClaimOffer = () => {
+    const pricingSection = document.getElementById("pricing");
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: "smooth" });
+    }
+    handleClose();
+  };
+
+  const bonuses = [
+    "2X monthly credits for 3 months",
+    "Priority support for 30 days",
+    "Early access to new features",
+    "Founding Member badge (#1–50)",
+    "Access to the private Beta Testing Group",
+  ];
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-md w-full mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            FOUNDING MEMBER BONUS
-          </h2>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
-            This is a one-time offer for the first 50 buyers.
-          </p>
-        </div>
-        <div className="mt-6">
-          <ul className="space-y-4 text-gray-700 dark:text-gray-200">
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✔</span>
-              <span>2X monthly credits for 3 months</span>
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✔</span>
-              <span>Priority support for 30 days</span>
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✔</span>
-              <span>Early access to new features</span>
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✔</span>
-              <span>Founding Member badge (#1–50)</span>
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✔</span>
-              <span>Access to the private Beta Testing Group</span>
-            </li>
-          </ul>
-        </div>
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Only 50 spots — once they’re gone, they’re gone forever.
-          </p>
-          <p className="mt-2 text-yellow-500 font-semibold">
-            ⚠️ Limited Spots: {remainingSpots} left out of 50
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Act now to lock in your founding perks.
-          </p>
-        </div>
-        <div className="mt-6">
-          <Button
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-4 rounded-lg"
-            onClick={() => {
-              const pricingSection = document.getElementById("pricing");
-              if (pricingSection) {
-                pricingSection.scrollIntoView({ behavior: "smooth" });
-              }
-              setIsOpen(false);
-            }}
+    <AnimatePresence>
+      {isOpen && (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogContent
+            className="p-0 border-none max-w-md w-full mx-auto rounded-2xl overflow-hidden"
+            asChild
+            forceMount
           >
-            Claim Founding Member Spot
-          </Button>
-        </div>
-        <DialogClose asChild>
-          <button className="absolute top-2 right-2 p-1 rounded-full text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700">
-            <X className="w-5 h-5" />
-          </button>
-        </DialogClose>
-      </DialogContent>
-    </Dialog>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-[linear-gradient(to_bottom,#FF4D8A,#C043F5,#4C52FF)] text-white font-sans"
+            >
+              <div className="p-8 text-center relative">
+                <DialogClose asChild>
+                  <button onClick={handleClose} className="absolute top-4 right-4 p-1 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                    <X className="w-6 h-6" />
+                  </button>
+                </DialogClose>
+                <h2 className="text-4xl font-extrabold tracking-tight">
+                  FOUNDING MEMBER BONUS
+                </h2>
+                <p className="mt-3 text-lg text-white/80">
+                  A one-time opportunity for the first 50 buyers.
+                </p>
+              </div>
+
+              <div className="px-8 pb-8">
+                <ul className="space-y-3 text-left">
+                  {bonuses.map((bonus, i) => (
+                    <li key={i} className="flex items-center text-base">
+                      <CheckCircle2 className="w-5 h-5 mr-3 text-green-300 flex-shrink-0" />
+                      <span>{bonus}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="px-8 pb-8 text-center">
+                <p className="font-semibold text-white/90 italic">
+                  Only 50 spots — once they’re gone, they’re gone forever.
+                </p>
+                <p className="mt-4 text-yellow-300 font-semibold">
+                  ⚠️ Limited Spots: {remainingSpots} left out of 50
+                </p>
+                <p className="mt-1 text-sm text-white/70">
+                  Act now to lock in your founding perks.
+                </p>
+              </div>
+
+              <div className="px-8 pb-8">
+                <motion.div
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Button
+                    className="w-full h-14 bg-[linear-gradient(to_right,#FFC934,#FFB300)] hover:opacity-90 text-lg text-[#432C00] font-bold py-3 px-4 rounded-xl shadow-lg transform hover:scale-105 transition-transform"
+                    onClick={handleClaimOffer}
+                  >
+                    Claim Founding Member Spot
+                  </Button>
+                </motion.div>
+              </div>
+            </motion.div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </AnimatePresence>
   );
 };
 
