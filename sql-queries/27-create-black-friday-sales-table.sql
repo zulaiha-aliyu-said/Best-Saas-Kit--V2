@@ -48,3 +48,4 @@ COMMENT ON COLUMN black_friday_sales.tx_ref IS 'Flutterwave transaction referenc
 COMMENT ON COLUMN black_friday_sales.plan_type IS 'Type of plan purchased: pro_trial or ltd';
 COMMENT ON COLUMN black_friday_sales.tier IS 'LTD tier number (1-4) for LTD plans, NULL for pro_trial';
 
+
