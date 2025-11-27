@@ -21,7 +21,6 @@ const Footer = () => {
     ],
     resources: [
       { name: "Help Center", href: "/help" },
-      { name: "Documentation", href: "/docs" },
       { name: "Tutorials", href: "/tutorials" },
       { name: "FAQ", href: "/#faq" },
       { name: "Support", href: "/support" }
