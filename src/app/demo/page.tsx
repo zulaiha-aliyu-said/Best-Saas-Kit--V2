@@ -128,11 +128,6 @@ export default function DemoPage() {
                   View Source Code
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link href="/docs">
-                  View Documentation
-                </Link>
-              </Button>
             </div>
           </div>
         </div>

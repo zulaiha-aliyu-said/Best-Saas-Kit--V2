@@ -195,7 +195,6 @@ export const REPURPOSE_TEMPLATES: RepurposeTemplate[] = [
     ],
     ctaSuggestions: [
       "Update now",
-      "Explore the docs",
       "Book a walkthrough"
     ],
     hashtagPacks: [

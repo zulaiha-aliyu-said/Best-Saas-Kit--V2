@@ -231,8 +231,6 @@ export function createWelcomeEmail(userName: string, userEmail: string) {
           
           <div style="text-align: center; margin-top: 35px;">
             <p style="color: #6b7280; font-size: 15px; margin: 0 0 15px 0;">Need help getting started?</p>
-            <a href="${EMAIL_CONFIG.SITE_URL}/docs" style="color: #8B5CF6; text-decoration: none; font-weight: 600; margin: 0 15px;">📚 Documentation</a>
-            <span style="color: #d1d5db;">|</span>
             <a href="${EMAIL_CONFIG.SITE_URL}/contact" style="color: #8B5CF6; text-decoration: none; font-weight: 600; margin: 0 15px;">💬 Contact Support</a>
           </div>
         </div>
