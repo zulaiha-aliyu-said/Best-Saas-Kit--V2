@@ -13,24 +13,15 @@ const Footer = () => {
       { name: "Sign In", href: "/auth/signin" }
     ],
     company: [
-      { name: "About", href: "/about" },
-      { name: "Blog", href: "/blog" },
-      { name: "Careers", href: "/careers" },
-      { name: "Contact", href: "/contact" },
-      { name: "Press Kit", href: "/press" }
+      { name: "Contact", href: "/contact" }
     ],
     resources: [
-      { name: "Help Center", href: "/help" },
-      { name: "Tutorials", href: "/tutorials" },
-      { name: "FAQ", href: "/#faq" },
-      { name: "Support", href: "/support" }
+      { name: "FAQ", href: "/#faq" }
     ],
     legal: [
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
-      { name: "Refund Policy", href: "/refund-policy" },
-      { name: "Cookie Policy", href: "/cookies" },
-      { name: "Security", href: "/security" }
+      { name: "Refund Policy", href: "/refund-policy" }
     ]
   }
 
@@ -54,7 +45,7 @@ const Footer = () => {
               <span className="text-xl font-bold text-foreground">Repurposely</span>
             </div>
             <p className="text-muted-foreground mb-6 max-w-sm">
-              Transform your content across platforms with AI. Discover trending topics, 
+              Transform your content across platforms with AI. Discover trending topics,
               create engaging posts, and grow your reach effortlessly.
             </p>
             <div className="flex space-x-4">
@@ -143,25 +134,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Newsletter Signup */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <div className="max-w-md">
-            <h3 className="font-semibold text-foreground mb-2">Stay Updated</h3>
-            <p className="text-muted-foreground text-sm mb-4">
-              Get the latest updates, tutorials, and announcements delivered to your inbox.
-            </p>
-            <div className="flex space-x-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
-              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">

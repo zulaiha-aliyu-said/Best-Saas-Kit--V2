@@ -43,7 +43,7 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-lg w-full mx-auto p-0 overflow-hidden border-0 bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-500">
+            <DialogContent className="max-w-lg w-[95vw] sm:w-full mx-auto p-0 overflow-hidden border-0 bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-500 max-h-[90vh] overflow-y-auto">
                 {/* Animated Background Orbs */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-400/30 rounded-full blur-3xl animate-pulse"></div>
@@ -51,14 +51,14 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
                 </div>
 
                 {/* Content Container */}
-                <div className="relative z-10 p-8 text-white">
+                <div className="relative z-10 p-4 sm:p-6 md:p-8 text-white">
                     {/* Close Button - More visible and easier to click */}
                     <DialogClose asChild>
                         <button
-                            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm group z-50"
+                            className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm group z-50"
                             aria-label="Close popup"
                         >
-                            <X className="w-5 h-5 text-white group-hover:rotate-90 transition-transform duration-300" />
+                            <X className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </DialogClose>
 
@@ -66,56 +66,56 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
                     <DialogTitle className="sr-only">Founding Member Exclusive Offer</DialogTitle>
 
                     {/* Header with Icon */}
-                    <div className="text-center mb-6">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-4 animate-bounce">
-                            <Sparkles className="w-8 h-8 text-white" />
+                    <div className="text-center mb-4 sm:mb-6">
+                        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3 sm:mb-4 animate-bounce">
+                            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </div>
-                        <div className="inline-flex items-center gap-2 mb-3 flex-wrap justify-center">
-                            <span className="text-sm font-semibold px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full animate-pulse">
+                        <div className="inline-flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 flex-wrap justify-center">
+                            <span className="text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full animate-pulse">
                                 🎉 FOUNDING MEMBER
                             </span>
-                            <span className="text-sm font-semibold px-3 py-1 bg-yellow-500/30 backdrop-blur-sm rounded-full">
+                            <span className="text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1 bg-yellow-500/30 backdrop-blur-sm rounded-full">
                                 ⏰ LIMITED TIME
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
                             Exclusive Launch Offer 🚀
                         </h2>
-                        <p className="text-lg text-white/90 leading-relaxed">
+                        <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed px-2">
                             Join our <span className="font-bold text-yellow-300">founding members</span> and unlock premium perks that will never be available again!
                         </p>
                     </div>
 
                     {/* Features Grid */}
-                    <div className="space-y-3 mb-6">
+                    <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                         {features.map((feature, index) => {
                             const Icon = feature.icon;
                             return (
                                 <div
                                     key={index}
-                                    className="flex items-start gap-3 p-3 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105"
+                                    className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105"
                                     style={{
                                         animation: `slideInLeft 0.5s ease-out ${index * 100}ms backwards`
                                     }}
                                 >
-                                    <div className={`p-2 ${feature.color} bg-white/10 rounded-lg flex-shrink-0`}>
-                                        <Icon className="w-5 h-5" />
+                                    <div className={`p-1.5 sm:p-2 ${feature.color} bg-white/10 rounded-lg flex-shrink-0`}>
+                                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <span className="text-white font-medium text-sm pt-2">{feature.text}</span>
+                                    <span className="text-white font-medium text-xs sm:text-sm pt-1 sm:pt-2">{feature.text}</span>
                                 </div>
                             );
                         })}
                     </div>
 
                     {/* Urgency Section */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-6 border border-white/20">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 border border-white/20">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-white/80">Spots Remaining</span>
-                            <span className="text-2xl font-bold text-yellow-300 animate-pulse">
+                            <span className="text-xs sm:text-sm text-white/80">Spots Remaining</span>
+                            <span className="text-xl sm:text-2xl font-bold text-yellow-300 animate-pulse">
                                 {remainingSpots}/50
                             </span>
                         </div>
-                        <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                        <div className="w-full bg-white/20 rounded-full h-2 sm:h-3 overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-1000"
                                 style={{
@@ -131,7 +131,7 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
 
                     {/* CTA Button */}
                     <Button
-                        className="w-full bg-white hover:bg-gray-100 text-purple-600 font-bold py-4 px-6 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
+                        className="w-full bg-white hover:bg-gray-100 text-purple-600 font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl text-sm sm:text-base md:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
                         onClick={() => {
                             const pricingSection = document.getElementById("pricing");
                             if (pricingSection) {
@@ -142,7 +142,7 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
                     >
                         <span className="flex items-center justify-center gap-2">
                             Claim My Founding Member Spot
-                            <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
                         </span>
                     </Button>
                 </div>
