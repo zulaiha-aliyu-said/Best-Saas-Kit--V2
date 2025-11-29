@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,7 @@ interface FoundingMemberPopupProps {
 
 const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
     const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const hasBeenShown = sessionStorage.getItem("foundingMemberPopupShown");
@@ -133,10 +135,7 @@ const FoundingMemberPopup = ({ remainingSpots }: FoundingMemberPopupProps) => {
                     <Button
                         className="w-full bg-white hover:bg-gray-100 text-purple-600 font-bold py-3 sm:py-4 px-6 rounded-xl text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
                         onClick={() => {
-                            const pricingSection = document.getElementById("pricing");
-                            if (pricingSection) {
-                                pricingSection.scrollIntoView({ behavior: "smooth" });
-                            }
+                            router.push('/pricing');
                             setIsOpen(false);
                         }}
                     >
