@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Innertube } from 'youtubei.js';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -139,7 +140,98 @@ async function fetchYouTubeMetadata(videoId: string): Promise<any> {
 
 async function fetchYouTubeTranscript(videoId: string): Promise<any> {
   try {
-    // Method 1: Try using a third-party transcript API
+    // Method 1: Use youtubei.js Innertube client (primary method)
+    try {
+      console.log('[YouTube Transcript] Initializing Innertube client...');
+      const youtube = await Innertube.create();
+      
+      console.log('[YouTube Transcript] Fetching video info for:', videoId);
+      const video = await youtube.getInfo(videoId);
+      
+      // Get video title from video info
+      const videoTitle = video.basic_info?.title || video.video_details?.title || 'YouTube Video';
+      console.log('[YouTube Transcript] Video title:', videoTitle);
+      
+      // Try to get transcript - handle 400 errors gracefully
+      console.log('[YouTube Transcript] Getting transcript...');
+      let transcriptData;
+      
+      try {
+        transcriptData = await video.getTranscript();
+      } catch (transcriptError: any) {
+        // If it's a 400 error, the video likely doesn't have transcripts
+        // Don't throw, just log and continue to fallback methods
+        if (transcriptError?.message?.includes('400') || 
+            transcriptError?.message?.includes('status code 400')) {
+          console.log('[YouTube Transcript] Transcript API returned 400 - video may not have captions available');
+          console.log('[YouTube Transcript] Will try fallback methods...');
+          transcriptData = null;
+        } else {
+          // Re-throw other errors
+          throw transcriptError;
+        }
+      }
+      
+      if (transcriptData && transcriptData.transcript) {
+        // Access segments via the correct path: transcript.content.body.initial_segments
+        const segments = transcriptData.transcript.content?.body?.initial_segments || [];
+        
+        console.log('[YouTube Transcript] Found segments:', segments?.length || 0);
+        
+        if (segments && segments.length > 0) {
+          // Extract text from segments - each segment has snippet.text
+          const transcriptText = segments
+            .filter((segment: any) => segment.snippet && segment.snippet.text)
+            .map((segment: any) => segment.snippet.text)
+            .filter(Boolean)
+            .join(' ');
+
+          if (transcriptText && transcriptText.trim().length > 0) {
+            console.log(
+              '[YouTube Transcript] Innertube succeeded, segments:',
+              segments.length,
+              'text length:',
+              transcriptText.length
+            );
+
+            return {
+              title: videoTitle,
+              text: transcriptText,
+              videoId,
+              source: 'youtubei.js',
+            };
+          } else {
+            console.log(
+              '[YouTube Transcript] Innertube returned empty text after processing segments'
+            );
+            console.log('[YouTube Transcript] Sample segment structure:', JSON.stringify(segments[0] || {}).substring(0, 200));
+          }
+        } else {
+          console.log(
+            '[YouTube Transcript] No segments found. Transcript structure:',
+            JSON.stringify({
+              hasTranscript: !!transcriptData.transcript,
+              hasContent: !!transcriptData.transcript?.content,
+              hasBody: !!transcriptData.transcript?.content?.body,
+              keys: Object.keys(transcriptData.transcript?.content?.body || {})
+            })
+          );
+        }
+      } else {
+        console.log('[YouTube Transcript] No transcript data available from Innertube');
+      }
+    } catch (innertubeError: any) {
+      console.error(
+        '[YouTube Transcript] Innertube failed:',
+        innertubeError?.message || innertubeError
+      );
+      console.error('[YouTube Transcript] Error stack:', innertubeError?.stack);
+      
+      // Don't throw here - let it fall through to fallback methods
+      // Only log the error and continue
+    }
+
+    // Method 2: Try using a third-party transcript API (RapidAPI) – optional fallback
     try {
       const apiResponse = await fetch(`https://youtube-transcript-api.p.rapidapi.com/transcript?video_id=${videoId}`, {
         method: 'GET',
@@ -152,132 +244,27 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
         const data = await apiResponse.json();
         if (data.transcript && data.transcript.length > 0) {
           const transcriptText = data.transcript.map((item: any) => item.text).join(' ');
+          console.log('[YouTube Transcript] RapidAPI fallback succeeded');
           return {
             title: data.title || 'YouTube Video',
             text: transcriptText,
             videoId,
+            source: 'rapidapi',
           };
         }
       }
-    } catch (apiError) {
-      console.log('Third-party API failed, trying direct method...');
+    } catch (apiError: any) {
+      console.log('[YouTube Transcript] RapidAPI fallback failed:', apiError?.message);
     }
 
-    // Method 2: Direct extraction from YouTube page
-    const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch video page');
-    }
-
-    const html = await response.text();
-
-    // Extract title
-    const titleMatch = html.match(/<title>(.+?)<\/title>/);
-    const title = titleMatch ? titleMatch[1].replace(' - YouTube', '').trim() : 'YouTube Video';
-
-    // More robust caption track extraction
-    // Look for the captionTracks array in the page
-    let captionUrl: string | null = null;
-
-    // Method 1: Try to find captionTracks directly
-    const captionTracksPattern = /"captionTracks":\s*\[([^\]]+)\]/;
-    const captionTracksMatch = html.match(captionTracksPattern);
-
-    if (captionTracksMatch) {
-      try {
-        // Extract the baseUrl from the first caption track
-        const baseUrlMatch = captionTracksMatch[0].match(/"baseUrl":\s*"([^"]+)"/);
-        if (baseUrlMatch) {
-          captionUrl = baseUrlMatch[1].replace(/\\u0026/g, '&');
-        }
-      } catch (e) {
-        console.error('Error parsing caption tracks:', e);
-      }
-    }
-
-    // Method 2: Try alternative pattern
-    if (!captionUrl) {
-      const altPattern = /"captionTracks":\[{"baseUrl":"([^"]+)"/;
-      const altMatch = html.match(altPattern);
-      if (altMatch) {
-        captionUrl = altMatch[1].replace(/\\u0026/g, '&');
-      }
-    }
-
-    if (!captionUrl) {
-      throw new Error('No captions available for this video. The video may not have subtitles/captions enabled.');
-    }
-
-    // Fetch the actual transcript
-    const transcriptResponse = await fetch(captionUrl);
-    
-    if (!transcriptResponse.ok) {
-      throw new Error('Failed to fetch transcript data');
-    }
-
-    const transcriptXml = await transcriptResponse.text();
-
-    // Parse XML and extract text - handle multiple formats
-    const transcriptParts: string[] = [];
-    
-    // Method 1: Standard text tags with content
-    const textMatches = transcriptXml.matchAll(/<text[^>]*>([^<]+)<\/text>/g);
-    for (const match of textMatches) {
-      const text = decodeHTMLEntities(match[1].trim());
-      if (text) {
-        transcriptParts.push(text);
-      }
-    }
-
-    // Method 2: Handle CDATA sections
-    if (transcriptParts.length === 0) {
-      const cdataMatches = transcriptXml.matchAll(/<text[^>]*><!\[CDATA\[([^\]]+)\]\]><\/text>/g);
-      for (const match of cdataMatches) {
-        const text = decodeHTMLEntities(match[1].trim());
-        if (text) {
-          transcriptParts.push(text);
-        }
-      }
-    }
-
-    // Method 3: Try to extract any text between tags
-    if (transcriptParts.length === 0) {
-      const allTextMatches = transcriptXml.matchAll(/<text[^>]*>([^<]*)<\/text>/g);
-      for (const match of allTextMatches) {
-        const text = decodeHTMLEntities(match[1].trim());
-        if (text) {
-          transcriptParts.push(text);
-        }
-      }
-    }
-
-    if (transcriptParts.length === 0) {
-      // Log the full XML for debugging
-      console.log('Full Transcript XML:', transcriptXml);
-      console.log('Caption URL used:', captionUrl);
-      
-      // Return a helpful error with XML sample
-      const xmlSample = transcriptXml.substring(0, 300);
-      throw new Error(`No transcript text found. XML format may be unsupported. Sample: ${xmlSample}`);
-    }
-
-    const transcriptText = transcriptParts.join(' ');
-
-    return {
-      title,
-      text: transcriptText,
-      videoId,
-    };
+    // If all methods fail, return a helpful error message
+    // Don't throw - return null so upstream can handle it gracefully
+    console.log('[YouTube Transcript] All transcript methods failed. Video may not have captions available.');
+    return null;
 
   } catch (error: any) {
-    console.error('Error fetching transcript:', error);
-    console.error('Error details:', error.message);
+    console.error('[YouTube Transcript] All methods failed:', error);
+    console.error('[YouTube Transcript] Error details:', error.message);
     // Return null instead of throwing to allow better error handling upstream
     return null;
   }

@@ -147,7 +147,13 @@ export async function POST(req: NextRequest) {
     });
 
     const body = await req.json();
-    const { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
+    let { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
+    
+    // Normalize sourceType: 'youtube' should be treated as 'url' for database compatibility
+    // Database constraint only allows: 'text' | 'url' | 'file'
+    if (sourceType === 'youtube') {
+      sourceType = 'url';
+    }
     
     // Define length guidelines based on setting
     const lengthGuides = {
@@ -205,9 +211,10 @@ export async function POST(req: NextRequest) {
     console.log(`💳 Credit calculation: ${numPlatforms} platforms × ${creditCostPerPlatform} credits = ${totalCreditCost} total credits`);
     console.log(`💳 User has ${plan?.credits || 0} credits, needs ${totalCreditCost} credits`);
 
-    // Fetch content from URL if sourceType is 'url'
+    // Fetch content from URL if sourceType is 'url' and we don't already have text
+    // Note: For YouTube, we already have the transcript text, so don't fetch again
     let sourceText = String(text || '');
-    if (sourceType === 'url' && url) {
+    if (sourceType === 'url' && url && !sourceText) {
       try {
         sourceText = await fetchUrlContent(url);
       } catch (error: any) {
