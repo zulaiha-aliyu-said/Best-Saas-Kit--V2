@@ -90,7 +90,7 @@ export interface DiscountValidationResult {
 // Create or update user on login
 export async function upsertUser(userData: CreateUserData): Promise<User> {
   const client = await pool.connect()
-  
+
   try {
     const query = `
       INSERT INTO users (
@@ -112,14 +112,14 @@ export async function upsertUser(userData: CreateUserData): Promise<User> {
         updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `
-    
+
     const values = [
       userData.google_id,  // Used for both id and google_id
       userData.email,
       userData.name || null,
       userData.image_url || null
     ]
-    
+
     const result = await client.query(query, values)
     return result.rows[0] as User
   } finally {
@@ -130,12 +130,12 @@ export async function upsertUser(userData: CreateUserData): Promise<User> {
 // Get user by Google ID
 export async function getUserByGoogleId(googleId: string): Promise<User | null> {
   const client = await pool.connect()
-  
+
   try {
     // Query by google_id to handle both old numeric IDs and new VARCHAR IDs
     const query = 'SELECT * FROM users WHERE google_id = $1'
     const result = await client.query(query, [googleId])
-    
+
     return result.rows[0] as User || null
   } finally {
     client.release()
@@ -173,7 +173,7 @@ export async function getUserById(id: string | number): Promise<User | null> {
 // Update user's last login
 export async function updateUserLastLogin(googleId: string): Promise<void> {
   const client = await pool.connect()
-  
+
   try {
     const query = `
       UPDATE users 
@@ -189,11 +189,11 @@ export async function updateUserLastLogin(googleId: string): Promise<void> {
 // Get all users (for admin purposes)
 export async function getAllUsers(): Promise<User[]> {
   const client = await pool.connect()
-  
+
   try {
     const query = 'SELECT * FROM users ORDER BY created_at DESC'
     const result = await client.query(query)
-    
+
     return result.rows as User[]
   } finally {
     client.release()
@@ -203,7 +203,7 @@ export async function getAllUsers(): Promise<User[]> {
 // Get user statistics
 export async function getUserStats() {
   const client = await pool.connect()
-  
+
   try {
     const queries = await Promise.all([
       client.query('SELECT COUNT(*) as total_users FROM users'),
@@ -211,7 +211,7 @@ export async function getUserStats() {
       client.query('SELECT COUNT(*) as new_this_week FROM users WHERE created_at >= CURRENT_DATE - INTERVAL \'7 days\''),
       client.query('SELECT COUNT(*) as new_this_month FROM users WHERE created_at >= CURRENT_DATE - INTERVAL \'30 days\'')
     ])
-    
+
     return {
       totalUsers: parseInt(queries[0].rows[0].total_users),
       activeToday: parseInt(queries[1].rows[0].active_today),
@@ -481,7 +481,7 @@ export interface GenerationRow {
   id: string
   user_id: string | number
   content_id?: string | null
-  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'reddit' | 'pinterest'
   tone: string
   options_json?: any
   output_json?: any
@@ -494,7 +494,7 @@ export interface PostRow {
   id: string
   user_id: string | number
   generation_id?: string | null
-  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'reddit' | 'pinterest'
   body: string
   hashtags?: string[] | null
   status: 'draft' | 'scheduled' | 'posted'
@@ -527,7 +527,7 @@ export async function createContent(params: {
 export async function insertGeneration(params: {
   userId: string | number
   contentId?: string | null
-  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'reddit' | 'pinterest'
   tone: string
   options?: any
   output?: any
@@ -551,7 +551,7 @@ export async function insertGeneration(params: {
 export async function insertPost(params: {
   userId: string | number
   generationId?: string | null
-  platform: 'x' | 'linkedin' | 'instagram' | 'email'
+  platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'reddit' | 'pinterest'
   body: string
   hashtags?: string[] | null
   status?: 'draft' | 'scheduled' | 'posted'
@@ -1313,7 +1313,7 @@ export interface CreatePerformanceFeedbackData {
 // Create a new performance prediction
 export async function createPerformancePrediction(predictionData: CreatePerformancePredictionData): Promise<PerformancePrediction> {
   const client = await pool.connect()
-  
+
   try {
     const query = `
       INSERT INTO performance_predictions (
@@ -1324,7 +1324,7 @@ export async function createPerformancePrediction(predictionData: CreatePerforma
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `
-    
+
     const values = [
       predictionData.user_id,
       predictionData.content,
@@ -1341,10 +1341,10 @@ export async function createPerformancePrediction(predictionData: CreatePerforma
       predictionData.model_version || null,
       predictionData.tokens_used || 0
     ]
-    
+
     const result = await client.query(query, values)
     const row = result.rows[0]
-    
+
     return {
       ...row,
       breakdown: JSON.parse(row.breakdown),
@@ -1358,7 +1358,7 @@ export async function createPerformancePrediction(predictionData: CreatePerforma
 // Get user's recent predictions
 export async function getUserPredictions(userId: string | number, limit: number = 20): Promise<PerformancePrediction[]> {
   const client = await pool.connect()
-  
+
   try {
     const query = `
       SELECT * FROM performance_predictions 
@@ -1366,9 +1366,9 @@ export async function getUserPredictions(userId: string | number, limit: number 
       ORDER BY created_at DESC 
       LIMIT $2
     `
-    
+
     const result = await client.query(query, [userId, limit])
-    
+
     return result.rows.map(row => ({
       ...row,
       breakdown: JSON.parse(row.breakdown),
@@ -1382,13 +1382,13 @@ export async function getUserPredictions(userId: string | number, limit: number 
 // Get prediction by ID
 export async function getPredictionById(predictionId: number): Promise<PerformancePrediction | null> {
   const client = await pool.connect()
-  
+
   try {
     const query = 'SELECT * FROM performance_predictions WHERE id = $1'
     const result = await client.query(query, [predictionId])
-    
+
     if (result.rows.length === 0) return null
-    
+
     const row = result.rows[0]
     return {
       ...row,
@@ -1403,7 +1403,7 @@ export async function getPredictionById(predictionId: number): Promise<Performan
 // Create performance feedback
 export async function createPerformanceFeedback(feedbackData: CreatePerformanceFeedbackData): Promise<PerformanceFeedback> {
   const client = await pool.connect()
-  
+
   try {
     const query = `
       INSERT INTO performance_feedback (
@@ -1414,7 +1414,7 @@ export async function createPerformanceFeedback(feedbackData: CreatePerformanceF
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `
-    
+
     const values = [
       feedbackData.prediction_id,
       feedbackData.user_id,
@@ -1426,7 +1426,7 @@ export async function createPerformanceFeedback(feedbackData: CreatePerformanceF
       feedbackData.feedback_notes || null,
       feedbackData.accuracy_rating || null
     ]
-    
+
     const result = await client.query(query, values)
     return result.rows[0] as PerformanceFeedback
   } finally {
@@ -1437,7 +1437,7 @@ export async function createPerformanceFeedback(feedbackData: CreatePerformanceF
 // Get user prediction statistics
 export async function getUserPredictionStats(userId: string | number) {
   const client = await pool.connect()
-  
+
   try {
     // Get basic stats
     const basicStatsQuery = `
@@ -1450,7 +1450,7 @@ export async function getUserPredictionStats(userId: string | number) {
       FROM performance_predictions
       WHERE user_id = $1
     `
-    
+
     // Get platform breakdown
     const platformQuery = `
       SELECT platform, COUNT(*) as count
@@ -1458,20 +1458,20 @@ export async function getUserPredictionStats(userId: string | number) {
       WHERE user_id = $1
       GROUP BY platform
     `
-    
+
     const [basicStats, platformResults] = await Promise.all([
       client.query(basicStatsQuery, [userId]),
       client.query(platformQuery, [userId])
     ])
-    
+
     // Build platform breakdown object
     const platformBreakdown = platformResults.rows.reduce((acc, row) => {
       acc[row.platform] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const basicStatsData = basicStats.rows[0]
-    
+
     return {
       total_predictions: parseInt(basicStatsData.total_predictions) || 0,
       average_score: parseFloat(basicStatsData.average_score) || 0,
@@ -1488,7 +1488,7 @@ export async function getUserPredictionStats(userId: string | number) {
 // Get prediction accuracy statistics (admin function)
 export async function getPredictionAccuracyStats() {
   const client = await pool.connect()
-  
+
   try {
     // Get basic accuracy stats
     const basicQuery = `
@@ -1499,7 +1499,7 @@ export async function getPredictionAccuracyStats() {
       FROM performance_predictions pp
       LEFT JOIN performance_feedback pf ON pp.id = pf.prediction_id
     `
-    
+
     // Get model performance breakdown
     const modelQuery = `
       SELECT 
@@ -1511,12 +1511,12 @@ export async function getPredictionAccuracyStats() {
       LEFT JOIN performance_feedback pf ON pp.id = pf.prediction_id
       GROUP BY pp.model_name
     `
-    
+
     const [basicResults, modelResults] = await Promise.all([
       client.query(basicQuery),
       client.query(modelQuery)
     ])
-    
+
     // Build model performance object
     const modelPerformance = modelResults.rows.reduce((acc, row) => {
       acc[row.model_name] = {
@@ -1526,9 +1526,9 @@ export async function getPredictionAccuracyStats() {
       }
       return acc
     }, {} as Record<string, any>)
-    
+
     const basicData = basicResults.rows[0]
-    
+
     return {
       total_predictions: parseInt(basicData.total_predictions) || 0,
       predictions_with_feedback: parseInt(basicData.predictions_with_feedback) || 0,
@@ -1543,7 +1543,7 @@ export async function getPredictionAccuracyStats() {
 // Get admin prediction analytics
 export async function getAdminPredictionAnalytics() {
   const client = await pool.connect()
-  
+
   try {
     // Get basic stats
     const basicStatsQuery = `
@@ -1555,41 +1555,41 @@ export async function getAdminPredictionAnalytics() {
         COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_predictions
       FROM performance_predictions
     `
-    
+
     // Get platform breakdown
     const platformQuery = `
       SELECT platform, COUNT(*) as count
       FROM performance_predictions
       GROUP BY platform
     `
-    
+
     // Get model breakdown
     const modelQuery = `
       SELECT COALESCE(model_name, 'unknown') as model_name, COUNT(*) as count
       FROM performance_predictions
       GROUP BY model_name
     `
-    
+
     const [basicStats, platformResults, modelResults] = await Promise.all([
       client.query(basicStatsQuery),
       client.query(platformQuery),
       client.query(modelQuery)
     ])
-    
+
     // Build platform breakdown object
     const platformBreakdown = platformResults.rows.reduce((acc, row) => {
       acc[row.platform] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     // Build model breakdown object
     const modelBreakdown = modelResults.rows.reduce((acc, row) => {
       acc[row.model_name] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const basicStatsData = basicStats.rows[0]
-    
+
     return {
       total_predictions: parseInt(basicStatsData.total_predictions) || 0,
       unique_users: parseInt(basicStatsData.unique_users) || 0,
@@ -1607,7 +1607,7 @@ export async function getAdminPredictionAnalytics() {
 // Get predictions with feedback for analytics
 export async function getPredictionsWithFeedback(limit: number = 50): Promise<any[]> {
   const client = await pool.connect()
-  
+
   try {
     const query = `
       SELECT 
@@ -1627,9 +1627,9 @@ export async function getPredictionsWithFeedback(limit: number = 50): Promise<an
       ORDER BY pp.created_at DESC
       LIMIT $1
     `
-    
+
     const result = await client.query(query, [limit])
-    
+
     return result.rows.map(row => ({
       ...row,
       breakdown: JSON.parse(row.breakdown),
@@ -1643,7 +1643,7 @@ export async function getPredictionsWithFeedback(limit: number = 50): Promise<an
 // Get user repurposed content statistics
 export async function getUserRepurposedContentStats(userId: string | number) {
   const client = await pool.connect()
-  
+
   try {
     // Get basic stats from generations table
     const basicStatsQuery = `
@@ -1657,7 +1657,7 @@ export async function getUserRepurposedContentStats(userId: string | number) {
       FROM generations
       WHERE user_id = $1 AND status = 'completed'
     `
-    
+
     // Get platform breakdown
     const platformQuery = `
       SELECT platform, COUNT(*) as count
@@ -1665,7 +1665,7 @@ export async function getUserRepurposedContentStats(userId: string | number) {
       WHERE user_id = $1 AND status = 'completed'
       GROUP BY platform
     `
-    
+
     // Get tone breakdown
     const toneQuery = `
       SELECT tone, COUNT(*) as count
@@ -1673,7 +1673,7 @@ export async function getUserRepurposedContentStats(userId: string | number) {
       WHERE user_id = $1 AND status = 'completed'
       GROUP BY tone
     `
-    
+
     // Get posts created from generations
     const postsQuery = `
       SELECT 
@@ -1684,29 +1684,29 @@ export async function getUserRepurposedContentStats(userId: string | number) {
       FROM posts
       WHERE user_id = $1
     `
-    
+
     const [basicStats, platformResults, toneResults, postsResults] = await Promise.all([
       client.query(basicStatsQuery, [userId]),
       client.query(platformQuery, [userId]),
       client.query(toneQuery, [userId]),
       client.query(postsQuery, [userId])
     ])
-    
+
     // Build platform breakdown object
     const platformBreakdown = platformResults.rows.reduce((acc, row) => {
       acc[row.platform] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     // Build tone breakdown object
     const toneBreakdown = toneResults.rows.reduce((acc, row) => {
       acc[row.tone] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const basicStatsData = basicStats.rows[0]
     const postsData = postsResults.rows[0]
-    
+
     return {
       total_generations: parseInt(basicStatsData.total_generations) || 0,
       platforms_used: parseInt(basicStatsData.platforms_used) || 0,
@@ -1729,7 +1729,7 @@ export async function getUserRepurposedContentStats(userId: string | number) {
 // Get admin repurposed content analytics
 export async function getAdminRepurposedContentAnalytics() {
   const client = await pool.connect()
-  
+
   try {
     // Get basic stats
     const basicStatsQuery = `
@@ -1743,7 +1743,7 @@ export async function getAdminRepurposedContentAnalytics() {
       FROM generations
       WHERE status = 'completed'
     `
-    
+
     // Get platform breakdown
     const platformQuery = `
       SELECT platform, COUNT(*) as count
@@ -1751,7 +1751,7 @@ export async function getAdminRepurposedContentAnalytics() {
       WHERE status = 'completed'
       GROUP BY platform
     `
-    
+
     // Get tone breakdown
     const toneQuery = `
       SELECT tone, COUNT(*) as count
@@ -1759,7 +1759,7 @@ export async function getAdminRepurposedContentAnalytics() {
       WHERE status = 'completed'
       GROUP BY tone
     `
-    
+
     // Get posts stats
     const postsQuery = `
       SELECT 
@@ -1768,28 +1768,28 @@ export async function getAdminRepurposedContentAnalytics() {
         COUNT(CASE WHEN status = 'draft' THEN 1 END) as draft_posts
       FROM posts
     `
-    
+
     const [basicStats, platformResults, toneResults, postsResults] = await Promise.all([
       client.query(basicStatsQuery),
       client.query(platformQuery),
       client.query(toneQuery),
       client.query(postsQuery)
     ])
-    
+
     // Build breakdown objects
     const platformBreakdown = platformResults.rows.reduce((acc, row) => {
       acc[row.platform] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const toneBreakdown = toneResults.rows.reduce((acc, row) => {
       acc[row.tone] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const basicStatsData = basicStats.rows[0]
     const postsData = postsResults.rows[0]
-    
+
     return {
       total_generations: parseInt(basicStatsData.total_generations) || 0,
       unique_users: parseInt(basicStatsData.unique_users) || 0,
@@ -1811,7 +1811,7 @@ export async function getAdminRepurposedContentAnalytics() {
 // Get user schedule analytics
 export async function getUserScheduleAnalytics(userId: string | number) {
   const client = await pool.connect()
-  
+
   try {
     // Get basic stats from schedules table
     const schedulesStatsQuery = `
@@ -1827,7 +1827,7 @@ export async function getUserScheduleAnalytics(userId: string | number) {
       FROM schedules
       WHERE user_id = $1
     `
-    
+
     // Get platform breakdown from scheduled_posts table
     const platformQuery = `
       SELECT platform, COUNT(*) as count
@@ -1835,7 +1835,7 @@ export async function getUserScheduleAnalytics(userId: string | number) {
       WHERE user_id = $1
       GROUP BY platform
     `
-    
+
     // Get status breakdown from scheduled_posts table
     const statusQuery = `
       SELECT status, COUNT(*) as count
@@ -1843,36 +1843,36 @@ export async function getUserScheduleAnalytics(userId: string | number) {
       WHERE user_id = $1
       GROUP BY status
     `
-    
+
     // Get upcoming schedules
     const upcomingQuery = `
       SELECT COUNT(*) as upcoming_count
       FROM schedules
       WHERE user_id = $1 AND scheduled_at > NOW() AND status = 'pending'
     `
-    
+
     const [schedulesStats, platformResults, statusResults, upcomingResults] = await Promise.all([
       client.query(schedulesStatsQuery, [userId]),
       client.query(platformQuery, [userId]),
       client.query(statusQuery, [userId]),
       client.query(upcomingQuery, [userId])
     ])
-    
+
     // Build platform breakdown object
     const platformBreakdown = platformResults.rows.reduce((acc, row) => {
       acc[row.platform] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     // Build status breakdown object
     const statusBreakdown = statusResults.rows.reduce((acc, row) => {
       acc[row.status] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const schedulesData = schedulesStats.rows[0]
     const upcomingData = upcomingResults.rows[0]
-    
+
     return {
       total_schedules: parseInt(schedulesData.total_schedules) || 0,
       posted_schedules: parseInt(schedulesData.posted_schedules) || 0,
@@ -1894,7 +1894,7 @@ export async function getUserScheduleAnalytics(userId: string | number) {
 // Get admin schedule analytics
 export async function getAdminScheduleAnalytics() {
   const client = await pool.connect()
-  
+
   try {
     // Get basic stats from schedules table
     const schedulesStatsQuery = `
@@ -1910,49 +1910,49 @@ export async function getAdminScheduleAnalytics() {
         ROUND(AVG(best_time_score), 2) as avg_best_time_score
       FROM schedules
     `
-    
+
     // Get platform breakdown from scheduled_posts table
     const platformQuery = `
       SELECT platform, COUNT(*) as count
       FROM scheduled_posts
       GROUP BY platform
     `
-    
+
     // Get status breakdown from scheduled_posts table
     const statusQuery = `
       SELECT status, COUNT(*) as count
       FROM scheduled_posts
       GROUP BY status
     `
-    
+
     // Get upcoming schedules
     const upcomingQuery = `
       SELECT COUNT(*) as upcoming_count
       FROM schedules
       WHERE scheduled_at > NOW() AND status = 'pending'
     `
-    
+
     const [schedulesStats, platformResults, statusResults, upcomingResults] = await Promise.all([
       client.query(schedulesStatsQuery),
       client.query(platformQuery),
       client.query(statusQuery),
       client.query(upcomingQuery)
     ])
-    
+
     // Build breakdown objects
     const platformBreakdown = platformResults.rows.reduce((acc, row) => {
       acc[row.platform] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const statusBreakdown = statusResults.rows.reduce((acc, row) => {
       acc[row.status] = parseInt(row.count)
       return acc
     }, {} as Record<string, number>)
-    
+
     const schedulesData = schedulesStats.rows[0]
     const upcomingData = upcomingResults.rows[0]
-    
+
     return {
       total_schedules: parseInt(schedulesData.total_schedules) || 0,
       unique_users: parseInt(schedulesData.unique_users) || 0,
@@ -2087,13 +2087,13 @@ export async function getUserPreferences(userId: string | number): Promise<UserP
       SELECT * FROM user_preferences 
       WHERE user_id = $1
     `;
-    
+
     const result = await pool.query(query, [userId]);
-    
+
     console.log('🗄️  database.ts - getUserPreferences');
     console.log('  userId:', userId);
     console.log('  rows found:', result.rows.length);
-    
+
     if (result.rows.length === 0) {
       console.log('  ⚠️  No preferences found, returning defaults');
       // Return default preferences if none exist
@@ -2126,17 +2126,17 @@ export async function getUserPreferences(userId: string | number): Promise<UserP
         platform_optimization_enabled: false,
       };
     }
-    
+
     const prefs = result.rows[0];
-    
+
     console.log('  ✅ Loaded from DB - platform_optimization_enabled:', prefs.platform_optimization_enabled);
     console.log('  ✅ Type:', typeof prefs.platform_optimization_enabled);
-    
+
     // Parse JSON fields
     if (prefs.default_platforms && typeof prefs.default_platforms === 'string') {
       prefs.default_platforms = JSON.parse(prefs.default_platforms);
     }
-    
+
     return prefs;
   } catch (error) {
     console.error('Error fetching user preferences:', error);
@@ -2195,7 +2195,7 @@ export async function updateUserPreferences(userId: string | number, preferences
         platform_optimization_enabled = EXCLUDED.platform_optimization_enabled,
         updated_at = CURRENT_TIMESTAMP
     `;
-    
+
     const values = [
       userId,
       preferences.name,
@@ -2224,13 +2224,13 @@ export async function updateUserPreferences(userId: string | number, preferences
       preferences.compact_mode,
       preferences.platform_optimization_enabled,
     ];
-    
+
     console.log('🗄️  database.ts - updateUserPreferences');
     console.log('  userId:', userId);
     console.log('  platform_optimization_enabled (value $26):', preferences.platform_optimization_enabled);
-    
+
     await pool.query(query, values);
-    
+
     console.log('  ✅ SQL query executed successfully');
   } catch (error) {
     console.error('Error updating user preferences:', error);
@@ -2241,13 +2241,13 @@ export async function updateUserPreferences(userId: string | number, preferences
 export async function generateUserApiKey(userId: string | number): Promise<string> {
   try {
     const apiKey = `sk_user_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-    
+
     const query = `
       UPDATE user_preferences 
       SET api_key = $1, updated_at = CURRENT_TIMESTAMP
       WHERE user_id = $2
     `;
-    
+
     await pool.query(query, [apiKey, userId]);
     return apiKey;
   } catch (error) {
@@ -2261,16 +2261,16 @@ export async function exportUserData(userId: string | number): Promise<any> {
     // Get user data
     const userQuery = `SELECT * FROM users WHERE id = $1`;
     const userResult = await pool.query(userQuery, [userId]);
-    
+
     if (userResult.rows.length === 0) {
       throw new Error('User not found');
     }
-    
+
     const user = userResult.rows[0];
-    
+
     // Get user preferences
     const preferences = await getUserPreferences(userId);
-    
+
     // Get user's content generations (if any)
     const contentQuery = `
       SELECT id, content, platform, created_at 
@@ -2279,7 +2279,7 @@ export async function exportUserData(userId: string | number): Promise<any> {
       ORDER BY created_at DESC
     `;
     const contentResult = await pool.query(contentQuery, [userId]);
-    
+
     // Get user's performance predictions (if any)
     const predictionsQuery = `
       SELECT id, content, platform, score, created_at 
@@ -2288,7 +2288,7 @@ export async function exportUserData(userId: string | number): Promise<any> {
       ORDER BY created_at DESC
     `;
     const predictionsResult = await pool.query(predictionsQuery, [userId]);
-    
+
     return {
       user: {
         id: user.id,
@@ -2355,7 +2355,7 @@ export async function getSystemConfig(): Promise<SystemConfig> {
   try {
     const query = `SELECT * FROM system_config ORDER BY id DESC LIMIT 1`;
     const result = await pool.query(query);
-    
+
     if (result.rows.length === 0) {
       // Return default configuration
       return {
@@ -2389,14 +2389,14 @@ export async function getSystemConfig(): Promise<SystemConfig> {
         tracking_id: "",
       };
     }
-    
+
     const config = result.rows[0];
-    
+
     // Parse JSON fields
     if (config.allowed_domains && typeof config.allowed_domains === 'string') {
       config.allowed_domains = JSON.parse(config.allowed_domains);
     }
-    
+
     return config;
   } catch (error) {
     console.error('Error fetching system config:', error);
@@ -2450,7 +2450,7 @@ export async function updateSystemConfig(config: Partial<SystemConfig>): Promise
         tracking_id = EXCLUDED.tracking_id,
         updated_at = CURRENT_TIMESTAMP
     `;
-    
+
     const values = [
       config.openrouter_api_key,
       config.groq_api_key,
@@ -2481,7 +2481,7 @@ export async function updateSystemConfig(config: Partial<SystemConfig>): Promise
       config.analytics_provider,
       config.tracking_id,
     ];
-    
+
     await pool.query(query, values);
   } catch (error) {
     console.error('Error updating system config:', error);
@@ -2505,7 +2505,7 @@ export async function testOpenRouterConnection(): Promise<void> {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
       },
     });
-    
+
     if (!response.ok) {
       throw new Error('OpenRouter API connection failed');
     }
@@ -2521,7 +2521,7 @@ export async function testGroqConnection(): Promise<void> {
         'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
       },
     });
-    
+
     if (!response.ok) {
       throw new Error('Groq API connection failed');
     }
@@ -2537,7 +2537,7 @@ export async function testEmailConnection(): Promise<void> {
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
       },
     });
-    
+
     if (!response.ok) {
       throw new Error('Email service connection failed');
     }
@@ -2560,9 +2560,9 @@ export async function getUserWritingStyle(userId: string | number): Promise<{
       FROM user_preferences 
       WHERE user_id = $1
     `;
-    
+
     const result = await pool.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       return {
         profile: null,
@@ -2571,10 +2571,10 @@ export async function getUserWritingStyle(userId: string | number): Promise<{
         style_enabled: false,
       };
     }
-    
+
     const row = result.rows[0];
     const samples = row.style_training_samples || [];
-    
+
     return {
       profile: row.writing_style_profile,
       confidence_score: row.style_confidence_score || 0,
@@ -2588,9 +2588,9 @@ export async function getUserWritingStyle(userId: string | number): Promise<{
 }
 
 export async function updateUserWritingStyle(
-  userId: string | number, 
-  profile: WritingStyleProfile, 
-  samples: StyleTrainingSample[], 
+  userId: string | number,
+  profile: WritingStyleProfile,
+  samples: StyleTrainingSample[],
   confidenceScore: number
 ): Promise<void> {
   try {
@@ -2607,7 +2607,7 @@ export async function updateUserWritingStyle(
         style_confidence_score = EXCLUDED.style_confidence_score,
         updated_at = CURRENT_TIMESTAMP
     `;
-    
+
     await pool.query(query, [
       userId,
       JSON.stringify(profile),
@@ -2630,7 +2630,7 @@ export async function toggleUserStyleEnabled(userId: string | number, enabled: b
         style_enabled = EXCLUDED.style_enabled,
         updated_at = CURRENT_TIMESTAMP
     `;
-    
+
     await pool.query(query, [userId, enabled]);
   } catch (error) {
     console.error('Error toggling user style enabled:', error);
@@ -2646,20 +2646,20 @@ export async function analyzeStyleSamples(samples: StyleTrainingSample[]): Promi
   // For now, return a basic analysis structure
   const wordCounts = samples.reduce((acc, sample) => acc + sample.word_count, 0);
   const avgWordCount = wordCounts / samples.length;
-  
+
   // Calculate confidence based on sample count and diversity
   let confidenceScore = Math.min(90, samples.length * 12); // 12 points per sample, max 90
-  
+
   // Adjust confidence based on sample diversity
   const platforms = new Set(samples.map(s => s.platform));
   const contentTypes = new Set(samples.map(s => s.content_type));
-  
+
   if (platforms.size > 1) confidenceScore += 3;
   if (contentTypes.size > 1) confidenceScore += 3;
-  
+
   // Ensure confidence is within valid range (0-100)
   confidenceScore = Math.min(100, Math.max(0, confidenceScore));
-  
+
   const profile: WritingStyleProfile = {
     tone: 'professional', // Will be determined by AI analysis
     personality_traits: ['professional', 'informative'],
@@ -2688,7 +2688,7 @@ export async function analyzeStyleSamples(samples: StyleTrainingSample[]): Promi
     },
     platform_preferences: {},
   };
-  
+
   return { profile, confidenceScore };
 }
 
@@ -2725,14 +2725,14 @@ export async function insertOptimizationAnalytics(
   data: PlatformOptimizationAnalytics
 ): Promise<number> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       SELECT insert_optimization_analytics(
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
       ) as id
     `;
-    
+
     const result = await client.query(query, [
       data.user_id,
       data.generation_id || null,
@@ -2753,7 +2753,7 @@ export async function insertOptimizationAnalytics(
       data.processing_time_ms || null,
       data.model_used || null,
     ]);
-    
+
     return result.rows[0].id;
   } finally {
     client.release();
@@ -2773,11 +2773,11 @@ export async function getUserOptimizationStats(userId: string | number): Promise
   recent_optimizations: number;
 }> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_user_optimization_stats($1)`;
     const result = await client.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       return {
         total_optimizations: 0,
@@ -2792,7 +2792,7 @@ export async function getUserOptimizationStats(userId: string | number): Promise
         recent_optimizations: 0,
       };
     }
-    
+
     return {
       total_optimizations: parseInt(result.rows[0].total_optimizations) || 0,
       platforms_optimized: parseInt(result.rows[0].platforms_optimized) || 0,
@@ -2820,11 +2820,11 @@ export async function getUserPlatformBreakdown(userId: string | number): Promise
   avg_readability_score: number;
 }>> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_user_platform_breakdown($1)`;
     const result = await client.query(query, [userId]);
-    
+
     return result.rows.map(row => ({
       platform: row.platform,
       optimization_count: parseInt(row.optimization_count) || 0,
@@ -2851,11 +2851,11 @@ export async function getAdminOptimizationStats(): Promise<{
   monthly_optimizations: number;
 }> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_admin_optimization_stats()`;
     const result = await client.query(query);
-    
+
     if (result.rows.length === 0) {
       return {
         total_optimizations: 0,
@@ -2869,7 +2869,7 @@ export async function getAdminOptimizationStats(): Promise<{
         monthly_optimizations: 0,
       };
     }
-    
+
     return {
       total_optimizations: parseInt(result.rows[0].total_optimizations) || 0,
       unique_users: parseInt(result.rows[0].unique_users) || 0,
@@ -2895,11 +2895,11 @@ export async function getPlatformPopularity(): Promise<Array<{
   avg_readability_score: number;
 }>> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_platform_popularity()`;
     const result = await client.query(query);
-    
+
     return result.rows.map(row => ({
       platform: row.platform,
       optimization_count: parseInt(row.optimization_count) || 0,
@@ -2921,11 +2921,11 @@ export async function getOptimizationTrends(days: number = 30): Promise<Array<{
   avg_character_count: number;
 }>> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_optimization_trends($1)`;
     const result = await client.query(query, [days]);
-    
+
     return result.rows.map(row => ({
       date: row.date,
       optimization_count: parseInt(row.optimization_count) || 0,
@@ -2985,19 +2985,19 @@ export interface CreateMessageData {
 // Create new conversation
 export async function createConversation(data: CreateConversationData): Promise<ChatConversation> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       INSERT INTO chat_conversations (user_id, title)
       VALUES ($1, $2)
       RETURNING *
     `;
-    
+
     const result = await client.query(query, [
       data.user_id,
       data.title || 'New Conversation'
     ]);
-    
+
     return result.rows[0];
   } finally {
     client.release();
@@ -3007,7 +3007,7 @@ export async function createConversation(data: CreateConversationData): Promise<
 // Get user's conversations
 export async function getUserConversations(userId: string, includeArchived: boolean = false): Promise<ChatConversation[]> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       SELECT * FROM chat_conversations
@@ -3015,7 +3015,7 @@ export async function getUserConversations(userId: string, includeArchived: bool
         ${includeArchived ? '' : 'AND is_archived = false'}
       ORDER BY last_message_at DESC
     `;
-    
+
     const result = await client.query(query, [userId]);
     return result.rows;
   } finally {
@@ -3026,13 +3026,13 @@ export async function getUserConversations(userId: string, includeArchived: bool
 // Get conversation by ID
 export async function getConversationById(conversationId: number, userId: string | number): Promise<ChatConversation | null> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       SELECT * FROM chat_conversations
       WHERE id = $1 AND user_id = $2
     `;
-    
+
     const result = await client.query(query, [conversationId, userId]);
     return result.rows[0] || null;
   } finally {
@@ -3043,36 +3043,36 @@ export async function getConversationById(conversationId: number, userId: string
 // Update conversation
 export async function updateConversation(conversationId: number, userId: string | number, updates: { title?: string; is_archived?: boolean }): Promise<ChatConversation | null> {
   const client = await pool.connect();
-  
+
   try {
     const setClauses: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
-    
+
     if (updates.title !== undefined) {
       setClauses.push(`title = $${paramIndex++}`);
       values.push(updates.title);
     }
-    
+
     if (updates.is_archived !== undefined) {
       setClauses.push(`is_archived = $${paramIndex++}`);
       values.push(updates.is_archived);
     }
-    
+
     if (setClauses.length === 0) {
       return null;
     }
-    
+
     setClauses.push(`updated_at = NOW()`);
     values.push(conversationId, userId);
-    
+
     const query = `
       UPDATE chat_conversations
       SET ${setClauses.join(', ')}
       WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
       RETURNING *
     `;
-    
+
     const result = await client.query(query, values);
     return result.rows[0] || null;
   } finally {
@@ -3083,13 +3083,13 @@ export async function updateConversation(conversationId: number, userId: string 
 // Delete conversation
 export async function deleteConversation(conversationId: number, userId: string | number): Promise<boolean> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       DELETE FROM chat_conversations
       WHERE id = $1 AND user_id = $2
     `;
-    
+
     const result = await client.query(query, [conversationId, userId]);
     return (result.rowCount ?? 0) > 0;
   } finally {
@@ -3100,14 +3100,14 @@ export async function deleteConversation(conversationId: number, userId: string 
 // Add message to conversation
 export async function addMessage(data: CreateMessageData): Promise<ChatMessage> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       INSERT INTO chat_messages (conversation_id, role, content, tokens_used, model)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    
+
     const result = await client.query(query, [
       data.conversation_id,
       data.role,
@@ -3115,7 +3115,7 @@ export async function addMessage(data: CreateMessageData): Promise<ChatMessage> 
       data.tokens_used || 0,
       data.model
     ]);
-    
+
     return result.rows[0];
   } finally {
     client.release();
@@ -3125,7 +3125,7 @@ export async function addMessage(data: CreateMessageData): Promise<ChatMessage> 
 // Get conversation messages
 export async function getConversationMessages(conversationId: number, limit?: number): Promise<ChatMessage[]> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       SELECT * FROM chat_messages
@@ -3133,7 +3133,7 @@ export async function getConversationMessages(conversationId: number, limit?: nu
       ORDER BY created_at ASC
       ${limit ? `LIMIT ${limit}` : ''}
     `;
-    
+
     const result = await client.query(query, [conversationId]);
     return result.rows;
   } finally {
@@ -3144,7 +3144,7 @@ export async function getConversationMessages(conversationId: number, limit?: nu
 // Get user's chat context (recent activity)
 export async function getUserChatContext(userId: string): Promise<any> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT get_user_chat_context($1) as context`;
     const result = await client.query(query, [userId]);
@@ -3166,7 +3166,7 @@ export async function getUserChatContext(userId: string): Promise<any> {
 // Get chat statistics
 export async function getChatStatistics(userId: string, days: number = 30): Promise<any> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_chat_statistics($1, $2)`;
     const result = await client.query(query, [userId, days]);
@@ -3229,14 +3229,14 @@ export interface CreatePromptData {
 // Create new prompt
 export async function createPrompt(data: CreatePromptData): Promise<PromptLibraryItem> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       INSERT INTO prompt_library (user_id, title, prompt, category, is_favorite)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    
+
     const result = await client.query(query, [
       data.user_id,
       data.title,
@@ -3244,7 +3244,7 @@ export async function createPrompt(data: CreatePromptData): Promise<PromptLibrar
       data.category || 'general',
       data.is_favorite || false
     ]);
-    
+
     return result.rows[0];
   } finally {
     client.release();
@@ -3259,7 +3259,7 @@ export async function getUserPrompts(
   search?: string
 ): Promise<PromptLibraryItem[]> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_user_prompts($1, $2, $3, $4)`;
     const result = await client.query(query, [
@@ -3268,7 +3268,7 @@ export async function getUserPrompts(
       favoritesOnly || false,
       search || null
     ]);
-    
+
     return result.rows;
   } finally {
     client.release();
@@ -3278,13 +3278,13 @@ export async function getUserPrompts(
 // Get prompt by ID
 export async function getPromptById(promptId: number, userId: string): Promise<PromptLibraryItem | null> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       SELECT * FROM prompt_library
       WHERE id = $1 AND user_id = $2
     `;
-    
+
     const result = await client.query(query, [promptId, userId]);
     return result.rows[0] || null;
   } finally {
@@ -3304,46 +3304,46 @@ export async function updatePrompt(
   }
 ): Promise<PromptLibraryItem | null> {
   const client = await pool.connect();
-  
+
   try {
     const setClauses: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
-    
+
     if (updates.title !== undefined) {
       setClauses.push(`title = $${paramIndex++}`);
       values.push(updates.title);
     }
-    
+
     if (updates.prompt !== undefined) {
       setClauses.push(`prompt = $${paramIndex++}`);
       values.push(updates.prompt);
     }
-    
+
     if (updates.category !== undefined) {
       setClauses.push(`category = $${paramIndex++}`);
       values.push(updates.category);
     }
-    
+
     if (updates.is_favorite !== undefined) {
       setClauses.push(`is_favorite = $${paramIndex++}`);
       values.push(updates.is_favorite);
     }
-    
+
     if (setClauses.length === 0) {
       return null;
     }
-    
+
     setClauses.push(`updated_at = NOW()`);
     values.push(promptId, userId);
-    
+
     const query = `
       UPDATE prompt_library
       SET ${setClauses.join(', ')}
       WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
       RETURNING *
     `;
-    
+
     const result = await client.query(query, values);
     return result.rows[0] || null;
   } finally {
@@ -3354,13 +3354,13 @@ export async function updatePrompt(
 // Delete prompt
 export async function deletePrompt(promptId: number, userId: string): Promise<boolean> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       DELETE FROM prompt_library
       WHERE id = $1 AND user_id = $2
     `;
-    
+
     const result = await client.query(query, [promptId, userId]);
     return (result.rowCount ?? 0) > 0;
   } finally {
@@ -3371,7 +3371,7 @@ export async function deletePrompt(promptId: number, userId: string): Promise<bo
 // Increment prompt usage
 export async function incrementPromptUsage(promptId: number, userId: string): Promise<void> {
   const client = await pool.connect();
-  
+
   try {
     const query = `
       UPDATE prompt_library
@@ -3381,7 +3381,7 @@ export async function incrementPromptUsage(promptId: number, userId: string): Pr
         updated_at = NOW()
       WHERE id = $1 AND user_id = $2
     `;
-    
+
     await client.query(query, [promptId, userId]);
   } finally {
     client.release();
@@ -3391,7 +3391,7 @@ export async function incrementPromptUsage(promptId: number, userId: string): Pr
 // Get prompt templates
 export async function getPromptTemplates(category?: string, limit: number = 20): Promise<PromptTemplate[]> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT * FROM get_popular_templates($1, $2)`;
     const result = await client.query(query, [category || null, limit]);
@@ -3404,7 +3404,7 @@ export async function getPromptTemplates(category?: string, limit: number = 20):
 // Increment template usage
 export async function incrementTemplateUsage(templateId: number): Promise<void> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT increment_template_usage($1)`;
     await client.query(query, [templateId]);
@@ -3416,7 +3416,7 @@ export async function incrementTemplateUsage(templateId: number): Promise<void> 
 // Get prompt statistics
 export async function getPromptStatistics(userId: string): Promise<any> {
   const client = await pool.connect();
-  
+
   try {
     const query = `SELECT get_prompt_statistics($1) as stats`;
     const result = await client.query(query, [userId]);

@@ -29,23 +29,23 @@ async function fetchUrlContent(url: string): Promise<string> {
     }
 
     const contentType = response.headers.get('content-type') || '';
-    
+
     // Check if it's HTML
     if (!contentType.includes('text/html')) {
       throw new Error('URL must return HTML content');
     }
 
     const html = await response.text();
-    
+
     // Parse HTML and extract text
     const $ = cheerio.load(html);
-    
+
     // Remove unwanted elements
     $('script, style, nav, header, footer, aside, iframe, noscript, img, svg').remove();
-    
+
     // Try to find main content area
     let content = '';
-    
+
     // Look for common article/content selectors (expanded list)
     const contentSelectors = [
       'article',
@@ -65,7 +65,7 @@ async function fetchUrlContent(url: string): Promise<string> {
       '.article',
       'h1 ~ p', // Paragraphs after main heading
     ];
-    
+
     for (const selector of contentSelectors) {
       const element = $(selector);
       if (element.length > 0) {
@@ -76,7 +76,7 @@ async function fetchUrlContent(url: string): Promise<string> {
         }
       }
     }
-    
+
     // Fallback: Get all paragraph text
     if (!content || content.length < 100) {
       const paragraphs = $('p')
@@ -84,35 +84,35 @@ async function fetchUrlContent(url: string): Promise<string> {
         .get()
         .filter(text => text.length > 20)
         .join('\n\n');
-      
+
       if (paragraphs.length > 100) {
         content = paragraphs;
       }
     }
-    
+
     // Ultimate fallback to body
     if (!content || content.length < 100) {
       content = $('body').text();
     }
-    
+
     // Clean up the text
     content = content
       .replace(/\s+/g, ' ') // Replace multiple spaces with single space
       .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines
       .trim();
-    
+
     // More lenient check
     if (!content || content.length < 50) {
       console.log('Content length:', content.length);
       console.log('First 200 chars:', content.slice(0, 200));
       throw new Error(`Could not extract meaningful content from URL. Only found ${content.length} characters.`);
     }
-    
+
     // Limit content length (max 10000 characters)
     if (content.length > 10000) {
       content = content.slice(0, 10000) + '...';
     }
-    
+
     console.log('Successfully extracted', content.length, 'characters from URL');
     return content;
   } catch (error: any) {
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
   try {
     // Import the helper function
     const { ensureUserExists } = await import('@/lib/ensure-user');
-    
+
     // Ensure user exists (auto-creates if needed)
     const userResult = await ensureUserExists();
     if (!userResult.success) {
@@ -134,11 +134,11 @@ export async function POST(req: NextRequest) {
         { status: userResult.status || 500 }
       );
     }
-    
+
     const { user, session } = userResult;
     // Keep userId as string to avoid precision loss with large numbers
     const userId = user?.id; // Use string directly, don't convert to number
-    
+
     // Log user info for debugging
     console.log('👤 User Info:', {
       id: userId,
@@ -147,14 +147,14 @@ export async function POST(req: NextRequest) {
     });
 
     const body = await req.json();
-    let { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x','linkedin','instagram','email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
-    
+    let { sourceType = 'text', text = '', url = '', tone = 'professional', platforms = ['x', 'linkedin', 'instagram', 'email'], numPosts = 3, contentLength = 'medium', options = {} } = body || {};
+
     // Normalize sourceType: 'youtube' should be treated as 'url' for database compatibility
     // Database constraint only allows: 'text' | 'url' | 'file'
     if (sourceType === 'youtube') {
       sourceType = 'url';
     }
-    
+
     // Define length guidelines based on setting
     const lengthGuides = {
       short: { tweet: '100-150 chars', linkedin: '500-800 chars', instagram: '300-600 chars', email: '400-800 chars', facebook: '500-800 chars', reddit: '500-1000 chars', pinterest: '100-200 chars' },
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
       long: { tweet: '200-260 chars', linkedin: '1200-1800 chars', instagram: '1200-1800 chars', email: '1500-2500 chars', facebook: '1200-1800 chars', reddit: '2000-3000 chars', pinterest: '200-300 chars' },
       detailed: { tweet: '230-280 chars', linkedin: '1800-2500 chars', instagram: '1800-2200 chars', email: '2500-4000 chars', facebook: '1800-2500 chars', reddit: '3000-5000 chars', pinterest: '250-400 chars' }
     };
-    
+
     const currentLength = lengthGuides[contentLength as keyof typeof lengthGuides] || lengthGuides.medium;
 
     // Get user's writing style if enabled
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
     // Calculate credit cost based on number of platforms (1 credit per platform)
     const numPlatforms = platforms.length;
     const plan = await getUserPlan(userId!);
-    
+
     // Log plan info for debugging
     console.log('💳 Plan Info:', {
       found: !!plan,
@@ -204,10 +204,10 @@ export async function POST(req: NextRequest) {
       subscriptionStatus: plan?.subscription_status,
       ltdTier: plan?.ltd_tier
     });
-    
+
     const creditCostPerPlatform = calculateCreditCost('content_repurposing', plan?.ltd_tier ?? undefined);
     const totalCreditCost = creditCostPerPlatform * numPlatforms;
-    
+
     console.log(`💳 Credit calculation: ${numPlatforms} platforms × ${creditCostPerPlatform} credits = ${totalCreditCost} total credits`);
     console.log(`💳 User has ${plan?.credits || 0} credits, needs ${totalCreditCost} credits`);
 
@@ -221,7 +221,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: error.message || 'Failed to fetch URL content' }, { status: 400 });
       }
     }
-    
+
     // Validate we have content
     if (!sourceText && !url) {
       return NextResponse.json({ error: 'Please provide either text content or a URL' }, { status: 400 });
@@ -231,14 +231,14 @@ export async function POST(req: NextRequest) {
     const includeCTA = options.includeCTA === true;
     const customHook = options.customHook || '';
     const customCTA = options.customCTA || '';
-    
+
     const lengthDescriptions = {
       short: 'VERY BRIEF and to the point. Each tweet 100-150 characters. Focus on the core message only.',
       medium: 'BALANCED length. Each tweet 150-200 characters. Include key points with some context.',
       long: 'COMPREHENSIVE. Each tweet 200-260 characters. Provide detailed information and examples.',
       detailed: 'VERY DETAILED. Each tweet 230-280 characters. Include examples, statistics, and thorough explanations.'
     };
-    
+
     const system = {
       role: 'system',
       content: `You are RepurposeAI. Convert long-form content into platform-specific social media posts.
@@ -354,19 +354,19 @@ Return ONLY the JSON.`
     if (!parsed) {
       // Enhanced local fallback for dev without keys or on provider errors
       const src = sourceText || `See: ${url}`;
-      const clean = src.replace(/\s+/g,' ').trim();
-      
+      const clean = src.replace(/\s+/g, ' ').trim();
+
       // Create better formatted tweets
       const sentences = clean.split(/[.!?]+/).filter(s => s.trim().length > 20);
       const tweetChunks: string[] = [];
-      
+
       // First tweet with custom hook if provided
       if (customHook && sentences.length > 0) {
         tweetChunks.push(customHook + '\n\n' + sentences[0].trim() + '.');
       } else if (sentences.length > 0) {
         tweetChunks.push(sentences[0].trim() + '.');
       }
-      
+
       // Add more tweets from content
       for (let i = 1; i < Math.min(sentences.length, numPosts); i++) {
         let tweet = sentences[i].trim();
@@ -378,13 +378,13 @@ Return ONLY the JSON.`
         }
         tweetChunks.push(tweet);
       }
-      
+
       // Add CTA to last tweet if provided
       if (customCTA && tweetChunks.length > 0 && includeCTA) {
         const lastIdx = tweetChunks.length - 1;
         tweetChunks[lastIdx] = tweetChunks[lastIdx] + '\n\n' + customCTA;
       }
-      
+
       // Ensure we have the right number of tweets
       while (tweetChunks.length < Math.min(numPosts, 3)) {
         if (sentences.length > tweetChunks.length) {
@@ -393,7 +393,7 @@ Return ONLY the JSON.`
           break;
         }
       }
-      
+
       // Create LinkedIn post
       let linkedinPost = '';
       if (customHook) {
@@ -406,7 +406,7 @@ Return ONLY the JSON.`
       if (includeHashtags) {
         linkedinPost += '\n\n#content #marketing #business';
       }
-      
+
       // Create Instagram caption
       let instagramCaption = '';
       if (customHook) {
@@ -422,21 +422,21 @@ Return ONLY the JSON.`
       if (includeEmojis) {
         instagramCaption = '✨ ' + instagramCaption + ' 🚀';
       }
-      
+
       // Create email
       const emailSubject = customHook || sentences[0]?.trim().slice(0, 60) || 'Your Content';
       let emailBody = sentences.slice(0, 8).join('. ').trim();
       if (includeCTA && customCTA) {
         emailBody += '\n\n' + customCTA;
       }
-      
+
       parsed = {
         x_thread: tweetChunks.length ? tweetChunks : [clean.slice(0, 260)],
         linkedin_post: linkedinPost,
         instagram_caption: instagramCaption,
-        email_newsletter: { 
-          subject: emailSubject, 
-          body: emailBody 
+        email_newsletter: {
+          subject: emailSubject,
+          body: emailBody
         },
         _fallback_note: 'Using basic mode. Configure GROQ_API_KEY or OPENROUTER_API_KEY for AI-powered generation.'
       } as any;
@@ -445,16 +445,16 @@ Return ONLY the JSON.`
 
     // Post-process according to client options
     const include = new Set<string>(platforms as string[]);
-    
+
     // Strictly enforce numPosts for x_thread
     if (Array.isArray(parsed?.x_thread)) {
       const targetNum = Math.max(1, Math.min(10, Number(numPosts)));
-      
+
       // Trim to exact number requested
       if (parsed.x_thread.length > targetNum) {
         parsed.x_thread = parsed.x_thread.slice(0, targetNum);
       }
-      
+
       // Pad if too few (split longest tweet or duplicate)
       while (parsed.x_thread.length < targetNum) {
         const longest = parsed.x_thread.reduce((a: string, b: string) => a.length > b.length ? a : b, '');
@@ -468,7 +468,7 @@ Return ONLY the JSON.`
           break; // Can't split further
         }
       }
-      
+
       // Enforce length based on contentLength setting
       const targetLengths = {
         short: { min: 80, target: 125, max: 150 },
@@ -476,25 +476,25 @@ Return ONLY the JSON.`
         long: { min: 190, target: 230, max: 270 },
         detailed: { min: 220, target: 255, max: 280 }
       };
-      
+
       const lengthTarget = targetLengths[contentLength as keyof typeof targetLengths] || targetLengths.medium;
-      
+
       parsed.x_thread = parsed.x_thread.map((t: string, idx: number) => {
         t = String(t).trim();
-        
+
         // If too long, trim
         if (t.length > lengthTarget.max) {
           t = t.slice(0, lengthTarget.max - 3) + '...';
         }
-        
+
         // If way too short for the setting (and not last tweet), flag it
         if (contentLength !== 'short' && t.length < lengthTarget.min && idx < parsed.x_thread.length - 1) {
           console.log(`Warning: Tweet ${idx + 1} is ${t.length} chars (expected ${lengthTarget.min}-${lengthTarget.max})`);
         }
-        
+
         return t;
       });
-      
+
       // Validate LinkedIn post length
       if (parsed.linkedin_post) {
         const linkedinLength = String(parsed.linkedin_post).length;
@@ -505,7 +505,7 @@ Return ONLY the JSON.`
           detailed: { min: 1700, max: 2600 }
         };
         const linkedinTarget = linkedinTargets[contentLength as keyof typeof linkedinTargets] || linkedinTargets.medium;
-        
+
         if (linkedinLength < linkedinTarget.min) {
           console.log(`Warning: LinkedIn post is too short: ${linkedinLength} chars (expected ${linkedinTarget.min}+)`);
         }
@@ -522,17 +522,17 @@ Return ONLY the JSON.`
       console.log('✨ Applying platform optimization...');
       console.log('📌 Platforms to optimize:', Array.from(include));
       const startTime = Date.now();
-      
+
       // Optimize for each platform
       if (include.has('x') && parsed?.x_thread) {
         console.log('🐦 Processing Twitter/X optimization...');
         console.log('  📝 Original x_thread type:', Array.isArray(parsed.x_thread) ? 'array' : 'string');
         console.log('  📝 Original x_thread content:', JSON.stringify(parsed.x_thread).substring(0, 200));
-        
+
         const originalContent = Array.isArray(parsed.x_thread) ? parsed.x_thread.join(' ') : parsed.x_thread;
         console.log('  📝 Joined content length:', originalContent.length);
         console.log('  📝 First 200 chars of joined content:', originalContent.substring(0, 200));
-        
+
         const xOptimization = optimizeForPlatform(originalContent, 'x');
         console.log('  ✅ Optimization result - isThread:', xOptimization.isThread);
         console.log('  ✅ Thread posts count:', xOptimization.threadPosts?.length || 0);
@@ -542,7 +542,7 @@ Return ONLY the JSON.`
             console.log(`      Tweet ${i + 1}: "${post.substring(0, 80)}..."`);
           });
         }
-        
+
         // Update parsed content with optimized version
         if (xOptimization.isThread && xOptimization.threadPosts) {
           parsed.x_thread = xOptimization.threadPosts;
@@ -550,7 +550,7 @@ Return ONLY the JSON.`
         } else {
           console.log('  ⚠️  No thread created, keeping original');
         }
-        
+
         optimizationResults.x = xOptimization;
       } else {
         if (!include.has('x')) {
@@ -559,19 +559,19 @@ Return ONLY the JSON.`
           console.log('  ⚠️  parsed.x_thread is missing or undefined');
         }
       }
-      
+
       if (include.has('linkedin') && parsed?.linkedin_post) {
         const linkedinOptimization = optimizeForPlatform(String(parsed.linkedin_post), 'linkedin');
         parsed.linkedin_post = linkedinOptimization.content;
         optimizationResults.linkedin = linkedinOptimization;
       }
-      
+
       if (include.has('instagram') && parsed?.instagram_caption) {
         const instagramOptimization = optimizeForPlatform(String(parsed.instagram_caption), 'instagram');
         parsed.instagram_caption = instagramOptimization.content;
         optimizationResults.instagram = instagramOptimization;
       }
-      
+
       if (include.has('email') && parsed?.email_newsletter) {
         const emailSubject = parsed.email_newsletter.subject || '';
         const emailBody = parsed.email_newsletter.body || '';
@@ -579,9 +579,9 @@ Return ONLY the JSON.`
         parsed.email_newsletter.body = emailOptimization.content;
         optimizationResults.email = emailOptimization;
       }
-      
+
       const processingTime = Date.now() - startTime;
-      
+
       // Store optimization results for later analytics tracking
       parsed._optimization_results = optimizationResults;
       parsed._optimization_processing_time = processingTime;
@@ -598,7 +598,7 @@ Return ONLY the JSON.`
       amount: totalCreditCost,
       userCredits: plan?.credits
     });
-    
+
     const creditResult = await deductLTDCredits(
       userId!,
       totalCreditCost,
@@ -611,13 +611,13 @@ Return ONLY the JSON.`
         contentLength: contentLength
       }
     );
-    
+
     console.log('💳 Credit deduction result:', {
       success: creditResult.success,
       remaining: creditResult.remaining,
       error: creditResult.error
     });
-    
+
     if (!creditResult.success) {
       console.error('❌ Credit deduction failed:', creditResult.error);
       return NextResponse.json({
@@ -627,7 +627,7 @@ Return ONLY the JSON.`
         required: totalCreditCost
       }, { status: 402 });
     }
-    
+
     console.log(`✅ Deducted ${totalCreditCost} credits. Remaining: ${creditResult.remaining}`);
 
     // Persist
@@ -639,7 +639,7 @@ Return ONLY the JSON.`
     });
 
     // Only use platforms supported by the database
-    const supportedPlatforms = ['x', 'linkedin', 'instagram', 'email'];
+    const supportedPlatforms = ['x', 'linkedin', 'instagram', 'email', 'facebook', 'reddit', 'pinterest'];
     const validPlatform = platforms?.find((p: string) => supportedPlatforms.includes(p)) || 'x';
 
     const generation = await insertGeneration({
@@ -653,7 +653,7 @@ Return ONLY the JSON.`
     });
 
     // Save posts for each platform
-    const postsToCreate: Array<{platform: 'x'|'linkedin'|'instagram'|'email'|'facebook'|'reddit'|'pinterest'; body: string; hashtags?: string[]}> = [];
+    const postsToCreate: Array<{ platform: 'x' | 'linkedin' | 'instagram' | 'email' | 'facebook' | 'reddit' | 'pinterest'; body: string; hashtags?: string[] }> = [];
     if (include.has('x') && Array.isArray(parsed.x_thread)) {
       postsToCreate.push({ platform: 'x', body: parsed.x_thread.join('\n\n') });
     }
@@ -725,16 +725,16 @@ Return ONLY the JSON.`
     if (parsed?.x_thread && Array.isArray(parsed.x_thread)) {
       console.log('📤 First thread item preview:', parsed.x_thread[0]?.substring(0, 100));
     }
-    
-    return NextResponse.json({ 
-      success: true, 
-      output: parsed, 
-      generation, 
+
+    return NextResponse.json({
+      success: true,
+      output: parsed,
+      generation,
       posts: createdPosts,
       credits: creditResult.remaining,
       creditsUsed: totalCreditCost
     });
-  } catch (e:any) {
+  } catch (e: any) {
     console.error('repurpose error', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
