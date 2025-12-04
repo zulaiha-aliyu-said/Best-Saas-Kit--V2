@@ -157,10 +157,10 @@ export async function POST(req: NextRequest) {
     
     // Define length guidelines based on setting
     const lengthGuides = {
-      short: { tweet: '100-150 chars', linkedin: '500-800 chars', instagram: '300-600 chars', email: '400-800 chars' },
-      medium: { tweet: '150-200 chars', linkedin: '800-1200 chars', instagram: '600-1200 chars', email: '800-1500 chars' },
-      long: { tweet: '200-260 chars', linkedin: '1200-1800 chars', instagram: '1200-1800 chars', email: '1500-2500 chars' },
-      detailed: { tweet: '230-280 chars', linkedin: '1800-2500 chars', instagram: '1800-2200 chars', email: '2500-4000 chars' }
+      short: { tweet: '100-150 chars', linkedin: '500-800 chars', instagram: '300-600 chars', email: '400-800 chars', facebook: '500-800 chars', reddit: '500-1000 chars', pinterest: '100-200 chars' },
+      medium: { tweet: '150-200 chars', linkedin: '800-1200 chars', instagram: '600-1200 chars', email: '800-1500 chars', facebook: '800-1200 chars', reddit: '1000-2000 chars', pinterest: '150-250 chars' },
+      long: { tweet: '200-260 chars', linkedin: '1200-1800 chars', instagram: '1200-1800 chars', email: '1500-2500 chars', facebook: '1200-1800 chars', reddit: '2000-3000 chars', pinterest: '200-300 chars' },
+      detailed: { tweet: '230-280 chars', linkedin: '1800-2500 chars', instagram: '1800-2200 chars', email: '2500-4000 chars', facebook: '1800-2500 chars', reddit: '3000-5000 chars', pinterest: '250-400 chars' }
     };
     
     const currentLength = lengthGuides[contentLength as keyof typeof lengthGuides] || lengthGuides.medium;
@@ -253,11 +253,14 @@ export async function POST(req: NextRequest) {
    - linkedin_post: ${currentLength.linkedin}
    - instagram_caption: ${currentLength.instagram}  
    - email_newsletter body: ${currentLength.email}
+   - facebook_post: ${currentLength.facebook} (engaging and conversational, similar to LinkedIn)
+   - reddit_post: ${currentLength.reddit} (detailed, informative, discussion-friendly, can be longer)
+   - pinterest_description: ${currentLength.pinterest} (concise, keyword-rich, engaging)
 
 3. ${contentLength === 'short' ? '⚡ SHORT MODE: Be extremely concise. Cut unnecessary words. No fluff.' : contentLength === 'detailed' ? '📚 DETAILED MODE: Elaborate fully. Add examples, data, and explanations. Be thorough.' : contentLength === 'long' ? '📝 LONG MODE: Provide comprehensive information with context and details.' : '⚖️ MEDIUM MODE: Balance brevity with informativeness.'}
 
 4. FORMAT: Return ONLY valid JSON (no markdown blocks):
-   {"x_thread": ["tweet1", "tweet2", ...], "linkedin_post": "...", "instagram_caption": "...", "email_newsletter": {"subject": "...", "body": "..."}}
+   {"x_thread": ["tweet1", "tweet2", ...], "linkedin_post": "...", "instagram_caption": "...", "email_newsletter": {"subject": "...", "body": "..."}, "facebook_post": "...", "reddit_post": "...", "pinterest_description": "..."}
 
 5. TONE: ${tone} throughout all content
 
@@ -316,7 +319,7 @@ Return ONLY the JSON.`
         if (raw.includes('```')) {
           raw = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
         }
-        try { parsed = JSON.parse(raw); } catch { parsed = { x_thread: [raw], linkedin_post: raw, instagram_caption: raw, email_newsletter: { subject: 'Your Content', body: raw } }; }
+        try { parsed = JSON.parse(raw); } catch { parsed = { x_thread: [raw], linkedin_post: raw, instagram_caption: raw, email_newsletter: { subject: 'Your Content', body: raw }, facebook_post: raw, reddit_post: raw, pinterest_description: raw }; }
         tokenUsage = completion.usage?.total_tokens || 0;
       } catch (err) {
         lastError = err;
@@ -341,7 +344,7 @@ Return ONLY the JSON.`
         if (raw.includes('```')) {
           raw = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
         }
-        try { parsed = JSON.parse(raw); } catch { parsed = { x_thread: [raw], linkedin_post: raw, instagram_caption: raw, email_newsletter: { subject: 'Your Content', body: raw } }; }
+        try { parsed = JSON.parse(raw); } catch { parsed = { x_thread: [raw], linkedin_post: raw, instagram_caption: raw, email_newsletter: { subject: 'Your Content', body: raw }, facebook_post: raw, reddit_post: raw, pinterest_description: raw }; }
         tokenUsage = 0;
       } catch (err) {
         lastError = err;
@@ -650,7 +653,7 @@ Return ONLY the JSON.`
     });
 
     // Save posts for each platform
-    const postsToCreate: Array<{platform: 'x'|'linkedin'|'instagram'|'email'; body: string; hashtags?: string[]}> = [];
+    const postsToCreate: Array<{platform: 'x'|'linkedin'|'instagram'|'email'|'facebook'|'reddit'|'pinterest'; body: string; hashtags?: string[]}> = [];
     if (include.has('x') && Array.isArray(parsed.x_thread)) {
       postsToCreate.push({ platform: 'x', body: parsed.x_thread.join('\n\n') });
     }
@@ -664,6 +667,15 @@ Return ONLY the JSON.`
       const subj = parsed.email_newsletter.subject || 'Newsletter';
       const bodyStr = parsed.email_newsletter.body || '';
       postsToCreate.push({ platform: 'email', body: `Subject: ${subj}\n\n${bodyStr}` });
+    }
+    if (include.has('facebook') && parsed.facebook_post) {
+      postsToCreate.push({ platform: 'facebook', body: String(parsed.facebook_post) });
+    }
+    if (include.has('reddit') && parsed.reddit_post) {
+      postsToCreate.push({ platform: 'reddit', body: String(parsed.reddit_post) });
+    }
+    if (include.has('pinterest') && parsed.pinterest_description) {
+      postsToCreate.push({ platform: 'pinterest', body: String(parsed.pinterest_description) });
     }
 
     const createdPosts = [] as any[];

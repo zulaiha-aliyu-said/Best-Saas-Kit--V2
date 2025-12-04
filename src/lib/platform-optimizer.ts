@@ -41,6 +41,19 @@ export const PLATFORM_LIMITS = {
     hashtagLimit: { min: 1, max: 3 },
     lineBreakFrequency: 2,
   },
+  reddit: {
+    maxChars: 40000,
+    optimalChars: { min: 200, max: 1000 },
+    hashtagLimit: { min: 0, max: 0 }, // Reddit doesn't use hashtags
+    lineBreakFrequency: 3,
+  },
+  pinterest: {
+    maxChars: 500,
+    optimalChars: { min: 100, max: 300 },
+    hashtagLimit: { min: 2, max: 5 },
+    emojiLimit: { min: 0, max: 2 },
+    lineBreakFrequency: 2,
+  },
   tiktok: {
     maxChars: 2200,
     optimalChars: { min: 100, max: 150 },

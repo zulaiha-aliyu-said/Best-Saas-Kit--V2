@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Copy, Repeat2, Download, Sparkles, Calendar as CalendarIcon, BarChart3 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { ScheduleModal } from "@/components/schedule/schedule-modal";
 import { PredictivePerformanceModal } from "@/components/ai/predictive-performance-modal";
 import { StyleIndicator } from "@/components/style/style-indicator";
@@ -23,6 +24,9 @@ interface GeneratedOutput {
   linkedin_post?: string;
   instagram_caption?: string;
   email_newsletter?: { subject?: string; body?: string };
+  facebook_post?: string;
+  reddit_post?: string;
+  pinterest_description?: string;
   _fallback_note?: string;
 }
 
@@ -981,6 +985,9 @@ export default function RepurposePage() {
                   { key: 'linkedin', label: 'LinkedIn', subtitle: 'Professional posts', icon: 'in' },
                   { key: 'instagram', label: 'Instagram', subtitle: 'Captions & stories', icon: 'IG' },
                   { key: 'email', label: 'Email Newsletter', subtitle: 'Newsletter format', icon: '✉' },
+                  { key: 'facebook', label: 'Facebook', subtitle: 'Posts & updates', icon: 'f' },
+                  { key: 'reddit', label: 'Reddit', subtitle: 'Posts & comments', icon: 'r' },
+                  { key: 'pinterest', label: 'Pinterest', subtitle: 'Pins & descriptions', icon: 'P' },
                 ].map(p => (
                   <button
                     key={p.key}
@@ -1613,18 +1620,18 @@ export default function RepurposePage() {
                     </div>
                   </div>
                 </div>
-                <CardContent className="p-6 bg-gradient-to-b from-blue-50/30 dark:from-blue-950/20 to-transparent">
-                  <div className="bg-card rounded-2xl border-2 border-border p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-700 to-blue-800 flex items-center justify-center text-white font-bold text-lg">
+                <CardContent className="p-5 bg-gradient-to-b from-blue-50/30 dark:from-blue-950/20 to-transparent">
+                  <div className="bg-card rounded-xl border-2 border-border p-4 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-700 to-blue-800 flex items-center justify-center text-white font-bold text-sm">
                         U
                       </div>
                       <div>
-                        <p className="font-semibold">Your Company</p>
+                        <p className="font-semibold text-sm">Your Company</p>
                         <p className="text-xs text-muted-foreground">Professional Post</p>
                       </div>
                     </div>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground m-0">
                       {output.linkedin_post}
                     </p>
                   </div>
@@ -1697,6 +1704,136 @@ export default function RepurposePage() {
             )}
 
             {/* Email Newsletter */}
+            {output?.facebook_post && (
+              <Card className="overflow-hidden border-2">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <span className="text-white font-bold text-xl">f</span>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="font-semibold text-lg">Facebook Post</h3>
+                        <p className="text-sm text-white/90">Engaging format • Ready to share</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.facebook_post || '')}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Post
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handleSchedule(output.facebook_post || '', 'facebook')}>
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(output.facebook_post || '', 'facebook')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Predict Performance
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <CardContent className="p-5 bg-gradient-to-b from-blue-50/50 dark:from-blue-950/30 to-transparent">
+                  <div className="bg-card rounded-xl border-2 border-border hover:border-blue-300 hover:shadow-lg transition-all p-4">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground m-0">
+                      {output.facebook_post}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {output?.reddit_post && (() => {
+              // Parse Reddit post - check if it has a title (starts with # or has title/body format)
+              const redditContent = output.reddit_post || '';
+              const titleMatch = redditContent.match(/^#\s+(.+)$/m);
+              const title = titleMatch ? titleMatch[1] : null;
+              const body = titleMatch ? redditContent.replace(/^#\s+.+$/m, '').trim() : redditContent;
+              
+              return (
+                <Card className="overflow-hidden border-2">
+                  <div className="bg-gradient-to-r from-orange-500 to-red-600 p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                          <span className="text-white font-bold text-xl">R</span>
+                        </div>
+                        <div className="text-white">
+                          <h3 className="font-semibold text-lg">Reddit Post</h3>
+                          <p className="text-sm text-white/90">Discussion format • Ready to post</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.reddit_post || '')}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy Post
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handleSchedule(output.reddit_post || '', 'reddit')}>
+                          <CalendarIcon className="h-4 w-4 mr-2" />
+                          Schedule
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(output.reddit_post || '', 'reddit')}>
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          Predict Performance
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <CardContent className="p-5 bg-gradient-to-b from-orange-50/50 dark:from-orange-950/30 to-transparent">
+                    <div className="bg-card rounded-xl border-2 border-border hover:border-orange-300 hover:shadow-lg transition-all p-4">
+                      {title && (
+                        <h3 className="text-lg font-bold text-foreground border-b pb-2 mb-3 mt-0">{title}</h3>
+                      )}
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed text-foreground m-0">
+                        <ReactMarkdown>
+                          {body}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+            {output?.pinterest_description && (
+              <Card className="overflow-hidden border-2">
+                <div className="bg-gradient-to-r from-red-500 to-pink-600 p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <span className="text-white font-bold text-xl">P</span>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="font-semibold text-lg">Pinterest Pin</h3>
+                        <p className="text-sm text-white/90">Keyword-rich • Ready to pin</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => copy(output.pinterest_description || '')}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Description
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handleSchedule(output.pinterest_description || '', 'pinterest')}>
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20" onClick={() => handlePerformancePrediction(output.pinterest_description || '', 'pinterest')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Predict Performance
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <CardContent className="p-5 bg-gradient-to-b from-red-50/50 dark:from-red-950/30 to-transparent">
+                  <div className="bg-card rounded-xl border-2 border-border hover:border-red-300 hover:shadow-lg transition-all p-4">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground m-0">
+                      {output.pinterest_description}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {output?.email_newsletter && (
               <Card className="overflow-hidden border-2">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 p-5">

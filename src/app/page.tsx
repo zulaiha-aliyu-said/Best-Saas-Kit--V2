@@ -11,18 +11,17 @@ import Footer from "@/components/landing/footer"
 import { SmoothScroll } from "@/components/ui/smooth-scroll"
 import { ScrollToTop } from "@/components/ui/scroll-to-top"
 import { BlackFridayBanner } from "@/components/landing/black-friday-banner"
-import FoundingMemberPopup from "@/components/landing/FoundingMemberPopup"
+
 
 export default async function Home() {
   const session = await auth();
   const isAuthenticated = !!session?.user?.id;
 
-  // TODO: Fetch the actual number of remaining spots from the backend
-  const remainingSpots = 47;
+
 
   return (
     <div className="min-h-screen">
-      <FoundingMemberPopup remainingSpots={remainingSpots} />
+
       <SmoothScroll />
       <BlackFridayBanner />
       <Navigation />
