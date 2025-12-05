@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Twitter, Linkedin, Instagram, Mail, Facebook } from "lucide-react";
+import { Twitter, Linkedin, Instagram, Mail, Facebook, MessageCircle, Pin } from "lucide-react";
 import { Platform } from "@/lib/platform-optimizer";
 
 interface PlatformPreviewProps {
@@ -28,6 +28,8 @@ const platformIcons = {
   email: Mail,
   facebook: Facebook,
   tiktok: Instagram, // Using Instagram icon for TikTok
+  reddit: MessageCircle,
+  pinterest: Pin,
 };
 
 const platformColors = {
@@ -37,6 +39,8 @@ const platformColors = {
   email: "bg-gray-600 text-white",
   facebook: "bg-[#1877F2] text-white",
   tiktok: "bg-black text-white",
+  reddit: "bg-[#FF4500] text-white",
+  pinterest: "bg-[#E60023] text-white",
 };
 
 const platformNames = {
@@ -46,6 +50,8 @@ const platformNames = {
   email: "Email",
   facebook: "Facebook",
   tiktok: "TikTok",
+  reddit: "Reddit",
+  pinterest: "Pinterest",
 };
 
 export function PlatformPreview({
