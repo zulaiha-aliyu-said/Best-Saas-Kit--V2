@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     // Extract video ID from various YouTube URL formats
     const videoId = extractVideoId(url);
-    
+
     if (!videoId) {
       return NextResponse.json(
         { error: 'Invalid YouTube URL' },
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     console.error('YouTube transcript error:', error);
     console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to fetch YouTube transcript',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
@@ -106,27 +106,27 @@ function extractVideoId(url: string): string | null {
 
 async function fetchYouTubeMetadata(videoId: string): Promise<any> {
   const apiKey = process.env.YOUTUBE_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('YouTube API key not configured');
   }
 
   const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${apiKey}`;
-  
+
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     throw new Error(`YouTube API request failed: ${response.status}`);
   }
 
   const data = await response.json();
-  
+
   if (!data.items || data.items.length === 0) {
     throw new Error('Video not found');
   }
 
   const video = data.items[0];
-  
+
   return {
     title: video.snippet.title,
     description: video.snippet.description,
@@ -144,25 +144,25 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
     try {
       console.log('[YouTube Transcript] Initializing Innertube client...');
       const youtube = await Innertube.create();
-      
+
       console.log('[YouTube Transcript] Fetching video info for:', videoId);
       const video = await youtube.getInfo(videoId);
-      
+
       // Get video title from video info
-      const videoTitle = video.basic_info?.title || video.video_details?.title || 'YouTube Video';
+      const videoTitle = video.basic_info?.title || (video as any).video_details?.title || 'YouTube Video';
       console.log('[YouTube Transcript] Video title:', videoTitle);
-      
+
       // Try to get transcript - handle 400 errors gracefully
       console.log('[YouTube Transcript] Getting transcript...');
       let transcriptData;
-      
+
       try {
         transcriptData = await video.getTranscript();
       } catch (transcriptError: any) {
         // If it's a 400 error, the video likely doesn't have transcripts
         // Don't throw, just log and continue to fallback methods
-        if (transcriptError?.message?.includes('400') || 
-            transcriptError?.message?.includes('status code 400')) {
+        if (transcriptError?.message?.includes('400') ||
+          transcriptError?.message?.includes('status code 400')) {
           console.log('[YouTube Transcript] Transcript API returned 400 - video may not have captions available');
           console.log('[YouTube Transcript] Will try fallback methods...');
           transcriptData = null;
@@ -171,13 +171,13 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
           throw transcriptError;
         }
       }
-      
+
       if (transcriptData && transcriptData.transcript) {
         // Access segments via the correct path: transcript.content.body.initial_segments
         const segments = transcriptData.transcript.content?.body?.initial_segments || [];
-        
+
         console.log('[YouTube Transcript] Found segments:', segments?.length || 0);
-        
+
         if (segments && segments.length > 0) {
           // Extract text from segments - each segment has snippet.text
           const transcriptText = segments
@@ -226,7 +226,7 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
         innertubeError?.message || innertubeError
       );
       console.error('[YouTube Transcript] Error stack:', innertubeError?.stack);
-      
+
       // Don't throw here - let it fall through to fallback methods
       // Only log the error and continue
     }
