@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { createLTDActivationEmail } from '@/lib/resend';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export default async function LTDEmailPreviewPage() {
   const session = await auth();

@@ -42,7 +42,7 @@ const Footer = () => {
               <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
                 <Zap className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground">Repurposely</span>
+              <span className="text-xl font-bold text-foreground">RepurposeAI Technology</span>
             </div>
             <p className="text-muted-foreground mb-6 max-w-sm">
               Transform your content across platforms with AI. Discover trending topics,
@@ -139,7 +139,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <div className="text-muted-foreground text-sm">
-            © 2025 Repurposely. All rights reserved.
+            © 2024 RepurposeAI Technology. All rights reserved.
           </div>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
             <a href="/refund-policy" className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full border bg-background hover:bg-muted transition-colors" aria-label="Refund Policy - 14 Day Money Back Guarantee">
