@@ -1,6 +1,6 @@
 import { ContactForm } from "@/components/contact/contact-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Mail, MessageSquare, Clock, Sparkles, HelpCircle, BookOpen } from "lucide-react"
+import { Mail, MessageSquare, Clock, Sparkles, HelpCircle, BookOpen, MapPin } from "lucide-react"
 import Link from "next/link"
 
 export const metadata = {
@@ -74,6 +74,13 @@ export default function ContactPage() {
                     <h4 className="font-semibold">Response Time</h4>
                     <p className="text-sm text-muted-foreground">Within 24 hours</p>
                     <p className="text-xs text-muted-foreground">Typically much faster during business hours</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-primary mt-1" />
+                  <div>
+                    <h4 className="font-semibold">Our Office</h4>
+                    <p className="text-sm text-muted-foreground">No 7 area bz Ahmadu Bello university samaru</p>
                   </div>
                 </div>
               </CardContent>
