@@ -184,10 +184,11 @@ export default function RepurposePage() {
       const errorMessage = err.message || 'Failed to fetch content from URL';
       setError(errorMessage);
       
-      // If it's a YouTube error, show help UI
+      // If it's a YouTube error, show help UI and a clear toast
       if (isYouTube) {
         setShowYouTubeHelp(true);
-        toast.error('Could not extract YouTube transcript automatically');
+        const isFriendly = /use the steps below|manual method|try again/i.test(errorMessage);
+        toast.error(isFriendly ? 'Couldn\'t get transcript — use the steps below' : 'Could not extract YouTube transcript automatically');
       } else {
         toast.error(errorMessage);
       }
@@ -223,14 +224,26 @@ export default function RepurposePage() {
       });
 
       if (!response.ok) {
-        let errorData: { error?: string } = {};
+        let errorData: { error?: string; title?: string } = {};
         try {
           errorData = await response.json();
         } catch {
           // non-JSON or empty body
         }
-        console.error('YouTube API error:', errorData);
-        throw new Error(errorData?.error || response.statusText || 'Failed to fetch YouTube content');
+        const friendlyMessage =
+          errorData?.error ||
+          (response.status === 404
+            ? "We couldn't extract the transcript for this video. It may not have captions, or you can paste it yourself using the steps below."
+            : response.status === 408
+              ? 'Transcript request took too long. Please try again or use the manual method below.'
+              : response.statusText || 'Failed to fetch YouTube content');
+        const isExpectedFailure = (response.status === 404 || response.status === 408) && /transcript|steps below|manual method|try again/i.test(friendlyMessage);
+        if (isExpectedFailure) {
+          console.log('YouTube transcript not available:', errorData?.title ? `"${errorData.title}"` : response.status, friendlyMessage.slice(0, 60) + '…');
+        } else {
+          console.error('YouTube API error:', errorData?.error || errorData || response.statusText);
+        }
+        throw new Error(friendlyMessage);
       }
 
       const data = await response.json();
@@ -249,10 +262,11 @@ export default function RepurposePage() {
       toast.success(`YouTube content extracted: ${data.transcript.title || 'Video'}`);
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to fetch YouTube content';
-      console.error('YouTube fetch error:', errorMessage, err);
+      const isFriendly = /use the steps below|manual method|try again|couldn't extract the transcript/i.test(errorMessage);
+      if (!isFriendly) console.error('YouTube fetch error:', errorMessage, err);
       setError(errorMessage);
       setShowYouTubeHelp(true);
-      toast.error(`Could not extract YouTube content: ${errorMessage}`);
+      toast.error(isFriendly ? 'Couldn\'t get transcript — use the steps below' : `Could not extract YouTube content: ${errorMessage}`);
     } finally {
       setYoutubeLoading(false);
     }
@@ -1179,6 +1193,13 @@ export default function RepurposePage() {
                   }
                   if (tab === 'url' && !url) {
                     setError('Please enter a URL');
+                    setLoading(false);
+                    return;
+                  }
+                  // URL tab with YouTube: require Fetch first (backend doesn't use transcript API for url source)
+                  const urlIsYouTube = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/.test(url || '');
+                  if (tab === 'url' && urlIsYouTube && !urlContent) {
+                    setError('Please click "Fetch" to extract the YouTube transcript first, or use the YouTube tab.');
                     setLoading(false);
                     return;
                   }
