@@ -25,7 +25,6 @@ export default function TrendsPage() {
   const [performance, setPerformance] = useState<any>(null);
   const [youtubeVideos, setYoutubeVideos] = useState<any[]>([]);
   const [trendAlerts, setTrendAlerts] = useState<any[]>([]);
-  const [performanceData, setPerformanceData] = useState<any[]>([]);
   const [autoInsert, setAutoInsert] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [highlightedTopic, setHighlightedTopic] = useState<string | null>(null);
@@ -43,46 +42,6 @@ export default function TrendsPage() {
   const [performanceModalOpen, setPerformanceModalOpen] = useState(false);
   const [performanceContent, setPerformanceContent] = useState("");
   const [performancePlatform, setPerformancePlatform] = useState<string>("x");
-
-  // Generate performance chart data from trending topics
-  const generatePerformanceData = (topics: any[]) => {
-    // Get top 3 topics by engagement
-    const topTopics = topics
-      .sort((a, b) => b.engagement - a.engagement)
-      .slice(0, 3);
-    
-    if (topTopics.length === 0) {
-      setPerformanceData([]);
-      return;
-    }
-    
-    // Generate time-series data based on timeRange
-    const dataPoints = timeRange === '24' ? 7 : timeRange === '7' ? 7 : 10;
-    const chartData = topTopics.map((topic, index) => {
-      const baseEngagement = topic.engagement || 50;
-      const color = index === 0 ? 'purple' : index === 1 ? 'pink' : 'green';
-      
-      // Generate realistic growth curve
-      const points = Array.from({ length: dataPoints }, (_, i) => {
-        const progress = i / (dataPoints - 1);
-        // Create an S-curve for realistic growth
-        const growth = baseEngagement * (0.3 + 0.7 * (1 / (1 + Math.exp(-10 * (progress - 0.5)))));
-        // Add some randomness
-        const variance = (Math.random() - 0.5) * 10;
-        return Math.max(20, Math.min(100, growth + variance));
-      });
-      
-      return {
-        name: topic.title.slice(0, 30) + (topic.title.length > 30 ? '...' : ''),
-        color,
-        points,
-        source: topic.source,
-        engagement: baseEngagement
-      };
-    });
-    
-    setPerformanceData(chartData);
-  };
 
   // Generate trend alerts from real data
   const generateTrendAlerts = (topics: any[], hashtagsData: any) => {
@@ -250,9 +209,6 @@ export default function TrendsPage() {
       
       // Generate trend alerts from real data
       generateTrendAlerts(allTopics, data.hashtags);
-      
-      // Generate performance chart data
-      generatePerformanceData(allTopics);
     } catch (error: any) {
       console.error('❌ [Client] Fetch error:', error.message);
       toast.error('Failed to fetch trends');
@@ -499,104 +455,6 @@ export default function TrendsPage() {
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Performance Chart */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between flex-wrap gap-4">
-            <div>
-              <CardTitle className="text-lg">Trending Performance Over Time</CardTitle>
-              <CardDescription>See how trending topics perform across platforms</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={timeRange === '24' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('24')}
-              >
-                24 Hours
-              </Button>
-              <Button
-                variant={timeRange === '7' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('7')}
-              >
-                7 Days
-              </Button>
-              <Button
-                variant={timeRange === '30' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('30')}
-              >
-                30 Days
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {performanceData.length > 0 ? (
-            <div className="relative h-64 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-6">
-              {/* Legend */}
-              <div className="absolute top-4 right-4 flex flex-col gap-2 text-xs bg-card/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-                {performanceData.map((series, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full bg-${series.color}-500`} />
-                    <span className="font-medium truncate max-w-[150px]" title={series.name}>
-                      {series.name}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {series.source === 'youtube' ? '🎥' : series.source === 'reddit' ? '🔴' : '📰'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Chart */}
-              <div className="h-full flex items-end justify-between gap-2 pt-16">
-                {performanceData[0]?.points.map((_: number, i: number) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-2 relative">
-                    {/* Bars for each series */}
-                    <div className="w-full flex justify-center items-end gap-0.5 h-full">
-                      {performanceData.map((series, seriesIdx) => {
-                        const height = series.points[i];
-                        const colorMap: Record<string, string> = {
-                          purple: 'bg-gradient-to-t from-purple-500 to-purple-300',
-                          pink: 'bg-gradient-to-t from-pink-500 to-pink-300',
-                          green: 'bg-gradient-to-t from-green-500 to-green-300'
-                        };
-                        return (
-                          <div
-                            key={seriesIdx}
-                            className={`flex-1 ${colorMap[series.color]} rounded-t transition-all hover:opacity-80 cursor-pointer`}
-                            style={{ height: `${height}%` }}
-                            title={`${series.name}: ${Math.round(height)}%`}
-                          />
-                        );
-                      })}
-                    </div>
-                    {/* Time labels */}
-                    <span className="text-xs text-muted-foreground">
-                      {timeRange === '24' 
-                        ? (i === 0 ? '00:00' : i === 3 ? '12:00' : i === 6 ? '24:00' : '')
-                        : timeRange === '7'
-                        ? (i === 0 ? 'Mon' : i === 3 ? 'Thu' : i === 6 ? 'Sun' : '')
-                        : (i === 0 ? 'Week 1' : i === 4 ? 'Week 2' : i === 9 ? 'Week 4' : '')
-                      }
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="h-64 bg-gradient-to-br from-muted/30 to-muted/50 rounded-lg flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <p className="text-sm font-medium">No performance data available</p>
-                <p className="text-xs mt-1">Data will appear when trends are loaded</p>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 

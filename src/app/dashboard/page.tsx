@@ -552,67 +552,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Content Performance This Week Chart */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl">Content Performance This Week</CardTitle>
-              <CardDescription className="text-base mt-1">
-                Track your content generation and engagement trends
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="bg-purple-600 hover:bg-purple-700 transition-all duration-300"
-                onClick={() => console.log('Filter: 7 Days')}
-              >
-                7 Days
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="hover:bg-purple-50 hover:border-purple-200 transition-all duration-300"
-                onClick={() => console.log('Filter: 30 Days')}
-              >
-                30 Days
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="hover:bg-purple-50 hover:border-purple-200 transition-all duration-300"
-                onClick={() => console.log('Filter: 90 Days')}
-              >
-                90 Days
-              </Button>
-            </div>
-          </div>
-            </CardHeader>
-            <CardContent>
-          <div className="h-80 flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg">
-            <div className="text-center">
-              <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground text-lg">Content Performance Chart</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Interactive chart showing Posts Generated and Engagement Rate trends
-              </p>
-              <div className="mt-4 flex items-center justify-center gap-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-muted-foreground">Posts Generated</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
-                  <span className="text-muted-foreground">Engagement Rate</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Trending Topics Section */}
       <div className="space-y-6 mb-12">
         <div className="flex items-center justify-between">

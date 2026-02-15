@@ -369,6 +369,11 @@ export default function RepurposePage() {
                 button.dataset.selected = button.dataset.tone === toneToApply ? 'true' : 'false';
               });
             }
+            // YouTube → Thread: switch to YouTube tab and default to Twitter/X for thread output
+            if (templateId === 'youtube-to-thread') {
+              setTab('youtube');
+              platforms = ['x'];
+            }
             toast.success(`"${template.name}" applied. Customize and paste your content.`);
           } else {
             toast.error('Template not found. Please choose a template from the list.');
