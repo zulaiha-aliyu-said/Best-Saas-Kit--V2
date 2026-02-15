@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
-// Simple test endpoint to verify API is working
+// Test endpoint: verify trends API and which sources have credentials in this environment.
+// In production, set REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, NEWS_API_KEY in your host's Environment Variables.
 export async function GET() {
   const envCheck = {
-    hasRedditId: !!process.env.REDDIT_CLIENT_ID,
-    hasRedditSecret: !!process.env.REDDIT_CLIENT_SECRET,
-    hasNewsKey: !!process.env.NEWS_API_KEY,
+    reddit: !!process.env.REDDIT_CLIENT_ID && !!process.env.REDDIT_CLIENT_SECRET,
+    news: !!process.env.NEWS_API_KEY,
+    youtube: !!process.env.YOUTUBE_API_KEY,
     timestamp: new Date().toISOString(),
   };
 
-  console.log('🧪 [Test Endpoint] API Keys Check:', envCheck);
-
   return NextResponse.json({
     status: 'ok',
-    message: 'Trends API is working',
-    environment: envCheck,
+    message: 'Trends API is working. Configure Reddit/News/YouTube keys in production for live trends.',
+    sourcesConfigured: envCheck,
   });
 }

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { fetchAllTrends } from "@/lib/trends-fetcher";
 
-export const runtime = 'edge';
+// Use Node runtime so REDDIT_* and NEWS_API_KEY env vars and Buffer (Reddit auth) work in production.
+export const runtime = 'nodejs';
 
 // Cache trends data for 30 minutes (more frequent updates for real data)
 let trendsCache: any = null;

@@ -13,8 +13,12 @@ export async function fetchRedditTrends() {
       return [];
     }
 
-    // Get Reddit access token
-    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    // Get Reddit access token (base64 works in both Node and Edge)
+    const credentials = `${clientId}:${clientSecret}`;
+    const auth =
+      typeof Buffer !== 'undefined'
+        ? Buffer.from(credentials, 'utf8').toString('base64')
+        : btoa(unescape(encodeURIComponent(credentials)));
     console.log('🔴 [Reddit API] Requesting access token...');
     
     const tokenResponse = await axios.post(
@@ -130,7 +134,15 @@ export async function fetchNewsTrends() {
     console.log(`✅ [News API] Successfully fetched ${trends.length} trends`);
     return trends;
   } catch (error: any) {
-    console.error('❌ [News API] Error:', error.message);
+    const status = error.response?.status;
+    if (status === 401) {
+      console.warn('⚠️ [News API] 401 Unauthorized. Free tier is development-only; production requires a paid plan at https://newsapi.org/pricing');
+    } else {
+      console.error('❌ [News API] Error:', error.message);
+    }
+    if (error.response?.data) {
+      console.warn('❌ [News API] Response:', error.response.data);
+    }
     return [];
   }
 }
