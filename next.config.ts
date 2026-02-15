@@ -36,11 +36,6 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
 
-  // Use project root for Turbopack (when used) to avoid multiple lockfile warning
-  turbopack: {
-    root: process.cwd(),
-  },
-
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
