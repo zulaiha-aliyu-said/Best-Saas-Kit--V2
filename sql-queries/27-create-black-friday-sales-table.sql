@@ -51,3 +51,5 @@ COMMENT ON COLUMN black_friday_sales.tier IS 'LTD tier number (1-4) for LTD plan
 
 
 
+
+

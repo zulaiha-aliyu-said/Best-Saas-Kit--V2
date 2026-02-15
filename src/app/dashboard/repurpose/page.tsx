@@ -34,6 +34,16 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import { CompetitorIntegrationWidget } from "@/components/competitor/CompetitorIntegrationWidget";
+import { REPURPOSE_TEMPLATES } from "@/data/templates";
+
+const REPURPOSE_PLATFORM_KEYS = ["x", "linkedin", "instagram", "email", "facebook", "reddit", "pinterest"] as const;
+
+const TEMPLATE_ID_ALIASES: Record<string, string> = {
+  "blog-social": "blog-to-social",
+  "video-posts": "youtube-to-thread",
+  "podcast-thread": "youtube-to-thread",
+  "article-newsletter": "article-to-newsletter",
+};
 
 export default function RepurposePage() {
   const [tab, setTab] = useState<"text"|"url"|"youtube"|"file">("text");
@@ -213,9 +223,14 @@ export default function RepurposePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: { error?: string } = {};
+        try {
+          errorData = await response.json();
+        } catch {
+          // non-JSON or empty body
+        }
         console.error('YouTube API error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch YouTube content');
+        throw new Error(errorData?.error || response.statusText || 'Failed to fetch YouTube content');
       }
 
       const data = await response.json();
@@ -308,55 +323,75 @@ export default function RepurposePage() {
     }
   };
 
-  useEffect(()=>{
-    // Small delay to ensure DOM is ready
+  useEffect(() => {
     const timer = setTimeout(() => {
-      const prefill = search.get('prefill');
-      const platforms = (search.get('platforms') || '').split(',').filter(Boolean);
-      const num = search.get('num');
-      const tone = search.get('tone');
-      const hashtags = search.get('hashtags');
-      const emojis = search.get('emojis');
-      const cta = search.get('cta');
-      const templateId = search.get('templateId');
-      
-      // Show toast if template is being applied
-      if (templateId) {
-        setLoadedTemplate(templateId);
-        toast.success('Template settings applied! Customize as needed.');
-      }
-      
-      if (prefill) {
-        const textarea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
-        if (textarea) textarea.value = prefill;
-      }
-      
-      if (platforms.length) {
-        const container = document.getElementById('rp-platforms');
-        container?.querySelectorAll('button[data-key]')?.forEach((btn)=>{
-          const b = btn as HTMLButtonElement;
-          b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
-        });
-      }
-      
-      if (tone) {
-        document.querySelectorAll('[data-tone]').forEach(el => {
-          const button = el as HTMLElement;
-          button.dataset.selected = button.dataset.tone === tone ? 'true' : 'false';
-        });
-      }
-      
-      if (hashtags !== null) {
-        setIncludeHashtags(hashtags === 'true');
-      }
-      if (emojis !== null) {
-        setIncludeEmojis(emojis === 'true');
-      }
-      if (cta !== null) {
-        setIncludeCTA(cta === 'true');
+      try {
+        const prefill = search.get('prefill');
+        const platformsParam = search.get('platforms') || '';
+        const tone = search.get('tone');
+        const hashtags = search.get('hashtags');
+        const emojis = search.get('emojis');
+        const cta = search.get('cta');
+        const rawTemplateId = search.get('template') || search.get('templateId');
+        const templateId = rawTemplateId ? (TEMPLATE_ID_ALIASES[rawTemplateId] || rawTemplateId) : null;
+
+        let platforms = platformsParam.split(',').filter(Boolean);
+
+        if (templateId) {
+          const template = REPURPOSE_TEMPLATES.find((t) => t.id === templateId);
+          if (template) {
+            setLoadedTemplate(templateId);
+            const allowed = REPURPOSE_PLATFORM_KEYS.filter((p) =>
+              (template.supportedPlatforms as string[]).includes(p)
+            );
+            platforms = allowed.length ? allowed : platforms;
+            setIncludeHashtags(template.includeHashtags);
+            setIncludeEmojis(template.includeEmojis);
+            setIncludeCTA(template.includeCTA);
+            if (template.recommendedTone) {
+              const toneToApply = template.recommendedTone;
+              document.querySelectorAll('[data-tone]').forEach((el) => {
+                const button = el as HTMLElement;
+                button.dataset.selected = button.dataset.tone === toneToApply ? 'true' : 'false';
+              });
+            }
+            toast.success(`"${template.name}" applied. Customize and paste your content.`);
+          } else {
+            toast.error('Template not found. Please choose a template from the list.');
+          }
+        }
+
+        if (prefill) {
+          const textarea = document.getElementById('rp-input') as HTMLTextAreaElement | null;
+          if (textarea) textarea.value = prefill;
+        }
+
+        if (platforms.length) {
+          const container = document.getElementById('rp-platforms');
+          container?.querySelectorAll('button[data-key]')?.forEach((btn) => {
+            const b = btn as HTMLButtonElement;
+            b.dataset.active = platforms.includes(String(b.dataset.key)) ? 'true' : 'false';
+          });
+        }
+
+        if (tone && !templateId) {
+          document.querySelectorAll('[data-tone]').forEach((el) => {
+            const button = el as HTMLElement;
+            button.dataset.selected = button.dataset.tone === tone ? 'true' : 'false';
+          });
+        }
+
+        if (!templateId) {
+          if (hashtags !== null && hashtags !== undefined) setIncludeHashtags(hashtags === 'true');
+          if (emojis !== null && emojis !== undefined) setIncludeEmojis(emojis === 'true');
+          if (cta !== null && cta !== undefined) setIncludeCTA(cta === 'true');
+        }
+      } catch (err) {
+        console.error('Repurpose URL/template apply error:', err);
+        toast.error('Could not apply settings from URL. Please set options manually.');
       }
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -1239,7 +1274,6 @@ export default function RepurposePage() {
                   
                   if (!res.ok) {
                     console.log('❌ Response not OK, status:', res.status);
-                    // Handle 402 Payment Required (insufficient credits)
                     if (res.status === 402 && data.code === 'INSUFFICIENT_CREDITS') {
                       console.log('💰 Credit error detected:', { remaining: data.remaining, required: data.required });
                       setCreditError({
@@ -1247,10 +1281,12 @@ export default function RepurposePage() {
                         required: data.required || 0
                       });
                       setError(null);
+                      toast.error('Insufficient credits. Please add more or select fewer platforms.');
                     } else {
-                      console.log('❌ Setting error:', data.error);
-                      setError(data.error || `Server error (${res.status}). Please try again.`);
+                      const errMsg = data.error || `Server error (${res.status}). Please try again.`;
+                      setError(errMsg);
                       setCreditError(null);
+                      toast.error(errMsg, { duration: 5000 });
                     }
                     setOutput(null);
                   } else if (data.output) {
@@ -1260,25 +1296,29 @@ export default function RepurposePage() {
                     setError(null);
                     setCreditError(null);
                   } else if (data.error) {
-                    // Response was OK but has error field
                     console.log('⚠️ Response OK but has error field:', data.error);
-                    setError(data.error || 'Failed to generate');
+                    const errMsg = data.error || 'Failed to generate';
+                    setError(errMsg);
                     setCreditError(null);
                     setOutput(null);
+                    toast.error(errMsg, { duration: 5000 });
                   } else {
-                    // Unexpected response structure
                     console.error('❌ Unexpected API response structure:', data);
-                    setError('Unexpected response from server. Please try again.');
+                    const errMsg = 'Unexpected response from server. Please try again.';
+                    setError(errMsg);
                     setCreditError(null);
                     setOutput(null);
+                    toast.error(errMsg, { duration: 5000 });
                   }
                 } catch (e: any) {
                   console.error('❌ Exception caught:', e);
                   console.error('  Error message:', e.message);
                   console.error('  Error stack:', e.stack);
-                  setError(e.message || 'Failed to generate');
+                  const message = e?.message || 'Failed to generate';
+                  setError(message);
                   setCreditError(null);
                   setOutput(null);
+                  toast.error(message, { duration: 5000 });
                 } finally {
                   setLoading(false);
                 }
@@ -1402,7 +1442,9 @@ export default function RepurposePage() {
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">Transform your blog posts into engaging social media content across all platforms.</p>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-medium">Popular</span>
-                <Button variant="link" className="text-primary p-0 h-auto">Use Template →</Button>
+                <Button variant="link" className="text-primary p-0 h-auto" asChild>
+                  <Link href="/dashboard/repurpose?template=blog-to-social">Use Template →</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -1418,7 +1460,9 @@ export default function RepurposePage() {
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">Convert YouTube video content into compelling Twitter threads and LinkedIn posts.</p>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium">New</span>
-                <Button variant="link" className="text-primary p-0 h-auto">Use Template →</Button>
+                <Button variant="link" className="text-primary p-0 h-auto" asChild>
+                  <Link href="/dashboard/repurpose?template=youtube-to-thread">Use Template →</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -1434,7 +1478,9 @@ export default function RepurposePage() {
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">Turn articles and long-form content into engaging email newsletter content.</p>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700 font-medium">Pro</span>
-                <Button variant="link" className="text-primary p-0 h-auto">Use Template →</Button>
+                <Button variant="link" className="text-primary p-0 h-auto" asChild>
+                  <Link href="/dashboard/repurpose?template=article-to-newsletter">Use Template →</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

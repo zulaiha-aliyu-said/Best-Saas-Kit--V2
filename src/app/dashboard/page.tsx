@@ -703,9 +703,11 @@ export default function DashboardPage() {
               Pre-built templates for common content types
             </p>
           </div>
-          <Button variant="outline" className="gap-2">
-            Browse All
-            <ArrowUpRight className="h-4 w-4" />
+          <Button variant="outline" className="gap-2" asChild>
+            <Link href="/dashboard/templates">
+              Browse All
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
 

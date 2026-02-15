@@ -232,6 +232,12 @@ export async function POST(req: NextRequest) {
     const customHook = options.customHook || '';
     const customCTA = options.customCTA || '';
 
+    // Set of platforms the user selected — used to build prompt and strip output
+    const include = new Set<string>(platforms as string[]);
+    if (include.size === 0) {
+      return NextResponse.json({ error: 'Please select at least one platform' }, { status: 400 });
+    }
+
     const lengthDescriptions = {
       short: 'VERY BRIEF and to the point. Each tweet 100-150 characters. Focus on the core message only.',
       medium: 'BALANCED length. Each tweet 150-200 characters. Include key points with some context.',
@@ -239,28 +245,41 @@ export async function POST(req: NextRequest) {
       detailed: 'VERY DETAILED. Each tweet 230-280 characters. Include examples, statistics, and thorough explanations.'
     };
 
+    // Build prompt only for selected platforms so AI generates strictly what the user asked for
+    const specLines: string[] = [];
+    if (include.has('x')) specLines.push(`   - x_thread: EXACTLY ${numPosts} tweets, each ${currentLength.tweet}`);
+    if (include.has('linkedin')) specLines.push(`   - linkedin_post: ${currentLength.linkedin}`);
+    if (include.has('instagram')) specLines.push(`   - instagram_caption: ${currentLength.instagram}`);
+    if (include.has('email')) specLines.push(`   - email_newsletter body: ${currentLength.email}`);
+    if (include.has('facebook')) specLines.push(`   - facebook_post: ${currentLength.facebook} (engaging and conversational, similar to LinkedIn)`);
+    if (include.has('reddit')) specLines.push(`   - reddit_post: ${currentLength.reddit} (detailed, informative, discussion-friendly, can be longer)`);
+    if (include.has('pinterest')) specLines.push(`   - pinterest_description: ${currentLength.pinterest} (concise, keyword-rich, engaging)`);
+
+    const formatParts: string[] = [];
+    if (include.has('x')) formatParts.push('"x_thread": ["tweet1", "tweet2", ...]');
+    if (include.has('linkedin')) formatParts.push('"linkedin_post": "..."');
+    if (include.has('instagram')) formatParts.push('"instagram_caption": "..."');
+    if (include.has('email')) formatParts.push('"email_newsletter": {"subject": "...", "body": "..."}');
+    if (include.has('facebook')) formatParts.push('"facebook_post": "..."');
+    if (include.has('reddit')) formatParts.push('"reddit_post": "..."');
+    if (include.has('pinterest')) formatParts.push('"pinterest_description": "..."');
+    const jsonFormat = '{' + formatParts.join(', ') + '}';
+
     const system = {
       role: 'system',
       content: `You are RepurposeAI. Convert long-form content into platform-specific social media posts.
 
-🚨 CRITICAL REQUIREMENTS - READ CAREFULLY:
+🚨 CRITICAL: Generate content ONLY for the platforms listed below. Do NOT add any other platform keys to your JSON.
 
 1. CONTENT LENGTH SETTING: ${contentLength.toUpperCase()}
    ${lengthDescriptions[contentLength as keyof typeof lengthDescriptions]}
 
-2. EXACT SPECIFICATIONS:
-   - x_thread: EXACTLY ${numPosts} tweets, each ${currentLength.tweet}
-   - linkedin_post: ${currentLength.linkedin}
-   - instagram_caption: ${currentLength.instagram}  
-   - email_newsletter body: ${currentLength.email}
-   - facebook_post: ${currentLength.facebook} (engaging and conversational, similar to LinkedIn)
-   - reddit_post: ${currentLength.reddit} (detailed, informative, discussion-friendly, can be longer)
-   - pinterest_description: ${currentLength.pinterest} (concise, keyword-rich, engaging)
+2. EXACT SPECIFICATIONS (generate only these):
+${specLines.length ? specLines.join('\n') : '   (none)'}
 
 3. ${contentLength === 'short' ? '⚡ SHORT MODE: Be extremely concise. Cut unnecessary words. No fluff.' : contentLength === 'detailed' ? '📚 DETAILED MODE: Elaborate fully. Add examples, data, and explanations. Be thorough.' : contentLength === 'long' ? '📝 LONG MODE: Provide comprehensive information with context and details.' : '⚖️ MEDIUM MODE: Balance brevity with informativeness.'}
 
-4. FORMAT: Return ONLY valid JSON (no markdown blocks):
-   {"x_thread": ["tweet1", "tweet2", ...], "linkedin_post": "...", "instagram_caption": "...", "email_newsletter": {"subject": "...", "body": "..."}, "facebook_post": "...", "reddit_post": "...", "pinterest_description": "..."}
+4. FORMAT: Return ONLY valid JSON (no markdown blocks). Include ONLY these keys: ${jsonFormat}
 
 5. TONE: ${tone} throughout all content
 
@@ -287,13 +306,21 @@ CRITICAL: Maintain the user's authentic voice and writing patterns while adaptin
 ` : ''}`
     } as const;
 
+    const userInstructions: string[] = [];
+    if (include.has('x')) userInstructions.push(`Generate EXACTLY ${numPosts} tweets (each ${currentLength.tweet}).`);
+    if (include.has('linkedin')) userInstructions.push('Generate one linkedin_post.');
+    if (include.has('instagram')) userInstructions.push('Generate one instagram_caption.');
+    if (include.has('email')) userInstructions.push('Generate one email_newsletter with subject and body.');
+    if (include.has('facebook')) userInstructions.push('Generate one facebook_post.');
+    if (include.has('reddit')) userInstructions.push('Generate one reddit_post.');
+    if (include.has('pinterest')) userInstructions.push('Generate one pinterest_description.');
     const userMsg = {
       role: 'user',
       content: `Content length requirement: ${contentLength.toUpperCase()}
 
 ${contentLength === 'short' ? '⚡ Make it VERY SHORT and concise!' : contentLength === 'detailed' ? '📚 Make it VERY DETAILED with examples and explanations!' : contentLength === 'long' ? '📝 Make it LONG and comprehensive!' : 'Make it medium length.'}
 
-Generate EXACTLY ${numPosts} tweets (each ${currentLength.tweet}).
+${userInstructions.length ? userInstructions.join(' ') : 'Generate content for the selected platforms.'}
 Tone: ${tone}
 ${customHook ? `\n🎣 IMPORTANT: Start with this hook: "${customHook}"` : ''}
 ${customCTA ? `\n📢 IMPORTANT: Use this CTA: "${customCTA}"` : ''}
@@ -301,7 +328,7 @@ ${customCTA ? `\n📢 IMPORTANT: Use this CTA: "${customCTA}"` : ''}
 Content:
 ${sourceText.slice(0, 3000)}
 
-Return ONLY the JSON.`
+Return ONLY the JSON with the keys you were asked to generate. No other keys.`
     } as const;
 
     // Decide AI path: OpenRouter if configured, otherwise deterministic fallback
@@ -319,7 +346,16 @@ Return ONLY the JSON.`
         if (raw.includes('```')) {
           raw = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
         }
-        try { parsed = JSON.parse(raw); } catch { parsed = { x_thread: [raw], linkedin_post: raw, instagram_caption: raw, email_newsletter: { subject: 'Your Content', body: raw }, facebook_post: raw, reddit_post: raw, pinterest_description: raw }; }
+        try { parsed = JSON.parse(raw); } catch {
+          parsed = {} as any;
+          if (include.has('x')) parsed.x_thread = [raw];
+          if (include.has('linkedin')) parsed.linkedin_post = raw;
+          if (include.has('instagram')) parsed.instagram_caption = raw;
+          if (include.has('email')) parsed.email_newsletter = { subject: 'Your Content', body: raw };
+          if (include.has('facebook')) parsed.facebook_post = raw;
+          if (include.has('reddit')) parsed.reddit_post = raw;
+          if (include.has('pinterest')) parsed.pinterest_description = raw;
+        }
         tokenUsage = completion.usage?.total_tokens || 0;
       } catch (err) {
         lastError = err;
@@ -344,7 +380,16 @@ Return ONLY the JSON.`
         if (raw.includes('```')) {
           raw = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
         }
-        try { parsed = JSON.parse(raw); } catch { parsed = { x_thread: [raw], linkedin_post: raw, instagram_caption: raw, email_newsletter: { subject: 'Your Content', body: raw }, facebook_post: raw, reddit_post: raw, pinterest_description: raw }; }
+        try { parsed = JSON.parse(raw); } catch {
+          parsed = {} as any;
+          if (include.has('x')) parsed.x_thread = [raw];
+          if (include.has('linkedin')) parsed.linkedin_post = raw;
+          if (include.has('instagram')) parsed.instagram_caption = raw;
+          if (include.has('email')) parsed.email_newsletter = { subject: 'Your Content', body: raw };
+          if (include.has('facebook')) parsed.facebook_post = raw;
+          if (include.has('reddit')) parsed.reddit_post = raw;
+          if (include.has('pinterest')) parsed.pinterest_description = raw;
+        }
         tokenUsage = 0;
       } catch (err) {
         lastError = err;
@@ -352,99 +397,93 @@ Return ONLY the JSON.`
     }
 
     if (!parsed) {
-      // Enhanced local fallback for dev without keys or on provider errors
+      // Enhanced local fallback for dev without keys or on provider errors — only for selected platforms
       const src = sourceText || `See: ${url}`;
       const clean = src.replace(/\s+/g, ' ').trim();
-
-      // Create better formatted tweets
       const sentences = clean.split(/[.!?]+/).filter(s => s.trim().length > 20);
-      const tweetChunks: string[] = [];
 
-      // First tweet with custom hook if provided
-      if (customHook && sentences.length > 0) {
-        tweetChunks.push(customHook + '\n\n' + sentences[0].trim() + '.');
-      } else if (sentences.length > 0) {
-        tweetChunks.push(sentences[0].trim() + '.');
-      }
+      const fallbackParsed: any = { _fallback_note: 'Using basic mode. Configure GROQ_API_KEY or OPENROUTER_API_KEY for AI-powered generation.' };
 
-      // Add more tweets from content
-      for (let i = 1; i < Math.min(sentences.length, numPosts); i++) {
-        let tweet = sentences[i].trim();
-        if (tweet.length > 250) {
-          tweet = tweet.slice(0, 247) + '...';
+      if (include.has('x')) {
+        const tweetChunks: string[] = [];
+        if (customHook && sentences.length > 0) {
+          tweetChunks.push(customHook + '\n\n' + sentences[0].trim() + '.');
+        } else if (sentences.length > 0) {
+          tweetChunks.push(sentences[0].trim() + '.');
         }
-        if (!tweet.endsWith('.') && !tweet.endsWith('!') && !tweet.endsWith('?')) {
-          tweet += '.';
+        for (let i = 1; i < Math.min(sentences.length, numPosts); i++) {
+          let tweet = sentences[i].trim();
+          if (tweet.length > 250) tweet = tweet.slice(0, 247) + '...';
+          if (!tweet.endsWith('.') && !tweet.endsWith('!') && !tweet.endsWith('?')) tweet += '.';
+          tweetChunks.push(tweet);
         }
-        tweetChunks.push(tweet);
-      }
-
-      // Add CTA to last tweet if provided
-      if (customCTA && tweetChunks.length > 0 && includeCTA) {
-        const lastIdx = tweetChunks.length - 1;
-        tweetChunks[lastIdx] = tweetChunks[lastIdx] + '\n\n' + customCTA;
-      }
-
-      // Ensure we have the right number of tweets
-      while (tweetChunks.length < Math.min(numPosts, 3)) {
-        if (sentences.length > tweetChunks.length) {
+        if (customCTA && tweetChunks.length > 0 && includeCTA) {
+          const lastIdx = tweetChunks.length - 1;
+          tweetChunks[lastIdx] = tweetChunks[lastIdx] + '\n\n' + customCTA;
+        }
+        while (tweetChunks.length < Math.min(numPosts, 3) && sentences.length > tweetChunks.length) {
           tweetChunks.push(sentences[tweetChunks.length].trim() + '.');
-        } else {
-          break;
         }
+        fallbackParsed.x_thread = tweetChunks.length ? tweetChunks : [clean.slice(0, 260)];
       }
 
-      // Create LinkedIn post
-      let linkedinPost = '';
-      if (customHook) {
-        linkedinPost = customHook + '\n\n';
-      }
-      linkedinPost += sentences.slice(0, 5).join('. ').trim();
-      if (includeCTA && customCTA) {
-        linkedinPost += '\n\n' + customCTA;
-      }
-      if (includeHashtags) {
-        linkedinPost += '\n\n#content #marketing #business';
+      if (include.has('linkedin')) {
+        let linkedinPost = customHook ? customHook + '\n\n' : '';
+        linkedinPost += sentences.slice(0, 5).join('. ').trim();
+        if (includeCTA && customCTA) linkedinPost += '\n\n' + customCTA;
+        if (includeHashtags) linkedinPost += '\n\n#content #marketing #business';
+        fallbackParsed.linkedin_post = linkedinPost;
       }
 
-      // Create Instagram caption
-      let instagramCaption = '';
-      if (customHook) {
-        instagramCaption = customHook + '\n\n';
-      }
-      instagramCaption += sentences.slice(0, 3).join('. ').trim();
-      if (includeCTA && customCTA) {
-        instagramCaption += '\n\n' + customCTA;
-      }
-      if (includeHashtags) {
-        instagramCaption += '\n\n#content #marketing #business #socialmedia';
-      }
-      if (includeEmojis) {
-        instagramCaption = '✨ ' + instagramCaption + ' 🚀';
+      if (include.has('instagram')) {
+        let instagramCaption = customHook ? customHook + '\n\n' : '';
+        instagramCaption += sentences.slice(0, 3).join('. ').trim();
+        if (includeCTA && customCTA) instagramCaption += '\n\n' + customCTA;
+        if (includeHashtags) instagramCaption += '\n\n#content #marketing #business #socialmedia';
+        if (includeEmojis) instagramCaption = '✨ ' + instagramCaption + ' 🚀';
+        fallbackParsed.instagram_caption = instagramCaption;
       }
 
-      // Create email
-      const emailSubject = customHook || sentences[0]?.trim().slice(0, 60) || 'Your Content';
-      let emailBody = sentences.slice(0, 8).join('. ').trim();
-      if (includeCTA && customCTA) {
-        emailBody += '\n\n' + customCTA;
+      if (include.has('email')) {
+        const emailSubject = customHook || sentences[0]?.trim().slice(0, 60) || 'Your Content';
+        let emailBody = sentences.slice(0, 8).join('. ').trim();
+        if (includeCTA && customCTA) emailBody += '\n\n' + customCTA;
+        fallbackParsed.email_newsletter = { subject: emailSubject, body: emailBody };
       }
 
-      parsed = {
-        x_thread: tweetChunks.length ? tweetChunks : [clean.slice(0, 260)],
-        linkedin_post: linkedinPost,
-        instagram_caption: instagramCaption,
-        email_newsletter: {
-          subject: emailSubject,
-          body: emailBody
-        },
-        _fallback_note: 'Using basic mode. Configure GROQ_API_KEY or OPENROUTER_API_KEY for AI-powered generation.'
-      } as any;
+      if (include.has('facebook')) {
+        let facebookPost = customHook ? customHook + '\n\n' : '';
+        facebookPost += sentences.slice(0, 5).join('. ').trim();
+        if (includeCTA && customCTA) facebookPost += '\n\n' + customCTA;
+        if (includeHashtags) facebookPost += '\n\n#content #marketing #business';
+        fallbackParsed.facebook_post = facebookPost;
+      }
+
+      if (include.has('reddit')) {
+        let redditPost = customHook ? customHook + '\n\n' : '';
+        redditPost += sentences.slice(0, 8).join('. ').trim();
+        if (includeCTA && customCTA) redditPost += '\n\n' + customCTA;
+        fallbackParsed.reddit_post = redditPost;
+      }
+
+      if (include.has('pinterest')) {
+        let pinterestDesc = sentences.slice(0, 3).join('. ').trim();
+        if (includeHashtags) pinterestDesc += ' #content #marketing';
+        fallbackParsed.pinterest_description = pinterestDesc;
+      }
+
+      parsed = fallbackParsed;
       tokenUsage = 0;
     }
 
-    // Post-process according to client options
-    const include = new Set<string>(platforms as string[]);
+    // Post-process: strip any platform keys not selected (defense in depth)
+    if (!include.has('x') && parsed?.x_thread) delete parsed.x_thread;
+    if (!include.has('linkedin') && parsed?.linkedin_post) delete parsed.linkedin_post;
+    if (!include.has('instagram') && parsed?.instagram_caption) delete parsed.instagram_caption;
+    if (!include.has('email') && parsed?.email_newsletter) delete parsed.email_newsletter;
+    if (!include.has('facebook') && parsed?.facebook_post) delete parsed.facebook_post;
+    if (!include.has('reddit') && parsed?.reddit_post) delete parsed.reddit_post;
+    if (!include.has('pinterest') && parsed?.pinterest_description) delete parsed.pinterest_description;
 
     // Strictly enforce numPosts for x_thread
     if (Array.isArray(parsed?.x_thread)) {
@@ -494,9 +533,10 @@ Return ONLY the JSON.`
 
         return t;
       });
+    }
 
-      // Validate LinkedIn post length
-      if (parsed.linkedin_post) {
+    // Validate LinkedIn post length (only when LinkedIn was selected and we have content)
+    if (include.has('linkedin') && parsed.linkedin_post) {
         const linkedinLength = String(parsed.linkedin_post).length;
         const linkedinTargets = {
           short: { min: 400, max: 900 },
@@ -509,12 +549,7 @@ Return ONLY the JSON.`
         if (linkedinLength < linkedinTarget.min) {
           console.log(`Warning: LinkedIn post is too short: ${linkedinLength} chars (expected ${linkedinTarget.min}+)`);
         }
-      }
     }
-    if (!include.has('x') && parsed?.x_thread) delete parsed.x_thread;
-    if (!include.has('linkedin') && parsed?.linkedin_post) delete parsed.linkedin_post;
-    if (!include.has('instagram') && parsed?.instagram_caption) delete parsed.instagram_caption;
-    if (!include.has('email') && parsed?.email_newsletter) delete parsed.email_newsletter;
 
     // Apply platform-specific optimization if enabled
     const optimizationResults: any = {};

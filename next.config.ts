@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Use project root for Turbopack when multiple lockfiles exist
+  turbopack: {
+    root: process.cwd(),
+  },
+
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
@@ -29,6 +34,11 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
+  },
+
+  // Use project root for Turbopack (when used) to avoid multiple lockfile warning
+  turbopack: {
+    root: process.cwd(),
   },
 
   // Experimental features for better performance

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Innertube } from 'youtubei.js';
+import { YoutubeTranscript } from 'youtube-transcript';
 
 export const runtime = 'nodejs';
 
@@ -142,11 +143,27 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
   try {
     // Method 1: Use youtubei.js Innertube client (primary method)
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/6dc0d248-1774-4273-9dc8-843c894b5700',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'youtube-transcript/route.ts:init',message:'Innertube create start',data:{videoId},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
       console.log('[YouTube Transcript] Initializing Innertube client...');
       const youtube = await Innertube.create();
 
       console.log('[YouTube Transcript] Fetching video info for:', videoId);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/6dc0d248-1774-4273-9dc8-843c894b5700',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'youtube-transcript/route.ts:preGetInfo',message:'Before getInfo',data:{videoId},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+      // #endregion
       const video = await youtube.getInfo(videoId);
+
+      const page = (video as any).page;
+      const nextResponse = Array.isArray(page) ? page[1] : undefined;
+      const engagementPanels = nextResponse?.engagement_panels;
+      const transcriptPanel = Array.isArray(engagementPanels)
+        ? engagementPanels.find((p: any) => p?.panel_identifier === 'engagement-panel-searchable-transcript')
+        : undefined;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/6dc0d248-1774-4273-9dc8-843c894b5700',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'youtube-transcript/route.ts:afterGetInfo',message:'After getInfo',data:{videoId,pageLength:page?.length,hasNextResponse:!!nextResponse,engagementPanelsLength:engagementPanels?.length,hasTranscriptPanel:!!transcriptPanel,titles:engagementPanels?.map((p:any)=>p?.panel_identifier)},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
 
       // Get video title from video info
       const videoTitle = video.basic_info?.title || (video as any).video_details?.title || 'YouTube Video';
@@ -159,15 +176,36 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
       try {
         transcriptData = await video.getTranscript();
       } catch (transcriptError: any) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/6dc0d248-1774-4273-9dc8-843c894b5700',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'youtube-transcript/route.ts:getTranscriptCatch',message:'getTranscript threw',data:{errorMessage:transcriptError?.message},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+        // #endregion
         // If it's a 400 error, the video likely doesn't have transcripts
-        // Don't throw, just log and continue to fallback methods
         if (transcriptError?.message?.includes('400') ||
           transcriptError?.message?.includes('status code 400')) {
           console.log('[YouTube Transcript] Transcript API returned 400 - video may not have captions available');
-          console.log('[YouTube Transcript] Will try fallback methods...');
           transcriptData = null;
         } else {
-          // Re-throw other errors
+          // getTranscript failed (e.g. "Transcript panel not found") but we may have caption_tracks from the player response
+          const captionTracks = (video as any).captions?.caption_tracks;
+          const trackUrl = captionTracks?.[0]?.base_url && (typeof captionTracks[0].base_url === 'string'
+            ? captionTracks[0].base_url
+            : (captionTracks[0].base_url as any)?.baseUrl);
+          if (trackUrl) {
+            try {
+              const res = await fetch(trackUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0' } });
+              const xml = await res.text();
+              const RE_XML = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
+              const parts: string[] = [];
+              for (const m of xml.matchAll(RE_XML)) parts.push(decodeHTMLEntities(m[3]));
+              const text = parts.join(' ').replace(/\s+/g, ' ').trim();
+              if (text) {
+                console.log('[YouTube Transcript] Caption track fallback succeeded');
+                return { title: videoTitle, text, videoId, source: 'caption_track' };
+              }
+            } catch (_) {
+              // ignore, fall through to re-throw
+            }
+          }
           throw transcriptError;
         }
       }
@@ -221,6 +259,9 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
         console.log('[YouTube Transcript] No transcript data available from Innertube');
       }
     } catch (innertubeError: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/6dc0d248-1774-4273-9dc8-843c894b5700',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'youtube-transcript/route.ts:innertubeCatch',message:'Innertube catch',data:{errorMessage:innertubeError?.message,errorName:innertubeError?.name},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
       console.error(
         '[YouTube Transcript] Innertube failed:',
         innertubeError?.message || innertubeError
@@ -231,7 +272,37 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
       // Only log the error and continue
     }
 
-    // Method 2: Try using a third-party transcript API (RapidAPI) – optional fallback
+    // Method 2: Scrape watch page for caption track URL (works when player response captions missing)
+    try {
+      const scraped = await fetchTranscriptFromWatchPage(videoId);
+      if (scraped) {
+        console.log('[YouTube Transcript] Watch page scrape fallback succeeded');
+        return scraped;
+      }
+    } catch (scrapeErr: any) {
+      console.log('[YouTube Transcript] Watch page scrape failed:', scrapeErr?.message);
+    }
+
+    // Method 3: youtube-transcript package (fallback when youtubei.js parser fails)
+    try {
+      const segments = await YoutubeTranscript.fetchTranscript(videoId);
+      if (segments && segments.length > 0) {
+        const transcriptText = segments.map((s: { text: string }) => s.text).join(' ');
+        if (transcriptText.trim()) {
+          console.log('[YouTube Transcript] youtube-transcript fallback succeeded');
+          return {
+            title: 'YouTube Video',
+            text: transcriptText,
+            videoId,
+            source: 'youtube-transcript',
+          };
+        }
+      }
+    } catch (ytTranscriptError: any) {
+      console.log('[YouTube Transcript] youtube-transcript fallback failed:', ytTranscriptError?.message);
+    }
+
+    // Method 4: Try using a third-party transcript API (RapidAPI) – optional fallback
     try {
       const apiResponse = await fetch(`https://youtube-transcript-api.p.rapidapi.com/transcript?video_id=${videoId}`, {
         method: 'GET',
@@ -259,6 +330,9 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
 
     // If all methods fail, return a helpful error message
     // Don't throw - return null so upstream can handle it gracefully
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/6dc0d248-1774-4273-9dc8-843c894b5700',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'youtube-transcript/route.ts:allFailed',message:'All transcript methods failed',data:{videoId},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
     console.log('[YouTube Transcript] All transcript methods failed. Video may not have captions available.');
     return null;
 
@@ -268,6 +342,91 @@ async function fetchYouTubeTranscript(videoId: string): Promise<any> {
     // Return null instead of throwing to allow better error handling upstream
     return null;
   }
+}
+
+/** Extract caption track URL from watch page HTML and fetch + parse transcript. */
+async function fetchTranscriptFromWatchPage(videoId: string): Promise<{ title: string; text: string; videoId: string; source: string } | null> {
+  const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0';
+  const res = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+    headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en-US,en;q=0.9' },
+  });
+  const html = await res.text();
+  if (html.includes('class="g-recaptcha"')) return null;
+
+  let baseUrl: string | null = null;
+
+  // Strategy 1: Same as youtube-transcript – "captions":{...} then JSON parse up to ,"videoDetails"
+  const byCaptions = html.split('"captions":');
+  if (byCaptions.length > 1) {
+    const block = byCaptions[1].split(',"videoDetails"')[0].split(';"videoDetails"')[0].replace(/\n/g, ' ').trim();
+    try {
+      const captionsJson = JSON.parse(block);
+      const tracklist = captionsJson?.playerCaptionsTracklistRenderer;
+      const track = tracklist?.captionTracks?.[0];
+      if (track?.baseUrl) baseUrl = track.baseUrl;
+    } catch {
+      // try alternate boundary (some pages use different key order)
+      const altBlock = byCaptions[1].split(',"videoDetails')[0].split('};')[0] + '}';
+      try {
+        const captionsJson = JSON.parse(altBlock);
+        const track = captionsJson?.playerCaptionsTracklistRenderer?.captionTracks?.[0];
+        if (track?.baseUrl) baseUrl = track.baseUrl;
+      } catch {
+        // fall through
+      }
+    }
+  }
+
+  // Strategy 2: Direct timedtext URL in page (escaped or unescaped)
+  if (!baseUrl) {
+    const directUrl = html.match(/https?:\\?\/\\?\/www\.youtube\.com\\?\/api\\?\/timedtext\?[^"']+/);
+    if (directUrl?.[0]) {
+      baseUrl = directUrl[0].replace(/\\\//g, '/').replace(/\\u0026/g, '&');
+    }
+  }
+  if (!baseUrl) {
+    const simpleMatch = html.match(/"baseUrl"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    if (simpleMatch) {
+      baseUrl = simpleMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+    }
+  }
+
+  if (!baseUrl) return null;
+
+  const sep = baseUrl.includes('?') ? '&' : '?';
+  // Try json3 first (structured, often more reliable)
+  let trackRes = await fetch(baseUrl + sep + 'fmt=json3', { headers: { 'User-Agent': USER_AGENT } });
+  let body = trackRes.ok ? await trackRes.text() : '';
+  let text = '';
+
+  if (trackRes.ok && body.trim().startsWith('{')) {
+    try {
+      const json = JSON.parse(body);
+      const events = json?.events || [];
+      const parts: string[] = [];
+      for (const e of events) {
+        for (const s of e?.segs || []) {
+          if (s?.utf8) parts.push(s.utf8);
+        }
+      }
+      text = parts.join(' ').replace(/\s+/g, ' ').trim();
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!text) {
+    trackRes = await fetch(baseUrl, { headers: { 'User-Agent': USER_AGENT } });
+    if (!trackRes.ok) return null;
+    body = await trackRes.text();
+    const RE_XML = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
+    const xmlParts: string[] = [];
+    for (const m of body.matchAll(RE_XML)) xmlParts.push(decodeHTMLEntities(m[3]));
+    text = xmlParts.join(' ').replace(/\s+/g, ' ').trim();
+  }
+
+  if (!text) return null;
+  return { title: 'YouTube Video', text, videoId, source: 'watch_page' };
 }
 
 function decodeHTMLEntities(text: string): string {
