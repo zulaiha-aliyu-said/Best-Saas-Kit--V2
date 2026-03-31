@@ -12,26 +12,14 @@ import { CreditOptimizationWidget } from "@/components/credits/CreditOptimizatio
 import { useSession } from "next-auth/react";
 
 import {
-  Users,
-  Activity,
-  CreditCard,
-  DollarSign,
-  TrendingUp,
-  Zap,
   BarChart3,
   Settings,
-  UserPlus,
   Calendar,
-  MessageSquare,
-  User,
   Sparkles,
-  Eye,
   Heart,
-  Share2,
   Clock,
   Target,
   ArrowUpRight,
-  ArrowDownRight,
   RefreshCw
 } from "lucide-react";
 
@@ -48,12 +36,6 @@ export default function DashboardPage() {
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userTier, setUserTier] = useState(1);
-  const [userStats, setUserStats] = useState({
-    totalUsers: 0,
-    activeToday: 0,
-    newThisWeek: 0,
-    newThisMonth: 0
-  });
   const [contentStats, setContentStats] = useState({
     postsGenerated: 0,
     creditsUsed: 0,
@@ -71,7 +53,17 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboardData();
     checkOnboardingStatus();
-  }, []);
+    checkAdminStatus();
+  }, [session]);
+
+  const checkAdminStatus = () => {
+    if (session?.user?.email) {
+      // Simple admin check based on email or other session data
+      // This is a placeholder - in a real app, you'd check a role field
+      const adminEmails = ['admin@repurposeai.com', 'zulaiha@repurposeai.com'];
+      setIsAdmin(adminEmails.includes(session.user.email));
+    }
+  };
 
   const checkOnboardingStatus = async () => {
     try {
@@ -100,9 +92,8 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       // Parallelize all API calls for better performance
-      const [creditsResponse, statsResponse, activityResponse, trendsResponse] = await Promise.allSettled([
+      const [creditsResponse, activityResponse, trendsResponse] = await Promise.allSettled([
         fetch('/api/credits'),
-        fetch('/api/users/stats'),
         fetch('/api/history'),
         fetch('/api/trends?platform=all&category=all&timeRange=24')
       ]);
@@ -113,19 +104,13 @@ export default function DashboardPage() {
         setUserCredits(creditsData.credits || 0);
       }
 
-      // Handle stats response
-      if (statsResponse.status === 'fulfilled' && statsResponse.value.ok) {
-        const statsData = await statsResponse.value.json();
-        setUserStats(statsData);
-      }
-
       // Handle activity response
       if (activityResponse.status === 'fulfilled' && activityResponse.value.ok) {
         const activityData = await activityResponse.value.json();
-        setRecentActivity(activityData.posts || []);
+        const posts = activityData.posts || [];
+        setRecentActivity(posts);
         
         // Calculate content stats from recent activity
-        const posts = activityData.posts || [];
         const totalPosts = posts.length;
         const totalCreditsUsed = posts.reduce((sum: number, post: any) => sum + (post.credits_used || 1), 0);
         const hoursSaved = totalPosts * 2; // Assume 2 hours saved per post
@@ -169,126 +154,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Admin stats
-  const adminStats = [
-    {
-      title: "Total Users",
-      value: userStats.totalUsers.toLocaleString(),
-      change: `+${userStats.newThisMonth} this month`,
-      icon: Users,
-    },
-    {
-      title: "Active Today",
-      value: userStats.activeToday.toLocaleString(),
-      change: "Users logged in today",
-      icon: Activity,
-    },
-    {
-      title: "New This Week",
-      value: userStats.newThisWeek.toLocaleString(),
-      change: "New registrations",
-      icon: UserPlus,
-    },
-    {
-      title: "New This Month",
-      value: userStats.newThisMonth.toLocaleString(),
-      change: "Monthly growth",
-      icon: Calendar,
-    },
-  ];
-
-  // Content repurposing stats for regular users - now using real data
-  const contentStatsArray = [
-    {
-      title: "Posts Generated",
-      value: contentStats.postsGenerated.toLocaleString(),
-      change: `+${Math.floor(contentStats.postsGenerated * 0.12)} this month`,
-      trend: "up",
-      icon: Sparkles,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-900/30",
-    },
-    {
-      title: "Credits Used",
-      value: contentStats.creditsUsed.toLocaleString(),
-      change: `+${Math.floor(contentStats.creditsUsed * 0.05)} this month`,
-      trend: "up",
-      icon: Target,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-900/30",
-    },
-    {
-      title: "Hours Saved",
-      value: `${contentStats.hoursSaved}h`,
-      change: `+${Math.floor(contentStats.hoursSaved * 0.18)} this month`,
-      trend: "up",
-      icon: Clock,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-900/30",
-    },
-    {
-      title: "Engagement Rate",
-      value: `${contentStats.engagementRate}%`,
-      change: `+${Math.floor(contentStats.engagementRate * 0.125)}% from last month`,
-      trend: "up",
-      icon: Heart,
-      color: "text-red-600",
-      bgColor: "bg-red-50 dark:bg-red-900/30",
-    },
-  ];
-
-  // Recent content performance
-  const recentContent = [
-    {
-      id: 1,
-      title: "AI Trends 2024",
-      platform: "LinkedIn",
-      engagement: "2.3K",
-      reach: "15.2K",
-      status: "published",
-      date: "2 hours ago",
-      icon: "in",
-      color: "text-blue-700",
-      bg: "bg-blue-50 dark:bg-blue-900/30"
-    },
-    {
-      id: 2,
-      title: "Content Strategy Tips",
-      platform: "Twitter",
-      engagement: "1.8K",
-      reach: "8.7K",
-      status: "scheduled",
-      date: "Tomorrow 9:00 AM",
-      icon: "𝕏",
-      color: "text-blue-600",
-      bg: "bg-blue-50 dark:bg-blue-900/30"
-    },
-    {
-      id: 3,
-      title: "Visual Storytelling",
-      platform: "Instagram",
-      engagement: "3.1K",
-      reach: "12.4K",
-      status: "published",
-      date: "1 day ago",
-      icon: "📷",
-      color: "text-pink-600",
-      bg: "bg-pink-50 dark:bg-pink-900/30"
-    },
-    {
-      id: 4,
-      title: "Weekly Newsletter",
-      platform: "Email",
-      engagement: "45.2%",
-      reach: "2.1K",
-      status: "published",
-      date: "3 days ago",
-      icon: "✉️",
-      color: "text-green-600",
-      bg: "bg-green-50 dark:bg-green-900/30"
-    }
-  ];
-
   return (
     <>
       {/* Onboarding Modal */}
@@ -314,7 +179,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">
-            {isAdmin ? "Admin Dashboard" : `Welcome back, User!`}
+            {isAdmin ? "Admin Dashboard" : `Welcome back, ${session?.user?.name || 'User'}!`}
           </h1>
           <p className="text-muted-foreground text-lg mt-2">
             {isAdmin
@@ -324,7 +189,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => fetchDashboardData()}>
             <RefreshCw className="h-4 w-4" />
             Refresh
           </Button>
@@ -353,7 +218,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Email Status Card */}
+      {/* Credit Status Card */}
       <div className="flex justify-end mb-4">
         <Card className="w-48">
           <CardContent className="p-4">
@@ -364,7 +229,7 @@ export default function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="font-medium text-sm">Email</span>
+                <span className="font-medium text-sm">Credits</span>
               </div>
               <span className="text-lg font-bold text-green-600">
                 {isLoading ? (
@@ -444,15 +309,8 @@ export default function DashboardPage() {
                   contentStats.postsGenerated.toLocaleString()
                 )}
               </div>
-              <div className="flex items-center gap-1 text-green-600 text-sm font-semibold">
-                <ArrowUpRight className="h-4 w-4" />
-                +{Math.floor(contentStats.postsGenerated * 0.12)}%
-              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">Posts Generated</p>
-            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2 text-xs group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
-              <span className="text-blue-600">{Math.floor(contentStats.postsGenerated * 0.07)} this month</span>
-            </div>
+            <p className="text-sm text-muted-foreground mb-2">Total Generated</p>
           </CardContent>
         </Card>
 
@@ -477,15 +335,8 @@ export default function DashboardPage() {
                   contentStats.creditsUsed.toLocaleString()
                 )}
               </div>
-              <div className="flex items-center gap-1 text-red-600 text-sm font-semibold">
-                <ArrowDownRight className="h-4 w-4" />
-                +{Math.floor(contentStats.creditsUsed * 0.05)}%
-              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">Credits Used</p>
-            <div className="bg-purple-50 rounded-lg p-2 text-xs group-hover:bg-purple-100 transition-colors">
-              <span className="text-purple-600">{Math.floor(contentStats.creditsUsed * 0.08)} this month</span>
-            </div>
+            <p className="text-sm text-muted-foreground mb-2">Total Credits</p>
           </CardContent>
         </Card>
 
@@ -508,15 +359,8 @@ export default function DashboardPage() {
                   `${contentStats.hoursSaved}h`
                 )}
               </div>
-              <div className="flex items-center gap-1 text-green-600 text-sm font-semibold">
-                <ArrowUpRight className="h-4 w-4" />
-                +{Math.floor(contentStats.hoursSaved * 0.18)}%
-              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">Hours Saved</p>
-            <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-2 text-xs group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
-              <span className="text-green-600">{Math.floor(contentStats.hoursSaved * 0.12)} this month</span>
-            </div>
+            <p className="text-sm text-muted-foreground mb-2">Estimated Saved</p>
           </CardContent>
         </Card>
 
@@ -539,15 +383,8 @@ export default function DashboardPage() {
                   `${contentStats.engagementRate}%`
                 )}
               </div>
-              <div className="flex items-center gap-1 text-green-600 text-sm font-semibold">
-                <ArrowUpRight className="h-4 w-4" />
-                +{Math.floor(contentStats.engagementRate * 0.125)}%
-              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">Engagement Rate</p>
-            <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-2 text-xs group-hover:bg-red-100 dark:group-hover:bg-red-900/50 transition-colors">
-              <span className="text-red-600">from last month</span>
-            </div>
+            <p className="text-sm text-muted-foreground mb-2">Average Rate</p>
           </CardContent>
         </Card>
       </div>
@@ -561,9 +398,11 @@ export default function DashboardPage() {
               Hot topics to inspire your next content
             </p>
           </div>
-          <Button variant="outline" className="gap-2">
-            View All Trends
-            <ArrowUpRight className="h-4 w-4" />
+          <Button variant="outline" className="gap-2" asChild>
+            <Link href="/dashboard/trends">
+              View All Trends
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
 
@@ -623,9 +462,9 @@ export default function DashboardPage() {
               );
             })
           ) : (
-            <div className="col-span-3 text-center py-8">
-              <p className="text-muted-foreground">No trending topics available</p>
-              <Button variant="outline" size="sm" className="mt-2" asChild>
+            <div className="col-span-3 text-center py-8 border-2 border-dashed rounded-lg">
+              <p className="text-muted-foreground">No trending topics available right now</p>
+              <Button variant="outline" size="sm" className="mt-4" asChild>
                 <Link href="/dashboard/trends">View All Trends</Link>
               </Button>
             </div>
@@ -841,9 +680,9 @@ export default function DashboardPage() {
                   );
                 })
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-8 border-2 border-dashed rounded-lg">
                   <p className="text-muted-foreground">No recent activity found</p>
-                  <Button variant="outline" size="sm" className="mt-2" asChild>
+                  <Button variant="outline" size="sm" className="mt-4" asChild>
                     <Link href="/dashboard/repurpose">Start Creating Content</Link>
                   </Button>
                 </div>
@@ -909,7 +748,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Platform Breakdown & Trending Topics */}
+      {/* Platform Breakdown & Credit Optimization */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Platform Breakdown Card */}
         <Card>
@@ -1008,156 +847,14 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Trending Topics Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">Trending Topics</CardTitle>
-                <CardDescription>
-                  Hot topics to inspire your next content
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" className="gap-2">
-                View All Trends
-                <ArrowUpRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            {isLoading ? (
-              <div className="col-span-2 flex items-center justify-center py-8">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span className="text-muted-foreground text-sm">Loading trending topics...</span>
-              </div>
-            ) : trendingTopics.length > 0 ? (
-              trendingTopics.slice(0, 4).map((topic, index) => {
-                const getBadgeInfo = (engagement: number) => {
-                  if (engagement > 80) {
-                    return { text: 'Trending', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: '🔥' };
-                  } else if (engagement > 60) {
-                    return { text: 'Rising', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: '📈' };
-                  } else {
-                    return { text: 'Popular', color: 'bg-green-100 text-green-700 border-green-200', icon: '⭐' };
-                  }
-                };
-
-                const badgeInfo = getBadgeInfo(topic.engagement || 0);
-                const engagementPercent = Math.round(topic.engagement || 0);
-
-                 return (
-                   <Link key={topic.id || index} href={`/dashboard/trends?topic=${encodeURIComponent(topic.title || '')}`} className="block">
-                     <div className="p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group">
-                       <div className="flex items-start justify-between mb-3">
-                         <Badge className={`${badgeInfo.color} text-xs`}>
-                           <span className="mr-1">{badgeInfo.icon}</span>
-                           {badgeInfo.text}
-                         </Badge>
-                         <span className="text-sm font-semibold text-purple-600">+{engagementPercent}%</span>
-                       </div>
-                       <h4 className="font-semibold text-sm mb-2 group-hover:text-purple-600 transition-colors line-clamp-1">
-                         {topic.title || 'Trending Topic'}
-                       </h4>
-                       <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                         {topic.description || topic.content || 'Discover trending content in this category.'}
-                       </p>
-                       <div className="flex flex-wrap gap-1">
-                         {topic.tags?.slice(0, 2).map((tag: string, tagIndex: number) => (
-                           <Badge key={tagIndex} variant="secondary" className="text-xs">
-                             {tag}
-                           </Badge>
-                         )) || (
-                           <>
-                             <Badge variant="secondary" className="text-xs">#Trending</Badge>
-                             <Badge variant="secondary" className="text-xs">#Content</Badge>
-                           </>
-                         )}
-                       </div>
-                     </div>
-                   </Link>
-                 );
-              })
-            ) : (
-              <div className="col-span-2 text-center py-8">
-                <p className="text-muted-foreground text-sm">No trending topics available</p>
-                <Button variant="outline" size="sm" className="mt-2" asChild>
-                  <Link href="/dashboard/trends">View All Trends</Link>
-                </Button>
-              </div>
-            )}
-          </div>
-          </CardContent>
-        </Card>
+        {/* Credit Optimization Widget */}
+        <div className="lg:col-span-2">
+          <CreditOptimizationWidget />
+        </div>
       </div>
 
-      {/* Credit Optimization Widget */}
-      <CreditOptimizationWidget />
-
-      {/* Activity & Account Status */}
+      {/* Account Status */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Recent Activity</CardTitle>
-            <CardDescription>
-              {isAdmin ? "System activity and updates" : "Your recent content actions"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {isAdmin ? (
-                <>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">New user registered</p>
-                      <p className="text-xs text-muted-foreground">john@example.com • 2 minutes ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
-                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Credits updated</p>
-                      <p className="text-xs text-muted-foreground">sarah@startup.com • 5 minutes ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800">
-                    <div className="w-2 h-2 bg-yellow-500 dark:bg-yellow-400 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">System maintenance</p>
-                      <p className="text-xs text-muted-foreground">Scheduled update • 1 hour ago</p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-purple-50 border border-purple-200">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Content repurposed</p>
-                      <p className="text-xs text-muted-foreground">LinkedIn post • 2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
-                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Post scheduled</p>
-                      <p className="text-xs text-muted-foreground">Twitter thread • Tomorrow 9:00 AM</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">High engagement</p>
-                      <p className="text-xs text-muted-foreground">Instagram post • 1 day ago</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Account Status</CardTitle>
@@ -1169,7 +866,7 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
                 <span className="text-sm font-medium">Plan</span>
-                <Badge variant="default">Pro</Badge>
+                <Badge variant="default">{userTier > 1 ? `LTD Tier ${userTier}` : "Free Plan"}</Badge>
               </div>
               <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
                 <span className="text-sm font-medium">Credits Available</span>
