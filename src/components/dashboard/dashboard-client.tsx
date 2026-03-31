@@ -123,16 +123,6 @@ export function DashboardClient({ children, session, isAdmin }: DashboardClientP
             ))}
           </div>
 
-          {/* Quick Stats */}
-          <div className="mt-6 rounded-xl bg-secondary/60 p-4 card-soft-shadow">
-            <p className="text-xs uppercase text-muted-foreground tracking-wide mb-2">Quick Stats</p>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span>Content Repurposed</span><span className="font-medium">1,247</span></div>
-              <div className="flex justify-between"><span>This Month</span><span className="text-green-600 font-medium">+87</span></div>
-              <div className="flex justify-between"><span>Credits Left</span><span className="font-medium">342</span></div>
-            </div>
-          </div>
-
           {/* Upgrade Card */}
           <div className="mt-4 rounded-xl p-4 repurpose-gradient text-white">
             <p className="text-sm font-medium mb-2">🎁 Lifetime Deal</p>
