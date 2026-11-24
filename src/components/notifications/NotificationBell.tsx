@@ -30,12 +30,10 @@ export function NotificationBell() {
     }
   }, []);
 
-  // Fetch once when the component mounts
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // Refresh notifications when dropdown opens
   const handleToggle = () => {
     const nextOpen = !isOpen;
     setIsOpen(nextOpen);
@@ -59,8 +57,9 @@ export function NotificationBell() {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    return () =>
+    return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [isOpen]);
 
   const handleMarkAsRead = async (notificationId: number) => {
